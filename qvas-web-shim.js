@@ -8,6 +8,11 @@
 
   const realFetch = window.fetch.bind(window);
 
+  // index.html switches into "remote device" mode in any browser (no `require`). That mode starts a second
+  // /api/state poller that consumes key presses it cannot act on (and has no case for key 7) and re-requests
+  // audio from a server endpoint that doesn't exist here. This app IS the host, so declare it as such.
+  window.electronApp = true;
+
   // ---------- GitHub Pages base path ----------
   // On https://user.github.io/repo/ the app lives under /repo/, but app.js uses root-absolute URLs
   // like /audio/... and /api/... . Rewrite same-origin root-absolute URLs to include the base.
@@ -240,6 +245,84 @@
     const lock = () => navigator.wakeLock.request('screen').catch(() => {});
     lock();
     document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') lock(); });
+  }
+
+
+  // ---------- on-screen keys (iPhone has no physical keyboard) ----------
+  // Same effect as pressing 3 / 4 / 6 / 7 on the desktop keyboard: posts the key to /api/key-press,
+  // which app.js picks up through its /api/state polling.
+  const KEYS = [
+    { key: '3', label: 'Open Doors' },
+    { key: '4', label: 'Now Arriving At' },
+    { key: '6', label: 'Close Doors' },
+    { key: '7', label: 'The Next Station Is' }
+  ];
+  let lastKeyTs = 0;
+  function sendKey(key) {
+    lastKeyTs = Math.max(Date.now(), lastKeyTs + 1); // app ignores timestamps that don't increase
+    return window.fetch('/api/key-press', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, timestamp: lastKeyTs })
+    });
+  }
+  function buildKeyBar() {
+    if (document.getElementById('qvas-keybar')) return;
+    const css = document.createElement('style');
+    css.textContent = `
+      #qvas-keybar{position:fixed;left:50%;transform:translateX(-50%);z-index:2147483647;display:flex;gap:6px;padding:5px;
+        border-radius:12px;background:rgba(0,0,0,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+        font-family:-apple-system,Helvetica,Arial,sans-serif;width:min(560px,calc(100vw - 16px));
+        user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+      #qvas-keybar.top{top:calc(env(safe-area-inset-top,0px) + 4px)}
+      #qvas-keybar.bottom{bottom:calc(env(safe-area-inset-bottom,0px) + 4px)}
+      #qvas-keybar button{flex:1 1 0;min-width:0;min-height:44px;padding:3px 4px;border:1px solid rgba(255,255,255,.35);
+        border-radius:9px;background:#1f2a44;color:#fff;font-size:11px;line-height:1.1;touch-action:manipulation;
+        -webkit-tap-highlight-color:transparent;cursor:pointer}
+      #qvas-keybar button b{display:block;font-size:17px}
+      #qvas-keybar button:active,#qvas-keybar button.hit{background:#3d5a99}
+      #qvas-keybar .qk-ctl{flex:0 0 34px;background:#333;font-size:16px;padding:0}
+      #qvas-keybar.collapsed{width:auto}
+      #qvas-keybar.collapsed button.qk-key{display:none}`;
+    document.head.appendChild(css);
+    const bar = document.createElement('div');
+    bar.id = 'qvas-keybar';
+    KEYS.forEach(({ key, label }) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.innerHTML = `<b>${key}</b>${label}`;
+      b.setAttribute('aria-label', `${key} ${label}`);
+      b.addEventListener('click', (e) => {
+        e.preventDefault();
+        b.classList.add('hit'); setTimeout(() => b.classList.remove('hit'), 150);
+        if (navigator.vibrate) navigator.vibrate(15);
+        sendKey(key);
+      });
+      b.addEventListener('mousedown', (e) => e.preventDefault()); // don't steal focus from the run-number field
+      bar.appendChild(b);
+    });
+    const store = {
+      get(k, d) { try { return localStorage.getItem(k) || d; } catch (e) { return d; } },
+      set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} }
+    };
+    const setPos = (p) => { bar.classList.remove('top', 'bottom'); bar.classList.add(p); store.set('qvas-keybar-pos', p); };
+    const mk = (txt, label, fn) => {
+      const c = document.createElement('button');
+      c.type = 'button'; c.className = 'qk-ctl'; c.textContent = txt; c.setAttribute('aria-label', label);
+      c.addEventListener('click', fn); return c;
+    };
+    bar.querySelectorAll('button').forEach(b => b.classList.add('qk-key'));
+    bar.appendChild(mk('\u21C5', 'Move keys to top or bottom', () => setPos(bar.classList.contains('top') ? 'bottom' : 'top')));
+    bar.appendChild(mk('\u2013', 'Hide or show keys', function () {
+      bar.classList.toggle('collapsed'); this.textContent = bar.classList.contains('collapsed') ? '3 4 6 7' : '\u2013';
+      if (bar.classList.contains('collapsed')) this.style.flexBasis = 'auto', this.style.padding = '0 10px'; else this.style.flexBasis = '', this.style.padding = '';
+    }));
+    setPos(store.get('qvas-keybar-pos', 'top'));
+    document.body.appendChild(bar);
+  }
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildKeyBar);
+    else buildKeyBar();
   }
 
   // Desktop-only IPC (GTFS download via PowerShell, Windows brightness) is unavailable here.
