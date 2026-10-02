@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manual Routes Manager</title>
+  <style>
+    :root { font-family: Arial, sans-serif; color: #fff; background: #111; }
+    body { max-width: 1000px; margin: 0 auto; padding: 24px; }
+    h1 { color: #ff0; }
+    section { border: 1px solid #555; padding: 18px; margin: 16px 0; background: #222; }
+    label { display: block; margin: 10px 0 4px; font-weight: bold; }
+    input, textarea, button { box-sizing: border-box; font: inherit; }
+    input, textarea { width: 100%; padding: 9px; color: #fff; background: #111; border: 1px solid #777; }
+    textarea { min-height: 180px; resize: vertical; }
+    button { padding: 10px 16px; margin: 12px 8px 0 0; color: #fff; background: #2e5b2d; border: 0; cursor: pointer; font-weight: bold; }
+    button.delete { background: #990000; }
+    .route-card { border-top: 1px solid #555; padding: 12px 0; }
+    .route-folder { border: 1px solid #555; background: #1b1b1b; }
+    .route-folder summary { padding: 12px; color: #ff0; cursor: pointer; font-size: 1.1em; font-weight: bold; }
+    .route-folder summary:hover { background: #333; }
+    .route-folder-content { padding: 0 12px 12px; }
+    .run-card { margin: 10px 0; padding: 10px; background: #333; }
+    #message { min-height: 20px; color: #8f8; }
+  </style>
+</head>
+<body>
+  <h1>Manual Routes Manager</h1>
+  <p>Add a line, then add route options under it. Saved changes are loaded automatically by the application.</p>
+  <section>
+    <h2>Line</h2>
+    <label for="line-name">Line name</label>
+    <input id="line-name" placeholder="Ferny Grove Line">
+    <button id="add-line">Add line</button>
+  </section>
+  <section>
+    <h2>Configured lines</h2>
+    <div id="routes"></div>
+  </section>
+  <div id="message" role="status"></div>
+  <script>
+    let data = { routes: [] };
+    const routesElement = document.getElementById('routes');
+    const messageElement = document.getElementById('message');
+
+    async function load() {
+      const response = await fetch('/manual-routes.json');
+      data = await response.json();
+      render();
+    }
+
+    function render() {
+      routesElement.innerHTML = '';
+      data.routes.forEach((line, lineIndex) => {
+        const card = document.createElement('div');
+        card.className = 'route-card';
+        card.innerHTML = `<details class="route-folder"><summary>${escapeHtml(line.name)}</summary><div class="route-folder-content"><button class="delete-line">Delete line</button><div class="runs"></div><button class="add-route">Add route option</button></div></details>`;
+        card.querySelector('.delete-line').onclick = () => { data.routes.splice(lineIndex, 1); render(); save(); };
+        const runs = card.querySelector('.runs');
+        line.runs.forEach((run, runIndex) => {
+          const runCard = document.createElement('div');
+          runCard.className = 'run-card';
+          runCard.innerHTML = `
+            <label>Route option name</label><input data-field="name" value="${escapeHtml(run.name)}">
+            <label>Stations, one per line</label><textarea data-field="stations">${escapeHtml(run.stations.join('\n'))}</textarea>
+            <label>Form audio file</label><input data-field="formFile" value="${escapeHtml(run.formFile || '')}" placeholder="QR_PIDS_AudioFiles/Form/example.mp3"><label>TNS_Special audio folder</label><input data-field="tnsFolder" value="${escapeHtml(run.tnsFolder || '')}" placeholder="QR_PIDS_AudioFiles/TNS_Special/..."><br><button class="delete">Delete route option</button>`;
+          runCard.querySelectorAll('[data-field]').forEach(input => input.oninput = () => {
+            const field = input.dataset.field;
+            run[field] = field === 'stations' ? input.value.split(/\r?\n/).map(value => value.trim()).filter(Boolean) : input.value;
+            save(false);
+          });
+          runCard.querySelector('.delete').onclick = () => { line.runs.splice(runIndex, 1); render(); save(); };
+          runs.appendChild(runCard);
+        });
+        card.querySelector('.add-route').onclick = () => { line.runs.push({ name: 'New route', stations: [], formFile: '', tnsFolder: '' }); render(); save(); };
+        routesElement.appendChild(card);
+      });
+    }
+
+    async function save(showMessage = true) {
+      const response = await fetch('/api/manual-routes', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      const result = await response.json();
+      if (showMessage) messageElement.textContent = result.success ? 'Saved. Restart or reopen the route picker to load changes.' : result.message;
+    }
+
+    document.getElementById('add-line').onclick = () => {
+      const name = document.getElementById('line-name').value.trim();
+      if (!name) return;
+      data.routes.push({ name, runs: [] });
+      document.getElementById('line-name').value = '';
+      render();
+      save();
+    };
+
+    function escapeHtml(value) { return String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char])); }
+    load().catch(error => messageElement.textContent = error.message);
+  </script>
+</body>
+</html>

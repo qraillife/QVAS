@@ -1,0 +1,2111 @@
+{
+  "D6X2": [
+    {
+      "name": "Bowen Hills",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Bowen_Hills.MP3"
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "Fortitude Valley",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Fortitude_Valley.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Fortitude_Valley.mp3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Fortitude_Valley.MP3"
+        }
+      }
+    },
+    {
+      "name": "Central",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Central.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Central.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Central.MP3"
+        }
+      }
+    },
+    {
+      "name": "Roma Street",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Roma_Street.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Roma_Street.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Roma_Street.MP3"
+        }
+      }
+    },
+    {
+      "name": "Milton",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Milton.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Milton.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Milton.MP3"
+        }
+      }
+    },
+    {
+      "name": "Indooroopilly",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Indooroopilly.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Indooroopilly.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Indooroopilly.MP3"
+        }
+      }
+    },
+    {
+      "name": "Darra",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Darra.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Darra.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Darra.MP3"
+        }
+      }
+    },
+    {
+      "name": "Wacol",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Wacol.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Wacol.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Wacol.MP3"
+        }
+      }
+    },
+    {
+      "name": "Gailes",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Gailes.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Gailes.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Gailes.MP3"
+        }
+      }
+    },
+    {
+      "name": "Goodna",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Goodna.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Goodna.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Goodna.MP3"
+        }
+      }
+    },
+    {
+      "name": "Redbank",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Redbank.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Redbank.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Redbank.MP3"
+        }
+      }
+    },
+    {
+      "name": "Riverview",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Riverview.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Riverview.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Riverview.MP3"
+        }
+      }
+    },
+    {
+      "name": "Dinmore",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Dinmore.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Dinmore.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Dinmore.MP3"
+        }
+      }
+    },
+    {
+      "name": "Ebbw Vale",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Ebbw_Vale.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Ebbw_Vale.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Ebbw_Vale.MP3"
+        }
+      }
+    },
+    {
+      "name": "Bundamba",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Bundamba.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Bundamba.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Bundamba.MP3"
+        }
+      }
+    },
+    {
+      "name": "Booval",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Booval.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Booval.mp3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Booval.MP3"
+        }
+      }
+    },
+    {
+      "name": "East Ipswich",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_East_Ipswich.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/East_Ipswich.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_East_Ipswich.MP3"
+        }
+      }
+    },
+    {
+      "name": "Ipswich",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Ipswich.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Ipswich.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Ipswich.MP3"
+        }
+      }
+    },
+    {
+      "name": "Thomas Street",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Thomas_Street.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Thomas Street.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Thomas_Street.MP3"
+        }
+      }
+    },
+    {
+      "name": "Wulkuraka",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Wulkuraka.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Wulkuraka.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Wulkuraka.MP3"
+        }
+      }
+    },
+    {
+      "name": "Karrabin",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Karrabin.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Karrabin.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Karrabin.MP3"
+        }
+      }
+    },
+    {
+      "name": "Walloon",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Walloon.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Walloon.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Walloon.MP3"
+        }
+      }
+    },
+    {
+      "name": "Thagoona",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Thagoona.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Thagoona.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Thagoona.MP3"
+        }
+      }
+    },
+    {
+      "name": "Rosewood",
+      "announcements": {
+        "next": {
+          "audio": "audio/RosewoodEXP/next_Rosewood.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/RosewoodEXP/Rosewood.MP3"
+        },
+        "arrival": {
+          "audio": "audio/RosewoodEXP/next_Rosewood.MP3"
+        }
+      }
+    }
+  ],
+  "DFX1": [
+    {
+      "name": "Roma Street",
+      "announcements": {
+        "mindTheGap": {
+          "audio": ""
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "Central",
+      "announcements": {
+        "mindTheGap": {
+          "audio": ""
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "Fortitude Valley",
+      "announcements": {
+        "mindTheGap": {
+          "audio": ""
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "Exhibition",
+      "announcements": {
+        "mindTheGap": {
+          "audio": ""
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    }
+  ],
+  "1E35": [
+    {
+      "name": "Park Road",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/BRFG/(Route Start) Park Road.mp3"
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "South Bank",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS South Bank.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/South Bank.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS South Bank.MP3"
+        }
+      }
+    },
+    {
+      "name": "South Brisbane",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS South Brisbane.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/South Brisbane.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS South Brisbane.MP3"
+        }
+      }
+    },
+    {
+      "name": "Roma Street",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Roma Street.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Roma Street.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Roma Street.mp3"
+        }
+      }
+    },
+    {
+      "name": "Central",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Central.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Central.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Central.MP3"
+        }
+      }
+    },
+    {
+      "name": "Fortitude Valley",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Fortitude Valley.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Fortitude Valley.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Fortitude Valley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Bowen Hills",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Bowen Hills.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Bowen Hills.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Bowen Hills.MP3"
+        }
+      }
+    },
+    {
+      "name": "Windsor",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Windsor.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Windsor.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Windsor.MP3"
+        }
+      }
+    },
+    {
+      "name": "Wilston",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Wilston.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        }
+      }
+    },
+    {
+      "name": "Newmarket",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Newmarket.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Newmarket.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Newmarket.mp3"
+        }
+      }
+    },
+    {
+      "name": "Alderley",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Aldereley.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Enoggera",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Enoggera.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/TNS Gaythorne.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Enoggera.MP3"
+        }
+      }
+    },
+    {
+      "name": "Gaythorne",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Gaythorne.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Lota.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Gaythorne.mp3"
+        }
+      }
+    },
+    {
+      "name": "Mitchelton",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Mitchelton.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Thorneside.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Mitchelton.MP3"
+        }
+      }
+    },
+    {
+      "name": "Oxford Park",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Oxford Park.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Oxford Park.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Oxford Park.MP3"
+        }
+      }
+    },
+    {
+      "name": "Grovely",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Grovely.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Grovely.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Grovely.MP3"
+        }
+      }
+    },
+    {
+      "name": "Keperra",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Keperra.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Keperra.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Keperra.MP3"
+        }
+      }
+    },
+    {
+      "name": "Ferny Grove",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/next_Cleveland.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Ferny Grove.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/next_Cleveland.MP3"
+        }
+      }
+    }
+  ],
+  "1E37": [
+    {
+      "name": "Roma Street",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/BRFG/Roma Street.mp3"
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "Central",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Central.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Central.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Central.MP3"
+        }
+      }
+    },
+    {
+      "name": "Fortitude Valley",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Fortitude Valley.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Fortitude Valley.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Fortitude Valley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Bowen Hills",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Bowen Hills.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Bowen Hills.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Bowen Hills.MP3"
+        }
+      }
+    },
+    {
+      "name": "Windsor",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Windsor.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Windsor.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Windsor.MP3"
+        }
+      }
+    },
+    {
+      "name": "Wilston",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Wilston.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        }
+      }
+    },
+    {
+      "name": "Newmarket",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Newmarket.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Newmarket.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Newmarket.mp3"
+        }
+      }
+    },
+    {
+      "name": "Alderley",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Aldereley.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Enoggera",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Enoggera.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/TNS Gaythorne.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Enoggera.MP3"
+        }
+      }
+    },
+    {
+      "name": "Gaythorne",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Gaythorne.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Lota.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Gaythorne.mp3"
+        }
+      }
+    },
+    {
+      "name": "Mitchelton",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Mitchelton.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Thorneside.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Mitchelton.MP3"
+        }
+      }
+    },
+    {
+      "name": "Oxford Park",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Oxford Park.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Oxford Park.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Oxford Park.MP3"
+        }
+      }
+    },
+    {
+      "name": "Grovely",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Grovely.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Grovely.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Grovely.MP3"
+        }
+      }
+    },
+    {
+      "name": "Keperra",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Keperra.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Keperra.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Keperra.MP3"
+        }
+      }
+    },
+    {
+      "name": "Ferny Grove",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Ferny Grove.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Ferny Grove.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Ferny Grove.MP3"
+        }
+      }
+    }
+  ],
+  "1S28": [
+    {
+      "name": "Ferny Grove",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGBGPR/PKR-53A.mp3"
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "Keperra",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Keperra.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-54A.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-54A.mp3"
+        }
+      }
+    },
+    {
+      "name": "Grovely",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Grovely.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Grovely.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Grovely.mp3"
+        }
+      }
+    },
+    {
+      "name": "Oxford Park",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Oxford Park.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Oxford Park.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Oxford Park.mp3"
+        }
+      }
+    },
+    {
+      "name": "Mitchelton",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Mitchelton.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Mitchelton.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Mitchelton.mp3"
+        }
+      }
+    },
+    {
+      "name": "Gaythorne",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Gaythorne.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Gaythorne.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Gaythorne.mp3"
+        }
+      }
+    },
+    {
+      "name": "Enoggera",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Enoggera.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Enoggera.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Enoggera.mp3"
+        }
+      }
+    },
+    {
+      "name": "Alderley",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Aldereley.mp3"
+        },
+        "next": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Newmarket",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Newmarket.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-55A.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-55A.mp3"
+        }
+      }
+    },
+    {
+      "name": "Wilston",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Wilston.mp3"
+        },
+        "next": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        }
+      }
+    },
+    {
+      "name": "Windsor",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Windsor.mp3"
+        },
+        "next": {
+          "audio": "audio/BRFG/TNS Windsor.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Windsor.mp3"
+        }
+      }
+    },
+    {
+      "name": "Bowen Hills",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Bowen Hills.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Bowen Hills.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Bowen Hills.mp3"
+        }
+      }
+    },
+    {
+      "name": "Fortitude Valley",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Fortitude Valley.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/APQR-14-08d.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/APQR-14-08d.mp3"
+        }
+      }
+    },
+    {
+      "name": "Central",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/RSTQR-01-03.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-26A.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-26A.mp3"
+        }
+      }
+    },
+    {
+      "name": "Roma Street",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/BRFG/Roma Street.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-27A.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-27A.mp3"
+        }
+      }
+    },
+    {
+      "name": "South Brisbane",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/South Brisbane.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/TNS South Brisbane.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/TNS South Brisbane.mp3"
+        }
+      }
+    },
+    {
+      "name": "South Bank",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/South Bank.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-28A.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-28A.mp3"
+        }
+      }
+    },
+    {
+      "name": "Boggo Road",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGBGPR/PKR-16A.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-14A.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-14A.mp3"
+        }
+      }
+    }
+  ],
+  "1S24": [
+    {
+      "name": "Ferny Grove",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Ferny Grove.mp3"
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "Keperra",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Keperra.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Keperra.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Keperra.mp3"
+        }
+      }
+    },
+    {
+      "name": "Grovely",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Grovely.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Grovely.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Grovely.mp3"
+        }
+      }
+    },
+    {
+      "name": "Oxford Park",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Oxford Park.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Oxford Park.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Oxford Park.mp3"
+        }
+      }
+    },
+    {
+      "name": "Mitchelton",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Mitchelton.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Mitchelton.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Mitchelton.mp3"
+        }
+      }
+    },
+    {
+      "name": "Gaythorne",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Gaythorne.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Gaythorne.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Gaythorne.mp3"
+        }
+      }
+    },
+    {
+      "name": "Enoggera",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Enoggera.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Enoggera.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Enoggera.mp3"
+        }
+      }
+    },
+    {
+      "name": "Alderley",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Aldereley.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Alderley.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Alderley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Newmarket",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Newmarket.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Newmarket.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Newmarket.mp3"
+        }
+      }
+    },
+    {
+      "name": "Wilston",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Wilston.mp3"
+        },
+        "next": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        }
+      }
+    },
+    {
+      "name": "Windsor",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Windsor.mp3"
+        },
+        "next": {
+          "audio": "audio/BRFG/TNS Windsor.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Windsor.mp3"
+        }
+      }
+    },
+    {
+      "name": "Bowen Hills",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Bowen Hills.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Bowen Hills.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Bowen Hills.mp3"
+        }
+      }
+    },
+    {
+      "name": "Fortitude Valley",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Fortitude Valley.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Fortitude Valley.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Fortitude Valley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Central",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/RSTQR-01-03.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/Park Road train - (All stations) - TNS Central - [TCWD].mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/Park Road train - (All stations) - TNS Central - [TCWD].mp3"
+        }
+      }
+    },
+    {
+      "name": "Roma Street",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/BRFG/Roma Street.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Roma Street.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Roma Street.mp3"
+        }
+      }
+    },
+    {
+      "name": "South Brisbane",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/South Brisbane.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS South Brisbane.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS South Brisbane.mp3"
+        }
+      }
+    },
+    {
+      "name": "South Bank",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/South Bank.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS South Bank.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS South Bank.mp3"
+        }
+      }
+    },
+    {
+      "name": "Park Road",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Park Road.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Park Road.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Park Road.mp3"
+        }
+      }
+    }
+  ],
+  "1S20": [
+    {
+      "name": "Test Train11",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Ferny Grove.mp3"
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    }
+  ],
+  "1S18": [
+    {
+      "name": "Ferny Grove",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGBGPR/PKR-53.mp3"
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "Keperra",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Keperra.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-54.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-54.mp3"
+        }
+      }
+    },
+    {
+      "name": "Grovely",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Grovely.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Grovely.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Grovely.mp3"
+        }
+      }
+    },
+    {
+      "name": "Oxford Park",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Oxford Park.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Oxford Park.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Oxford Park.mp3"
+        }
+      }
+    },
+    {
+      "name": "Mitchelton",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Mitchelton.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Mitchelton.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Mitchelton.mp3"
+        }
+      }
+    },
+    {
+      "name": "Gaythorne",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Gaythorne.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Gaythorne.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Gaythorne.mp3"
+        }
+      }
+    },
+    {
+      "name": "Enoggera",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Enoggera.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Enoggera.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Enoggera.mp3"
+        }
+      }
+    },
+    {
+      "name": "Alderley",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Aldereley.mp3"
+        },
+        "next": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Newmarket",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Newmarket.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-55.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-55.mp3"
+        }
+      }
+    },
+    {
+      "name": "Wilston",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Wilston.mp3"
+        },
+        "next": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        }
+      }
+    },
+    {
+      "name": "Windsor",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Windsor.mp3"
+        },
+        "next": {
+          "audio": "audio/BRFG/TNS Windsor.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Windsor.mp3"
+        }
+      }
+    },
+    {
+      "name": "Bowen Hills",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Bowen Hills.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGPKR/TNS Bowen Hills.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGPKR/TNS Bowen Hills.mp3"
+        }
+      }
+    },
+    {
+      "name": "Fortitude Valley",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/Fortitude Valley.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/APQR-14-08d.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/APQR-14-08d.mp3"
+        }
+      }
+    },
+    {
+      "name": "Central",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/RSTQR-01-03.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-26.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-26.mp3"
+        }
+      }
+    },
+    {
+      "name": "Roma Street",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/BRFG/Roma Street.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-27.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-27.mp3"
+        }
+      }
+    },
+    {
+      "name": "South Brisbane",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/South Brisbane.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/TNS South Brisbane.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/TNS South Brisbane.mp3"
+        }
+      }
+    },
+    {
+      "name": "South Bank",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/South Bank.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-28.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-28.mp3"
+        }
+      }
+    },
+    {
+      "name": "Boggo Road / Park Road",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGBGPR/PKR-16.mp3"
+        },
+        "next": {
+          "audio": "audio/FYGBGPR/PKR-14.mp3"
+        },
+        "arrival": {
+          "audio": "audio/FYGBGPR/PKR-14.mp3"
+        }
+      }
+    }
+  ],
+  "1EE5": [
+    {
+      "name": "Boggo Road",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGBGPR/PKR-08A.mp3"
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "South Bank",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS South Bank.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/South Bank.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS South Bank.MP3"
+        }
+      }
+    },
+    {
+      "name": "South Brisbane",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS South Brisbane.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/FYGPKR/South Brisbane.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS South Brisbane.MP3"
+        }
+      }
+    },
+    {
+      "name": "Roma Street",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Roma Street.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Roma Street.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Roma Street.mp3"
+        }
+      }
+    },
+    {
+      "name": "Central",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Central.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Central.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Central.MP3"
+        }
+      }
+    },
+    {
+      "name": "Fortitude Valley",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Fortitude Valley.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Fortitude Valley.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Fortitude Valley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Bowen Hills",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Bowen Hills.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Bowen Hills.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Bowen Hills.MP3"
+        }
+      }
+    },
+    {
+      "name": "Windsor",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Windsor.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Windsor.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Windsor.MP3"
+        }
+      }
+    },
+    {
+      "name": "Wilston",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Wilston.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        }
+      }
+    },
+    {
+      "name": "Newmarket",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Newmarket.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Newmarket.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Newmarket.mp3"
+        }
+      }
+    },
+    {
+      "name": "Alderley",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Aldereley.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Enoggera",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Enoggera.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Enoggera.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Enoggera.MP3"
+        }
+      }
+    },
+    {
+      "name": "Gaythorne",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Gaythorne.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Gaythorne.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Gaythorne.mp3"
+        }
+      }
+    },
+    {
+      "name": "Mitchelton",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Mitchelton.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Mitchelton.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Mitchelton.MP3"
+        }
+      }
+    },
+    {
+      "name": "Oxford Park",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Oxford Park.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Oxford Park.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Oxford Park.MP3"
+        }
+      }
+    },
+    {
+      "name": "Grovely",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Grovely.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Grovely.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Grovely.MP3"
+        }
+      }
+    },
+    {
+      "name": "Keperra",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Keperra.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Keperra.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Keperra.MP3"
+        }
+      }
+    },
+    {
+      "name": "Ferny Grove",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Ferny Grove.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Ferny Grove.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Ferny Grove.MP3"
+        }
+      }
+    }
+  ],
+  "1EE7": [
+    {
+      "name": "Boggo Road / Park Road",
+      "announcements": {
+        "mindTheGap": {
+          "audio": "audio/FYGBGPR/PKR-08.mp3"
+        },
+        "arrival": {
+          "audio": ""
+        }
+      }
+    },
+    {
+      "name": "South Bank",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS South Bank.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/South Bank.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS South Bank.MP3"
+        }
+      }
+    },
+    {
+      "name": "South Brisbane",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS South Brisbane.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/South Brisbane.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS South Brisbane.MP3"
+        }
+      }
+    },
+    {
+      "name": "Roma Street",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Roma Street.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Roma Street.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Roma Street.mp3"
+        }
+      }
+    },
+    {
+      "name": "Central",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Central.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Central.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Central.MP3"
+        }
+      }
+    },
+    {
+      "name": "Fortitude Valley",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Fortitude Valley.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Fortitude Valley.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Fortitude Valley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Bowen Hills",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Bowen Hills.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Bowen Hills.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Bowen Hills.MP3"
+        }
+      }
+    },
+    {
+      "name": "Windsor",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Windsor.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Windsor.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Windsor.MP3"
+        }
+      }
+    },
+    {
+      "name": "Wilston",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Wilston.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Wilston.mp3"
+        }
+      }
+    },
+    {
+      "name": "Newmarket",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Newmarket.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Newmarket.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Newmarket.mp3"
+        }
+      }
+    },
+    {
+      "name": "Alderley",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Aldereley.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Aldereley.mp3"
+        }
+      }
+    },
+    {
+      "name": "Enoggera",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Enoggera.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/TNS Gaythorne.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Enoggera.MP3"
+        }
+      }
+    },
+    {
+      "name": "Gaythorne",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Gaythorne.mp3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Lota.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Gaythorne.mp3"
+        }
+      }
+    },
+    {
+      "name": "Mitchelton",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Mitchelton.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Thorneside.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Mitchelton.MP3"
+        }
+      }
+    },
+    {
+      "name": "Oxford Park",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Oxford Park.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Oxford Park.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Oxford Park.MP3"
+        }
+      }
+    },
+    {
+      "name": "Grovely",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Grovely.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Grovely.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Grovely.MP3"
+        }
+      }
+    },
+    {
+      "name": "Keperra",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Keperra.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Keperra.mp3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Keperra.MP3"
+        }
+      }
+    },
+    {
+      "name": "Ferny Grove",
+      "announcements": {
+        "next": {
+          "audio": "audio/BRFG/TNS Ferny Grove.MP3"
+        },
+        "mindTheGap": {
+          "audio": "audio/BRFG/Ferny Grove.MP3"
+        },
+        "arrival": {
+          "audio": "audio/BRFG/TNS Ferny Grove.MP3"
+        }
+      }
+    }
+  ]
+}

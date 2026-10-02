@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Announcement Display</title>
+  <style>
+    @font-face {
+      font-family: 'ngrsidedest';
+      src: url('/fonts/ngrsidedest.otf.woff2') format('woff2'),
+           url('/fonts/ngrsidedest.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+    body {
+      background: 
+        radial-gradient(circle, #222 1px, transparent 1px);
+      background-size: 6px 6px;
+      background-color: #000;
+      color: #fff;
+      margin: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 40px;
+    }
+    #destination {
+      font-size: 5.5em;
+      font-family: 'Mobitec 13x9', sans-serif;
+      color: #ffbb00;
+      letter-spacing: 0.05em;
+      margin-top: 30px;
+      white-space: nowrap;
+    }
+    /* Scrolling animation for destinations with scroller enabled */
+    @keyframes scroll {
+      0% {
+        transform: translateX(100%);
+      }
+      100% {
+        transform: translateX(-100%);
+      }
+    }
+    #destination.scroller {
+      animation: scroll 12s linear infinite;
+    }
+    #custom-text {
+      font-size: 1.2em;
+      font-family: Arial, sans-serif;
+      color: #fff;
+      margin-top: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="destination"></div>
+  <div id="custom-text"></div>
+  <script>
+    let displayTimeout = null;
+    let autoClearEnabled = true;  // Flag to control auto-clear
+
+    function displayDI(data) {
+      const destEl = document.getElementById('destination');
+      const customEl = document.getElementById('custom-text');
+      console.log('displayDI called, destEl exists:', !!destEl);
+      
+      if (destEl && data.destination) {
+        console.log('Setting destination text to:', data.destination);
+        
+        // Remove scroller class by default
+        destEl.classList.remove('scroller');
+        
+        // Determine what text to display
+        let displayText = data.destination;
+        
+        // If useCustomText is true and customText exists, use custom text as the destination
+        if (data.useCustomText && data.customText) {
+          displayText = data.customText;
+          console.log('✓ Using custom text as destination:', data.customText);
+        }
+        
+        // Apply scroller animation if enabled
+        if (data.scroller) {
+          destEl.classList.add('scroller');
+          console.log('✓ Scroller enabled for:', displayText);
+        }
+        
+        // Add 3 spaces between words
+        displayText = displayText.split(' ').join('   ');
+        
+        destEl.textContent = displayText;
+        console.log('Destination element innerHTML:', destEl.innerHTML);
+        
+        // Clear custom text area
+        if (customEl) {
+          customEl.textContent = '';
+        }
+      } else {
+        console.warn('Cannot display - destEl:', !!destEl, 'destination value:', data.destination);
+      }
+      
+      // Auto-clear after 30 seconds (unless persistent flag is set)
+      if (displayTimeout) clearTimeout(displayTimeout);
+      
+      // Check if auto-clear should be disabled (for special messages)
+      autoClearEnabled = !data.persistent;
+      
+      if (autoClearEnabled) {
+        displayTimeout = setTimeout(() => {
+          clearDisplay();
+        }, 30000);
+      } else {
+        console.log('✓ Auto-clear disabled - destination will persist until system reset');
+      }
+    }
+
+    function clearDisplay() {
+      document.getElementById('destination').textContent = '';
+      document.getElementById('custom-text').textContent = '';
+      document.getElementById('destination').classList.remove('scroller');
+    }
+
+    window.addEventListener('message', (event) => {
+      console.log('Display window received message:', event.data);
+      if (event.data && typeof event.data === 'object' && event.data.type === 'DI') {
+        console.log('✓ DI message received, displaying destination:', event.data.destination);
+        // Display destination only
+        displayDI(event.data);
+      } else if (event.data && event.data.type === 'STOP') {
+        console.log('STOP message received');
+        clearDisplay();
+        if (displayTimeout) clearTimeout(displayTimeout);
+      } else if (event.data && event.data.type === 'RESET') {
+        console.log('RESET message received');
+        clearDisplay();
+        if (displayTimeout) clearTimeout(displayTimeout);
+      } else {
+        console.log('Unknown message type:', event.data);
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,258 @@
+/*
+ * QVAS web/PWA shim
+ * Replaces what server.js (Node) and main.js (Electron) provided, so the UI runs
+ * standalone inside a WKWebView. Loaded before app.js.
+ */
+(function () {
+  'use strict';
+
+  const realFetch = window.fetch.bind(window);
+
+  // ---------- GitHub Pages base path ----------
+  // On https://user.github.io/repo/ the app lives under /repo/, but app.js uses root-absolute URLs
+  // like /audio/... and /api/... . Rewrite same-origin root-absolute URLs to include the base.
+  const BASE = window.location.pathname.replace(/[^/]*$/, ''); // e.g. "/repo/" or "/"
+  function fixUrl(u) {
+    try {
+      if (typeof u !== 'string' || BASE === '/') return u;
+      const url = new URL(u, window.location.href);
+      if (url.origin === window.location.origin && !url.pathname.startsWith(BASE)) {
+        url.pathname = BASE + url.pathname.replace(/^\//, '');
+        return url.toString();
+      }
+    } catch (e) {}
+    return u;
+  }
+  function relPath(pathname) { // strip the base so route matching sees "/api/..." again
+    return BASE !== '/' && pathname.startsWith(BASE) ? '/' + pathname.slice(BASE.length) : pathname;
+  }
+  if (BASE !== '/') {
+    const NativeAudio = window.Audio;
+    window.Audio = function (src) { const a = new NativeAudio(); if (src !== undefined) a.src = src; return a; };
+    window.Audio.prototype = NativeAudio.prototype;
+    [[HTMLMediaElement, 'src'], [HTMLImageElement, 'src'], [HTMLSourceElement, 'src']].forEach(([C, prop]) => {
+      const d = Object.getOwnPropertyDescriptor(C.prototype, prop);
+      if (d && d.set) Object.defineProperty(C.prototype, prop, { get: d.get, set(v) { d.set.call(this, fixUrl(v)); }, configurable: true });
+    });
+  }
+
+  // ---------- big GTFS files are stored as <1 chunk><N> parts (GitHub 100 MB file limit) ----------
+  let partsPromise = null;
+  const loadParts = () => partsPromise || (partsPromise = realFetch('SEQ_GTFS/_parts.json').then(r => r.ok ? r.json() : {}).catch(() => ({})));
+  async function assemble(name, dir) {
+    const parts = await loadParts();
+    if (!parts[name]) return null;
+    const blobs = [];
+    for (let i = 0; i < parts[name]; i++) {
+      const r = await realFetch(`${dir}${name}.part${i}`);
+      if (!r.ok) throw new Error(`missing ${name}.part${i}`);
+      blobs.push(await r.blob());
+    }
+    return new Response(new Blob(blobs), { status: 200, headers: { 'Content-Type': 'text/plain; charset=utf-8' } });
+  }
+  const gtfsFile = (name) => assemble(name, 'SEQ_GTFS/');
+
+  // ---------- in-memory state (was appState / phoneGPSData in server.js) ----------
+  let appState = {
+    doorCycle: 0, route: '', station: '', pid: '', DI: '',
+    inputValue: '', lastKeyPress: null, timestamp: Date.now()
+  };
+  let phoneGPS = null;
+  const GPS_MAX_AGE_MS = 10000;
+
+  // ---------- cached static data ----------
+  let patternsPromise = null;
+  let manifestPromise = null;
+  const loadPatterns = () => patternsPromise || (patternsPromise = assemble('gtfs-patterns.json', '').then(r => r || realFetch('gtfs-patterns.json')).then(r => r.json()));
+  const loadManifest = () => manifestPromise || (manifestPromise = realFetch('audio-manifest.json').then(r => r.json()));
+
+  const json = (body, status = 200) =>
+    new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json; charset=utf-8' } });
+
+  async function bodyOf(init, input) {
+    try {
+      if (init && typeof init.body === 'string') return JSON.parse(init.body);
+      if (input && typeof input.text === 'function') return JSON.parse(await input.text());
+    } catch (e) { /* fall through */ }
+    return {};
+  }
+
+  // ---------- route handlers (ported from server.js) ----------
+  async function handle(pathname, search, method, init, input) {
+    if (pathname === '/api/routes') {
+      const gtfs = await loadPatterns();
+      const routes = Object.keys(gtfs.routes || {}).map(id => ({
+        route_id: id,
+        route_name: gtfs.routes[id].route_name,
+        route_long_name: gtfs.routes[id].route_long_name,
+        pattern_count: (gtfs.routes[id].patterns || []).length
+      }));
+      return json({ success: true, total_routes: routes.length, routes });
+    }
+
+    if (pathname.startsWith('/api/route/')) {
+      const gtfs = await loadPatterns();
+      const code = decodeURIComponent(pathname.split('/api/route/')[1].split('?')[0]).toUpperCase();
+      let route = gtfs.routes[code];
+      if (!route) {
+        for (const [id, data] of Object.entries(gtfs.routes)) {
+          if (id.startsWith(code + '-') || id.toUpperCase() === code) { route = data; break; }
+        }
+      }
+      if (!route) return json({ error: `Route ${code} not found` }, 404);
+      return json({ success: true, route_name: route.route_name, route_long_name: route.route_long_name, patterns: route.patterns || [] });
+    }
+
+    if (pathname.startsWith('/api/search/run/')) {
+      const gtfs = await loadPatterns();
+      const run = decodeURIComponent(pathname.split('/api/search/run/')[1].split('?')[0]).toUpperCase();
+      const found = [];
+      for (const [tripId, routeId] of Object.entries(gtfs.tripIdMap || {})) {
+        if (tripId.includes(run)) {
+          const route = gtfs.routes[routeId];
+          if (route && !found.find(r => r.route_id === routeId)) {
+            found.push({ route_id: routeId, route_name: route.route_name, route_long_name: route.route_long_name, trip_id: tripId });
+          }
+        }
+      }
+      if (!found.length) return json({ success: false, message: `Run code ${run} not found`, results: [] }, 404);
+      return json({ success: true, search_term: run, results_count: found.length, results: found });
+    }
+
+    if (pathname === '/api/audio-files') {
+      const manifest = await loadManifest();
+      const dir = new URLSearchParams(search).get('path') || '';
+      const entry = manifest[decodeURIComponent(dir)];
+      if (!entry) return json({ error: 'Directory not found' }, 404);
+      return json(entry);
+    }
+
+    if (pathname === '/api/state') {
+      const snapshot = { ...appState, timestamp: Date.now() };
+      appState.lastKeyPress = null; // one-time delivery, as on the server
+      return json(snapshot);
+    }
+
+    if (pathname === '/api/state-update' && method === 'POST') {
+      appState = { ...appState, ...(await bodyOf(init, input)) };
+      return json({ success: true });
+    }
+
+    if (pathname === '/api/key-press' && method === 'POST') {
+      appState.lastKeyPress = await bodyOf(init, input);
+      return json({ success: true });
+    }
+
+    if (pathname === '/api/phone-gps' && method === 'POST') {
+      const p = await bodyOf(init, input);
+      const lat = Number(p.lat), lon = Number(p.lon);
+      if (!Number.isFinite(lat) || !Number.isFinite(lon)) return json({ success: false, error: 'Invalid GPS coordinates' }, 400);
+      phoneGPS = { lat, lon, speed: p.speed ?? null, accuracy: p.accuracy ?? null, timestamp: Date.now(), receivedAt: Date.now() };
+      return json({ success: true });
+    }
+
+    // On the phone the "train position" is simply the phone's own GPS.
+    if (pathname === '/api/tsw/player-position') {
+      startGPS();
+      if (phoneGPS && Date.now() - phoneGPS.receivedAt <= GPS_MAX_AGE_MS) {
+        return json({ success: true, source: 'Phone GPS', ...phoneGPS });
+      }
+      return json({ success: false, error: gpsError || 'Waiting for a GPS fix' });
+    }
+
+    if (pathname === '/api/manual-routes' && method === 'POST') {
+      // No writable project folder on iOS; keep edits for the session via localStorage.
+      try { localStorage.setItem('qvas-manual-routes', JSON.stringify(await bodyOf(init, input))); } catch (e) {}
+      return json({ success: true });
+    }
+
+    return null; // not ours -> real fetch (static files)
+  }
+
+  // ---------- GPS (replaces gps-transmitter.html + /api/phone-gps) ----------
+  let gpsWatchId = null;
+  let gpsError = '';
+  function startGPS() {
+    if (gpsWatchId !== null || !navigator.geolocation) return;
+    gpsWatchId = navigator.geolocation.watchPosition(
+      pos => {
+        gpsError = '';
+        phoneGPS = {
+          lat: pos.coords.latitude,
+          lon: pos.coords.longitude,
+          speed: pos.coords.speed != null && pos.coords.speed >= 0 ? pos.coords.speed : null,
+          accuracy: pos.coords.accuracy,
+          timestamp: pos.timestamp || Date.now(),
+          receivedAt: Date.now()
+        };
+      },
+      err => { gpsError = err.message || 'Location unavailable'; },
+      { enableHighAccuracy: true, maximumAge: 1000, timeout: 15000 }
+    );
+  }
+
+  // ---------- fetch interception ----------
+  window.fetch = async function (input, init) {
+    try {
+      const raw = typeof input === 'string' ? input : (input && input.url) || String(input);
+      const u = new URL(raw, window.location.href);
+      const method = ((init && init.method) || (input && input.method) || 'GET').toUpperCase();
+      const sameOrigin = u.origin === window.location.origin;
+      const path = sameOrigin ? relPath(u.pathname) : u.pathname;
+      // Match by path only, so hard-coded hosts like http://localhost:5000/api/key-press also resolve here.
+      if (path.startsWith('/api/')) {
+        const res = await handle(path, u.search, method, init, input);
+        if (res) return res;
+      }
+      const g = path.match(/^\/SEQ_GTFS\/([a-z_]+\.txt)$/);
+      if (g) { const res = await gtfsFile(g[1]); if (res) return res; }
+      if (typeof input === 'string' && sameOrigin) return realFetch(fixUrl(input), init);
+    } catch (e) {
+      console.error('[qvas-shim]', e);
+      return json({ error: String(e.message || e) }, 500);
+    }
+    return realFetch(input, init);
+  };
+
+  // ---------- iOS audio quirks ----------
+  // Output-device selection (setSinkId) doesn't exist on iOS; make it a harmless no-op.
+  if (typeof HTMLMediaElement !== 'undefined' && !HTMLMediaElement.prototype.setSinkId) {
+    HTMLMediaElement.prototype.setSinkId = function () { return Promise.resolve(); };
+  }
+
+  // iOS blocks audio until the user has touched the screen once. Unlock on first touch so
+  // GPS-triggered announcements can play afterwards.
+  const unlock = () => {
+    try {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) { const ctx = new AC(); ctx.resume && ctx.resume(); const b = ctx.createBuffer(1, 1, 22050); const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); }
+      const a = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
+      a.play().catch(() => {});
+    } catch (e) {}
+    window.removeEventListener('touchend', unlock, true);
+    window.removeEventListener('click', unlock, true);
+  };
+  window.addEventListener('touchend', unlock, true);
+  window.addEventListener('click', unlock, true);
+
+  // Keep the screen awake while driving the display.
+  if (navigator.wakeLock && navigator.wakeLock.request) {
+    const lock = () => navigator.wakeLock.request('screen').catch(() => {});
+    lock();
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') lock(); });
+  }
+
+  // Desktop-only IPC (GTFS download via PowerShell, Windows brightness) is unavailable here.
+  window.electron = {
+    platform: 'web',
+    updateGTFS: async () => ({ success: false, message: 'Update GTFS on the desktop app, then re-run the site build.' }),
+    getGTFSStatus: async () => ({ success: false, updatedAt: 'Bundled with app', dueAt: 'Unavailable' }),
+    getSystemBrightness: async () => ({ success: false, message: 'Not available on iOS.' }),
+    setSystemBrightness: async () => ({ success: false, message: 'Not available on iOS.' }),
+    onGTFSUpdateProgress: () => {},
+    onDoorStateChanged: () => {},
+    onGlobalKey: () => {},
+    doorUnlock: () => {},
+    doorLock: () => {}
+  };
+})();
