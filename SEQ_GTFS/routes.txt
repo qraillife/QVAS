@@ -404,6 +404,7 @@ route_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_
 398-5065,398,"Mitchelton - Ferny Grove",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/398,E463A4,1D1D1D
 398-5146,398,"Mitchelton - Ferny Grove",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/398,E463A4,1D1D1D
 399-868,399,"Samford - Ferny Grove Station (Hail & Ride)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/399,E463A4,1D1D1D
+402-5065,402,"Toowong - University of Qld",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/402,E463A4,1D1D1D
 402-5146,402,"Toowong - University of Qld",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/402,E463A4,1D1D1D
 411-5065,411,"University of Qld - City via Hawken Drive",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/411,E463A4,1D1D1D
 411-5146,411,"University of Qld - City via Hawken Drive",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/411,E463A4,1D1D1D
@@ -568,36 +569,66 @@ route_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_
 598-5146,598,"Great Circle Line Anti-Clockwise",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/598,E463A4,1D1D1D
 599-5065,599,"Great Circle Line Clockwise",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/599,E463A4,1D1D1D
 599-5146,599,"Great Circle Line Clockwise",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/599,E463A4,1D1D1D
+600-5079,600,"Caloundra - Maroochydore via Mooloolaba, Kawana",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/600,E463A4,1D1D1D
 600-5183,600,"Caloundra - Maroochydore via Mooloolaba, Kawana",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/600,E463A4,1D1D1D
+602-5079,602,"Caloundra - Maroochydore via Mountain Creek",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/602,E463A4,1D1D1D
 602-5183,602,"Caloundra - Maroochydore via Mountain Creek",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/602,E463A4,1D1D1D
+603-5079,603,"Little Mountain - Caloundra",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/603,E463A4,1D1D1D
 603-5183,603,"Little Mountain - Caloundra",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/603,E463A4,1D1D1D
+604-5079,604,"Caloundra - Bellvista Loop",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/604,E463A4,1D1D1D
 604-5183,604,"Caloundra - Bellvista Loop",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/604,E463A4,1D1D1D
+605-5079,605,"Caloundra - Landsborough",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/605,E463A4,1D1D1D
 605-5183,605,"Caloundra - Landsborough",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/605,E463A4,1D1D1D
+606-5079,606,"Baringa - Caloundra",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/606,E463A4,1D1D1D
 606-5183,606,"Baringa - Caloundra",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/606,E463A4,1D1D1D
+607-5079,607,"Caloundra - University via SCUH and Kawana",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/607,E463A4,1D1D1D
 607-5183,607,"Caloundra - University via SCUH and Kawana",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/607,E463A4,1D1D1D
+608-5079,608,"Caloundra - Nirimba",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/608,E463A4,1D1D1D
 608-5183,608,"Caloundra - Nirimba",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/608,E463A4,1D1D1D
+609-5079,609,"Pelican Waters - Caloundra",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/609,E463A4,1D1D1D
 609-5183,609,"Pelican Waters - Caloundra",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/609,E463A4,1D1D1D
+610-5079,610,"Nambour - Maroochydore via Kunda Park",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/610,E463A4,1D1D1D
 610-5183,610,"Nambour - Maroochydore via Kunda Park",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/610,E463A4,1D1D1D
+611-5079,611,"Maroochydore - SCUH via Mooloolaba and Kawana",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/611,E463A4,1D1D1D
 611-5183,611,"Maroochydore - SCUH via Mooloolaba and Kawana",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/611,E463A4,1D1D1D
+612-5079,612,"Nambour - Maroochydore via Bli Bli",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/612,E463A4,1D1D1D
 612-5183,612,"Nambour - Maroochydore via Bli Bli",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/612,E463A4,1D1D1D
-613-5183,613,"Maroochydore - Alexandra Headland Loop",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/613,E463A4,1D1D1D
+613-5079,613,"Maroochydore - Alexandra Headland Loop",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/613,E463A4,1D1D1D
+614-5079,614,"Kawana - Maroochydore via Mountain Creek",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/614,E463A4,1D1D1D
 614-5183,614,"Kawana - Maroochydore via Mountain Creek",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/614,E463A4,1D1D1D
+615-5079,615,"Maroochydore - Landsborough via University",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/615,E463A4,1D1D1D
 615-5183,615,"Maroochydore - Landsborough via University",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/615,E463A4,1D1D1D
+616-5079,616,"Maroochydore - University via Alexandra Headland",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/616,E463A4,1D1D1D
 616-5183,616,"Maroochydore - University via Alexandra Headland",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/616,E463A4,1D1D1D
+617-5079,617,"Maroochydore - Sippy Downs via University",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/617,E463A4,1D1D1D
 617-5183,617,"Maroochydore - Sippy Downs via University",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/617,E463A4,1D1D1D
+618-5079,618,"Sippy Downs - Kawana via University",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/618,E463A4,1D1D1D
 618-5183,618,"Sippy Downs - Kawana via University",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/618,E463A4,1D1D1D
+619-5079,619,"Kawana - Maroochydore via Alexandra Headland",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/619,E463A4,1D1D1D
 619-5183,619,"Kawana - Maroochydore via Alexandra Headland",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/619,E463A4,1D1D1D
+620-5079,620,"Noosa Heads - Maroochydore via Peregian Beach",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/620,E463A4,1D1D1D
 620-5183,620,"Noosa Heads - Maroochydore via Peregian Beach",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/620,E463A4,1D1D1D
+622-5079,622,"Maroochydore - Noosa Junction via Airport, Coolum",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/622,E463A4,1D1D1D
 622-5183,622,"Maroochydore - Noosa Junction via Airport, Coolum",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/622,E463A4,1D1D1D
+626-5079,626,"Tewantin - Sunrise Beach via Noosa Heads",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/626,E463A4,1D1D1D
 626-5183,626,"Tewantin - Sunrise Beach via Noosa Heads",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/626,E463A4,1D1D1D
+627-5079,627,"Tewantin - Sunshine Beach via Noosa Heads",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/627,E463A4,1D1D1D
 627-5183,627,"Tewantin - Sunshine Beach via Noosa Heads",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/627,E463A4,1D1D1D
+628-5079,628,"Parklands - Noosa Junction via Noosa Civic",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/628,E463A4,1D1D1D
 628-5183,628,"Parklands - Noosa Junction via Noosa Civic",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/628,E463A4,1D1D1D
+629-5079,629,"Tewantin - Noosa Junction via Noosa Civic",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/629,E463A4,1D1D1D
 629-5183,629,"Tewantin - Noosa Junction via Noosa Civic",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/629,E463A4,1D1D1D
+630-5079,630,"Noosa - Nambour via Eumundi",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/630,E463A4,1D1D1D
 630-5183,630,"Noosa - Nambour via Eumundi",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/630,E463A4,1D1D1D
+631-5079,631,"Noosa - Nambour via Cooroy and Eumundi",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/631,E463A4,1D1D1D
 631-5183,631,"Noosa - Nambour via Cooroy and Eumundi",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/631,E463A4,1D1D1D
+632-5079,632,"Noosa - Cooran via Cooroy and Pomona",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/632,E463A4,1D1D1D
 632-5183,632,"Noosa - Cooran via Cooroy and Pomona",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/632,E463A4,1D1D1D
+636-5079,636,"Nambour - University via Buderim",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/636,E463A4,1D1D1D
 636-5183,636,"Nambour - University via Buderim",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/636,E463A4,1D1D1D
+637-5079,637,"Nambour local loop",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/637,E463A4,1D1D1D
 637-5183,637,"Nambour local loop",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/637,E463A4,1D1D1D
+638-5079,638,"Nambour - Palmwoods loop",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/638,E463A4,1D1D1D
 638-5183,638,"Nambour - Palmwoods loop",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/638,E463A4,1D1D1D
 640-4986,640,"Bribie Island - Caboolture station",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/640,E463A4,1D1D1D
 641-4986,641,"Banksia Beach - Bongaree (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/641,E463A4,1D1D1D
@@ -605,7 +636,6 @@ route_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_
 643-4986,643,"Bribie Island - Caboolture via Sandstone Point",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/643,E463A4,1D1D1D
 644-4986,644,"Sandstone Point - Bribie Island park 'n' ride",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/644,E463A4,1D1D1D
 649-4889,649,"Caboolture Station - Nambour Station (Rail Bus)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/649,E463A4,1D1D1D
-649-5188,649,"Caboolture Station - Nambour Station (Rail Bus)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/649,E463A4,1D1D1D
 651-4986,651,"Morayfield station - West Caboolture (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/651,E463A4,1D1D1D
 652-4986,652,"Caboolture Square - Beachmere (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/652,E463A4,1D1D1D
 653-4986,653,"Caboolture stn - Morayfield stn via Bellmere",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/653,E463A4,1D1D1D
@@ -614,19 +644,12 @@ route_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_
 656-4986,656,"Morayfield station - Upper Caboolture (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/656,E463A4,1D1D1D
 657-4986,657,"Caboolture station - Caboolture North (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/657,E463A4,1D1D1D
 660-4889,660,"Caboolture Station - Redcliffe via Kippa-Ring",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/660,E463A4,1D1D1D
-660-5188,660,"Caboolture Station - Redcliffe via Kippa-Ring",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/660,E463A4,1D1D1D
 662-4889,662,"Moreton Downs - Rothwell Station",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/662,E463A4,1D1D1D
-662-5188,662,"Moreton Downs - Rothwell Station",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/662,E463A4,1D1D1D
 663-4889,663,"Narangba Local Service (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/663,E463A4,1D1D1D
-663-5188,663,"Narangba Local Service (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/663,E463A4,1D1D1D
 664-4889,664,"Burpengary Local Service (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/664,E463A4,1D1D1D
-664-5188,664,"Burpengary Local Service (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/664,E463A4,1D1D1D
 665-4889,665,"Deception Bay - Rothwell Station",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/665,E463A4,1D1D1D
-665-5188,665,"Deception Bay - Rothwell Station",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/665,E463A4,1D1D1D
 667-4889,667,"Morayfield Local Service (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/667,E463A4,1D1D1D
-667-5188,667,"Morayfield Local Service (Loop)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/667,E463A4,1D1D1D
 668-4889,668,"Narangba Station - North Lakes",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/668,E463A4,1D1D1D
-668-5188,668,"Narangba Station - North Lakes",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/668,E463A4,1D1D1D
 669-4994,669,"Strathpine - Warner via Lawnton",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/669,E463A4,1D1D1D
 670-4994,670,"Strathpine - Warner via Warner Lakes",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/670,E463A4,1D1D1D
 671-4994,671,"Strathpine - Warner",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/671,E463A4,1D1D1D
@@ -776,7 +799,11 @@ route_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_
 BDBR-5106,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BDBR-5110,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BDBR-5111,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
+BDBR-5115,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BDBR-5117,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
+BDBR-5135,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
+BDBR-5136,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
+BDBR-5137,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BDBR-5154,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BDBR-5155,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BDBR-5165,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
@@ -786,7 +813,9 @@ BDBR-5185,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-you
 BDBR-5186,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BDBR-5187,BDBR,"Airport - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BDCL-5111,BDCL,"Airport - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+BDCL-5115,BDCL,"Airport - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BDCL-5117,BDCL,"Airport - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+BDCL-5137,BDCL,"Airport - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BDCL-5154,BDCL,"Airport - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BDCL-5155,BDCL,"Airport - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BDVL-4997,BDVL,"Airport - Varsity Lakes",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
@@ -817,7 +846,11 @@ BRBD-4998,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-you
 BRBD-5106,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BRBD-5110,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BRBD-5111,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
+BRBD-5115,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BRBD-5117,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
+BRBD-5135,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
+BRBD-5136,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
+BRBD-5137,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BRBD-5154,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BRBD-5155,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BRBD-5165,BRBD,"Brisbane City - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
@@ -834,7 +867,11 @@ BRBN-5187,BRBN,"Brisbane City - Beenleigh",,2,https://jp.translink.com.au/plan-y
 BRBR-5106,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
 BRBR-5110,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
 BRBR-5111,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
+BRBR-5115,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
 BRBR-5117,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
+BRBR-5135,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
+BRBR-5136,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
+BRBR-5137,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
 BRBR-5154,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
 BRBR-5155,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
 BRBR-5165,BRBR,"Brisbane City - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,666D8E,1D1D1D
@@ -845,7 +882,11 @@ BRCA-4998,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-
 BRCA-5106,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRCA-5110,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRCA-5111,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRCA-5115,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRCA-5117,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRCA-5135,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRCA-5136,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRCA-5137,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRCA-5154,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRCA-5155,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRCA-5165,BRCA,"Brisbane City - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -859,7 +900,11 @@ BRCL-4998,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-y
 BRCL-5106,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRCL-5110,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRCL-5111,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+BRCL-5115,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRCL-5117,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+BRCL-5135,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+BRCL-5136,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+BRCL-5137,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRCL-5154,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRCL-5155,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRCL-5165,BRCL,"Brisbane City - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
@@ -873,7 +918,9 @@ BRDB-4998,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-you
 BRDB-5106,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 BRDB-5110,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 BRDB-5111,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
+BRDB-5115,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 BRDB-5117,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
+BRDB-5137,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 BRDB-5154,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 BRDB-5155,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 BRDB-5165,BRDB,"Brisbane City - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
@@ -887,7 +934,11 @@ BRFG-4998,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan
 BRFG-5106,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 BRFG-5110,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 BRFG-5111,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
+BRFG-5115,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 BRFG-5117,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
+BRFG-5135,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
+BRFG-5136,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
+BRFG-5137,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 BRFG-5154,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 BRFG-5155,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 BRFG-5165,BRFG,"Brisbane City - Ferny Grove",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
@@ -901,7 +952,11 @@ BRGY-4998,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/pla
 BRGY-5106,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRGY-5110,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRGY-5111,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRGY-5115,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRGY-5117,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRGY-5135,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRGY-5136,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRGY-5137,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRGY-5154,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRGY-5155,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRGY-5165,BRGY,"Brisbane City - Gympie North",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -915,7 +970,11 @@ BRIP-4998,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-you
 BRIP-5106,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRIP-5110,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRIP-5111,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRIP-5115,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRIP-5117,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRIP-5135,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRIP-5136,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+BRIP-5137,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRIP-5154,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRIP-5155,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 BRIP-5167,BRIP,"Brisbane City - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -928,7 +987,9 @@ BRRP-4998,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com
 BRRP-5106,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRRP-5110,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRRP-5111,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+BRRP-5115,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRRP-5117,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+BRRP-5137,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRRP-5154,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRRP-5155,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRRP-5165,BRRP,"Brisbane City - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
@@ -942,7 +1003,11 @@ BRSH-4998,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan
 BRSH-5106,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRSH-5110,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRSH-5111,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+BRSH-5115,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRSH-5117,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+BRSH-5135,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+BRSH-5136,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+BRSH-5137,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRSH-5154,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRSH-5155,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 BRSH-5165,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
@@ -954,7 +1019,10 @@ BRSH-5187,BRSH,"Brisbane City - Shorncliffe",,2,https://jp.translink.com.au/plan
 BRSP-4998,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRSP-5110,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRSP-5111,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+BRSP-5115,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRSP-5117,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+BRSP-5136,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+BRSP-5137,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRSP-5154,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRSP-5155,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 BRSP-5165,BRSP,"Brisbane City - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
@@ -968,18 +1036,28 @@ BRVL-5185,BRVL,"Brisbane City - Varsity Lakes",,2,https://jp.translink.com.au/pl
 BRVL-5186,BRVL,"Brisbane City - Varsity Lakes",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 BRVL-5187,BRVL,"Brisbane City - Varsity Lakes",,2,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 CABR-5111,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CABR-5115,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CABR-5117,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CABR-5135,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CABR-5136,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CABR-5137,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CABR-5154,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CABR-5155,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CABR-5185,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CABR-5186,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CABR-5187,CABR,"Caboolture - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CADB-5135,CADB,"Caboolture - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CADB-5136,CADB,"Caboolture - Doomben",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CAIP-4997,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CAIP-4998,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CAIP-5106,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CAIP-5110,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CAIP-5111,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CAIP-5115,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CAIP-5117,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CAIP-5135,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CAIP-5136,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+CAIP-5137,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CAIP-5154,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CAIP-5155,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 CAIP-5165,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -991,7 +1069,11 @@ CAIP-5187,CAIP,"Caboolture - Ipswich",,2,https://jp.translink.com.au/plan-your-j
 CASP-4998,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CASP-5110,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CASP-5111,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+CASP-5115,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CASP-5117,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+CASP-5135,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+CASP-5136,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+CASP-5137,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CASP-5154,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CASP-5155,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CASP-5165,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
@@ -1000,7 +1082,9 @@ CASP-5185,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-yo
 CASP-5186,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CASP-5187,CASP,"Caboolture - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CLBD-5111,CLBD,"Cleveland - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+CLBD-5115,CLBD,"Cleveland - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CLBD-5117,CLBD,"Cleveland - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+CLBD-5137,CLBD,"Cleveland - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CLBD-5154,CLBD,"Cleveland - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CLBD-5155,CLBD,"Cleveland - Airport",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 CLBR-4997,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
@@ -1008,7 +1092,11 @@ CLBR-4998,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-y
 CLBR-5106,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLBR-5110,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLBR-5111,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+CLBR-5115,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLBR-5117,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+CLBR-5135,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+CLBR-5136,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+CLBR-5137,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLBR-5154,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLBR-5155,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLBR-5165,CLBR,"Cleveland - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
@@ -1022,7 +1110,11 @@ CLSH-4998,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-you
 CLSH-5106,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLSH-5110,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLSH-5111,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+CLSH-5115,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLSH-5117,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+CLSH-5135,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+CLSH-5136,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+CLSH-5137,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLSH-5154,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLSH-5155,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 CLSH-5165,CLSH,"Cleveland - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
@@ -1036,7 +1128,9 @@ DBBR-4998,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-you
 DBBR-5106,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 DBBR-5110,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 DBBR-5111,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
+DBBR-5115,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 DBBR-5117,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
+DBBR-5137,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 DBBR-5154,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 DBBR-5155,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 DBBR-5165,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
@@ -1045,6 +1139,8 @@ DBBR-5170,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-you
 DBBR-5185,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 DBBR-5186,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
 DBBR-5187,DBBR,"Doomben - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,9B60A6,1D1D1D
+DBCA-5135,DBCA,"Doomben - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+DBCA-5136,DBCA,"Doomben - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 DBCL-5185,DBCL,"Doomben - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 DBCL-5186,DBCL,"Doomben - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 DBCL-5187,DBCL,"Doomben - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
@@ -1066,7 +1162,11 @@ FGBR-4998,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan
 FGBR-5106,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 FGBR-5110,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 FGBR-5111,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
+FGBR-5115,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 FGBR-5117,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
+FGBR-5135,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
+FGBR-5136,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
+FGBR-5137,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 FGBR-5154,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 FGBR-5155,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 FGBR-5165,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
@@ -1076,7 +1176,9 @@ FGBR-5185,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan
 FGBR-5186,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 FGBR-5187,FGBR,"Ferny Grove - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,D53E45,1D1D1D
 FGCL-5111,FGCL,"Ferny Grove - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+FGCL-5115,FGCL,"Ferny Grove - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 FGCL-5117,FGCL,"Ferny Grove - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+FGCL-5137,FGCL,"Ferny Grove - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 FGCL-5154,FGCL,"Ferny Grove - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 FGCL-5155,FGCL,"Ferny Grove - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 GYBR-4997,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1084,7 +1186,11 @@ GYBR-4998,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/pla
 GYBR-5106,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 GYBR-5110,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 GYBR-5111,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+GYBR-5115,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 GYBR-5117,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+GYBR-5135,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+GYBR-5136,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+GYBR-5137,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 GYBR-5154,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 GYBR-5155,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 GYBR-5165,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1094,7 +1200,9 @@ GYBR-5185,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/pla
 GYBR-5186,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 GYBR-5187,GYBR,"Gympie North - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 GYSP-5111,GYSP,"Gympie North - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+GYSP-5115,GYSP,"Gympie North - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 GYSP-5117,GYSP,"Gympie North - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+GYSP-5137,GYSP,"Gympie North - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 GYSP-5154,GYSP,"Gympie North - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 GYSP-5155,GYSP,"Gympie North - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 GYSP-5185,GYSP,"Gympie North - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
@@ -1105,7 +1213,11 @@ IPBR-4998,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-you
 IPBR-5106,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPBR-5110,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPBR-5111,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPBR-5115,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPBR-5117,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPBR-5135,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPBR-5136,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPBR-5137,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPBR-5154,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPBR-5155,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPBR-5165,IPBR,"Ipswich - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1119,7 +1231,11 @@ IPCA-4998,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-j
 IPCA-5106,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPCA-5110,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPCA-5111,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPCA-5115,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPCA-5117,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPCA-5135,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPCA-5136,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPCA-5137,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPCA-5154,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPCA-5155,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPCA-5165,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1128,12 +1244,17 @@ IPCA-5170,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-j
 IPCA-5185,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPCA-5186,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPCA-5187,IPCA,"Ipswich - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPIP-5137,IPIP,"Ipswich - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-4997,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-4998,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-5106,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-5110,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-5111,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPNA-5115,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-5117,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPNA-5135,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPNA-5136,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPNA-5137,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-5154,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-5155,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-5165,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1142,12 +1263,17 @@ IPNA-5170,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-jour
 IPNA-5185,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-5186,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPNA-5187,IPNA,"Ipswich - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPRP-5137,IPRP,"Ipswich - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 IPRW-4997,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPRW-4998,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPRW-5106,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPRW-5110,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPRW-5111,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPRW-5115,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPRW-5117,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPRW-5135,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPRW-5136,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPRW-5137,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPRW-5154,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPRW-5155,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPRW-5165,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1157,9 +1283,12 @@ IPRW-5185,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-jou
 IPRW-5186,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPRW-5187,IPRW,"Ipswich - Rosewood",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPSH-5111,IPSH,"Ipswich - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPSH-5115,IPSH,"Ipswich - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPSH-5117,IPSH,"Ipswich - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPSH-5137,IPSH,"Ipswich - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPSH-5154,IPSH,"Ipswich - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 IPSH-5155,IPSH,"Ipswich - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+IPSP-5137,IPSP,"Ipswich - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 L1-5029,L1,"Helensvale - Burleigh Heads",,0,https://jp.translink.com.au/plan-your-journey/timetables,FFC425,1D1D1D
 M1-4949,M1,"Eight Mile Plains - City",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/M1,E463A4,1D1D1D
 M2-4949,M2,"RBWH - UQ Lakes via City",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/M2,E463A4,1D1D1D
@@ -1195,6 +1324,8 @@ N449-5146,N449,"Valley - Riverhills NightLink via Indooroopilly",,3,https://jp.t
 N555-4985,N555,"Fortitude Valley - Loganholme",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/N555,E463A4,1D1D1D
 N555-5153,N555,"Fortitude Valley - Loganholme",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/N555,E463A4,1D1D1D
 NABR-5111,NABR,"Nambour - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+NABR-5115,NABR,"Nambour - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+NABR-5137,NABR,"Nambour - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NABR-5154,NABR,"Nambour - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NABR-5185,NABR,"Nambour - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NABR-5186,NABR,"Nambour - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1203,7 +1334,11 @@ NAIP-4998,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-jour
 NAIP-5106,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NAIP-5110,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NAIP-5111,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+NAIP-5115,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NAIP-5117,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+NAIP-5135,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+NAIP-5136,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+NAIP-5137,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NAIP-5154,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NAIP-5155,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NAIP-5165,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1213,17 +1348,15 @@ NAIP-5185,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-jour
 NAIP-5186,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NAIP-5187,NAIP,"Nambour - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 NASP-5111,NASP,"Nambour - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+NASP-5115,NASP,"Nambour - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 NASP-5117,NASP,"Nambour - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+NASP-5137,NASP,"Nambour - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 NASP-5154,NASP,"Nambour - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 NASP-5155,NASP,"Nambour - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 NASP-5185,NASP,"Nambour - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 NASP-5186,NASP,"Nambour - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 NASP-5187,NASP,"Nambour - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
-R309-4686,R309,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R309,E463A4,1D1D1D
-R348-4400,R348,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R348,E463A4,1D1D1D
 R348-5011,R348,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R348,E463A4,1D1D1D
-R395-2410,R395,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R395,E463A4,1D1D1D
-R581-3039,R581,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R581,E463A4,1D1D1D
 R582-3039,R582,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R582,E463A4,1D1D1D
 R583-3039,R583,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R583,E463A4,1D1D1D
 R586-3039,R586,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R586,E463A4,1D1D1D
@@ -1231,32 +1364,11 @@ R588-5140,R588,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-j
 R589-5140,R589,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R589,E463A4,1D1D1D
 R590-5140,R590,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R590,E463A4,1D1D1D
 R591-3039,R591,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R591,E463A4,1D1D1D
-R592-3039,R592,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R592,E463A4,1D1D1D
-R594-3039,R594,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R594,E463A4,1D1D1D
-R596-3039,R596,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R596,E463A4,1D1D1D
-R597-3039,R597,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R597,E463A4,1D1D1D
-R598-3039,R598,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R598,E463A4,1D1D1D
-R599-3039,R599,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R599,E463A4,1D1D1D
-R600-4400,R600,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R600,E463A4,1D1D1D
-R601-4400,R601,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R601,E463A4,1D1D1D
-R603-4400,R603,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R603,E463A4,1D1D1D
-R604-2410,R604,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R604,E463A4,1D1D1D
-R605-4400,R605,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R605,E463A4,1D1D1D
-R609-4398,R609,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R609,E463A4,1D1D1D
-R609-4400,R609,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R609,E463A4,1D1D1D
-R612-4400,R612,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R612,E463A4,1D1D1D
-R613-4400,R613,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R613,E463A4,1D1D1D
-R616-4398,R616,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R616,E463A4,1D1D1D
-R616-4400,R616,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R616,E463A4,1D1D1D
-R700-4686,R700,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R700,E463A4,1D1D1D
-R701-4686,R701,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R701,E463A4,1D1D1D
+R601-5134,R601,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R601,E463A4,1D1D1D
 R761-5140,R761,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R761,E463A4,1D1D1D
-R761-5189,R761,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R761,E463A4,1D1D1D
 R762-5140,R762,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R762,E463A4,1D1D1D
 R770-5140,R770,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R770,E463A4,1D1D1D
-R770-5189,R770,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R770,E463A4,1D1D1D
 R772-5140,R772,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R772,E463A4,1D1D1D
-R772-5189,R772,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R772,E463A4,1D1D1D
 R773-5140,R773,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R773,E463A4,1D1D1D
 R774-5140,R774,"Rail Replacement Bus",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R774,E463A4,1D1D1D
 R888-5065,R888,"Eight Mile Plains - City Loop (ATS)",,3,https://jp.translink.com.au/plan-your-journey/timetables/bus/T/R888,E463A4,1D1D1D
@@ -1266,7 +1378,9 @@ RPBR-4998,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com
 RPBR-5106,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPBR-5110,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPBR-5111,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+RPBR-5115,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPBR-5117,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+RPBR-5137,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPBR-5154,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPBR-5155,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPBR-5165,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
@@ -1276,7 +1390,9 @@ RPBR-5185,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com
 RPBR-5186,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPBR-5187,RPBR,"Redcliffe Peninsula - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPIP-5111,RPIP,"Redcliffe Peninsula - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+RPIP-5115,RPIP,"Redcliffe Peninsula - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RPIP-5117,RPIP,"Redcliffe Peninsula - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+RPIP-5137,RPIP,"Redcliffe Peninsula - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RPIP-5154,RPIP,"Redcliffe Peninsula - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RPIP-5155,RPIP,"Redcliffe Peninsula - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RPSP-4997,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
@@ -1284,7 +1400,9 @@ RPSP-4998,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.a
 RPSP-5106,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPSP-5110,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPSP-5111,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+RPSP-5115,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPSP-5117,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+RPSP-5137,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPSP-5154,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPSP-5155,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 RPSP-5165,RPSP,"Redcliffe Peninsula - Springfield",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
@@ -1298,7 +1416,11 @@ RWIP-4998,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-jou
 RWIP-5106,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RWIP-5110,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RWIP-5111,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+RWIP-5115,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RWIP-5117,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+RWIP-5135,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+RWIP-5136,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+RWIP-5137,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RWIP-5154,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RWIP-5155,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 RWIP-5165,RWIP,"Rosewood - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1312,7 +1434,11 @@ SHBR-4998,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan
 SHBR-5106,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHBR-5110,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHBR-5111,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+SHBR-5115,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHBR-5117,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+SHBR-5135,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+SHBR-5136,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+SHBR-5137,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHBR-5154,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHBR-5155,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHBR-5165,SHBR,"Shorncliffe - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
@@ -1326,7 +1452,11 @@ SHCL-4998,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-you
 SHCL-5106,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHCL-5110,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHCL-5111,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+SHCL-5115,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHCL-5117,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+SHCL-5135,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+SHCL-5136,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+SHCL-5137,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHCL-5154,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHCL-5155,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHCL-5165,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
@@ -1335,13 +1465,18 @@ SHCL-5170,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-you
 SHCL-5185,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHCL-5186,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHCL-5187,SHCL,"Shorncliffe - Cleveland",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
+SHIP-5137,SHIP,"Shorncliffe - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,4778B2,FFFFFF
 SHSH-5106,SHSH,"Shorncliffe - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SHSH-5110,SHSH,"Shorncliffe - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+SHSH-5135,SHSH,"Shorncliffe - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+SHSH-5136,SHSH,"Shorncliffe - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SHSH-5167,SHSH,"Shorncliffe - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SHSH-5170,SHSH,"Shorncliffe - Shorncliffe",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SMBI-3779,SMBI,"Southern Moreton Bay Island",,4,https://jp.translink.com.au/plan-your-journey/timetables,61C5C9,FFFFFF
 SPBR-5111,SPBR,"Springfield - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+SPBR-5115,SPBR,"Springfield - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPBR-5117,SPBR,"Springfield - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+SPBR-5137,SPBR,"Springfield - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPBR-5154,SPBR,"Springfield - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPBR-5155,SPBR,"Springfield - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPBR-5185,SPBR,"Springfield - Brisbane City",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
@@ -1350,7 +1485,11 @@ SPBR-5187,SPBR,"Springfield - Brisbane City",,2,https://jp.translink.com.au/plan
 SPCA-4998,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPCA-5110,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPCA-5111,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+SPCA-5115,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPCA-5117,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+SPCA-5135,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+SPCA-5136,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+SPCA-5137,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPCA-5154,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPCA-5155,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPCA-5165,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1358,10 +1497,14 @@ SPCA-5167,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-yo
 SPCA-5185,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPCA-5186,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPCA-5187,SPCA,"Springfield - Caboolture",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+SPIP-5137,SPIP,"Springfield - Ipswich",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPNA-4998,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPNA-5110,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPNA-5111,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+SPNA-5115,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPNA-5117,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+SPNA-5136,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
+SPNA-5137,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPNA-5154,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPNA-5155,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
 SPNA-5165,SPNA,"Springfield - Nambour",,2,https://jp.translink.com.au/plan-your-journey/timetables,27855A,1D1D1D
@@ -1374,7 +1517,9 @@ SPRP-4998,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.a
 SPRP-5106,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPRP-5110,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPRP-5111,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+SPRP-5115,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPRP-5117,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
+SPRP-5137,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPRP-5154,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPRP-5155,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D
 SPRP-5165,SPRP,"Springfield - Redcliffe Peninsula",,2,https://jp.translink.com.au/plan-your-journey/timetables,6CC6E9,1D1D1D

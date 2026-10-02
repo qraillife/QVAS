@@ -13,6 +13,22 @@
   // audio from a server endpoint that doesn't exist here. This app IS the host, so declare it as such.
   window.electronApp = true;
 
+  // ---------- black border / iPhone safe areas ----------
+  // The app draws edge to edge (viewport-fit=cover), so on an iPhone the Dynamic Island, rounded corners and home
+  // indicator would overlap it. Pad the page with the safe-area insets (min 10px/6px) on a black background.
+  (function () {
+    const st = document.createElement('style');
+    st.textContent = `
+      html{background:#000 !important;height:100%;box-sizing:border-box;
+        padding:max(env(safe-area-inset-top,0px),6px) max(env(safe-area-inset-right,0px),10px)
+                max(env(safe-area-inset-bottom,0px),6px) max(env(safe-area-inset-left,0px),10px)}
+      body{height:100% !important;border-radius:10px;overflow:hidden}
+      /* keys shrink to fit the narrower screen instead of wrapping (which clipped the bottom row) */
+      .touch-keyboard .keyboard-row{flex-wrap:nowrap !important}
+      .touch-keyboard .key-btn{flex:1 1 0;min-width:0 !important;max-width:84px;padding-left:2px !important;padding-right:2px !important}`;
+    (document.head || document.documentElement).appendChild(st);
+  })();
+
   // ---------- GitHub Pages base path ----------
   // On https://user.github.io/repo/ the app lives under /repo/, but app.js uses root-absolute URLs
   // like /audio/... and /api/... . Rewrite same-origin root-absolute URLs to include the base.
@@ -158,6 +174,7 @@
 
     // On the phone the "train position" is simply the phone's own GPS.
     if (pathname === '/api/tsw/player-position') {
+      if (!gpsEnabled) return json({ success: false, error: 'Phone GPS is off' });
       startGPS();
       if (phoneGPS && Date.now() - phoneGPS.receivedAt <= GPS_MAX_AGE_MS) {
         return json({ success: true, source: 'Phone GPS', ...phoneGPS });
@@ -177,6 +194,16 @@
   // ---------- GPS (replaces gps-transmitter.html + /api/phone-gps) ----------
   let gpsWatchId = null;
   let gpsError = '';
+  // Off by default (same as desktop, where the phone-GPS feed isn't running). When on, the app auto-highlights the
+  // station nearest to the phone, which jumps the list to the wrong place if you aren't actually on the route.
+  let gpsEnabled = false;
+  try { gpsEnabled = localStorage.getItem('qvas-phone-gps') === '1'; } catch (e) {}
+  function setGpsEnabled(on) {
+    gpsEnabled = !!on;
+    try { localStorage.setItem('qvas-phone-gps', gpsEnabled ? '1' : '0'); } catch (e) {}
+    if (gpsEnabled) startGPS();
+    if (!gpsEnabled) { if (gpsWatchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; phoneGPS = null; }
+  }
   function startGPS() {
     if (gpsWatchId !== null || !navigator.geolocation) return;
     gpsWatchId = navigator.geolocation.watchPosition(
@@ -270,9 +297,9 @@
     if (document.getElementById('qvas-keybar')) return;
     const css = document.createElement('style');
     css.textContent = `
-      #qvas-keybar{position:fixed;left:50%;transform:translateX(-50%);z-index:2147483647;display:flex;gap:6px;padding:5px;
+      #qvas-keybar{position:fixed;left:calc(50% - 40px);transform:translateX(-50%);z-index:2147483647;display:flex;gap:6px;padding:5px;
         border-radius:12px;background:rgba(0,0,0,.72);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
-        font-family:-apple-system,Helvetica,Arial,sans-serif;width:min(560px,calc(100vw - 16px));
+        font-family:-apple-system,Helvetica,Arial,sans-serif;width:min(500px,calc(100vw - 300px));
         user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
       #qvas-keybar.top{top:calc(env(safe-area-inset-top,0px) + 4px)}
       #qvas-keybar.bottom{bottom:calc(env(safe-area-inset-bottom,0px) + 4px)}
@@ -312,6 +339,13 @@
       c.addEventListener('click', fn); return c;
     };
     bar.querySelectorAll('button').forEach(b => b.classList.add('qk-key'));
+    const gps = mk(gpsEnabled ? 'GPS On' : 'GPS Off', 'Turn phone GPS on or off', function () {
+      setGpsEnabled(!gpsEnabled); this.textContent = gpsEnabled ? 'GPS On' : 'GPS Off';
+      this.style.background = gpsEnabled ? '#1d6b3a' : '';
+    });
+    gps.style.flexBasis = 'auto'; gps.style.padding = '0 8px'; gps.style.fontSize = '11px';
+    if (gpsEnabled) gps.style.background = '#1d6b3a';
+    bar.appendChild(gps);
     bar.appendChild(mk('\u21C5', 'Move keys to top or bottom', () => setPos(bar.classList.contains('top') ? 'bottom' : 'top')));
     bar.appendChild(mk('\u2013', 'Hide or show keys', function () {
       bar.classList.toggle('collapsed'); this.textContent = bar.classList.contains('collapsed') ? '3 4 6 7' : '\u2013';

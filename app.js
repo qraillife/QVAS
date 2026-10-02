@@ -2850,6 +2850,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 console.log('🔒 [POLLING] Key 6 - Locking doors');
                 doorsLock();
                 break;
+              case '7':
+              case 'numpad 7':
+                console.log('📣 [POLLING] Key 7 - Next station is');
+                if (typeof playNextStation === 'function') playNextStation();
+                break;
             }
           }
         }

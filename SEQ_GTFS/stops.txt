@@ -591,7 +591,7 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 10732,010732,Albany Creek Rd at Leitchs Road, -27.345633, 152.976185
 10733,010733,Dillingen St near Ironbark Rd, -27.493686, 152.940001
 10734,010734,Dillingen St near Diamantina St, -27.493797, 152.940002
-10736,010736,Oconnell Tce at Hamilton Place (Temporary relocation), -27.448204, 153.035408
+10736,010736,Oconnell Tce at Hamilton Place, -27.448644, 153.034286
 10737,010737,Hamilton Pl near Jeays St, -27.447972, 153.035387
 10738,010738,OConnell Terrace near Bowen Bridge Rd, -27.448032, 153.029849
 1074,001074,"Boundary St at West End Junction, stop 5", -27.477889, 153.012562
@@ -1217,7 +1217,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 12041,012041,Cemetery Rd at Cemetery - Upper Kedron, -27.410777, 152.924712
 12042,012042,Charolais Cr near Kirralee Cr, -27.413407, 152.925555
 12043,012043,Charolais Cr at Wyellan Pl, -27.415000, 152.923713
-12045,012045,"Ferny Grove station, stop A", -27.400810, 152.934555
 12046,012046,Settlement Rd at Kaloma Rd, -27.435828, 152.943448
 12047,012047,"Tarragindi Rd at Bailey Street, stop 37", -27.524620, 153.035964
 12048,012048,"Windsor Rd at Windsor - Prospect, stop 9", -27.452424, 153.007226
@@ -1264,7 +1263,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 12090,012090,"Lensworth St near Selhurst St, stop 59", -27.571477, 153.034228
 12091,012091,South Pine Rd near Johnstone Rd, -27.321998, 152.987522
 12092,012092,South Pine Rd near Johnstone Rd, -27.321990, 152.987686
-12096,012096,"Ferny Grove station, stop B", -27.401077, 152.934924
 12097,012097,Greendale Way at Empress Drive, -27.517380, 153.120448
 12098,012098,Greendale Way at Empress Drive, -27.517516, 153.120481
 121,000121,Roma Street Stop 121 at Police HQ, -27.466533, 153.018427
@@ -1628,7 +1626,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 1421,001421,"Kennedy Tce near Primrose Tce, stop 15/16", -27.453671, 152.993542
 1422,001422,"Kennedy Tce near Brindle St, stop 17", -27.453610, 152.991238
 14220,014220,"Beenleigh Rd at Kuraby station, stop 92", -27.605309, 153.091722
-14223,014223,Wooloowin station - Bridge St, -27.420478, 153.043130
 14226,014226,Trinity Way at Mirthwood Drive, -27.652691, 153.046156
 14227,014227,Trinity Way at Mirthwood Drive, -27.652796, 153.045939
 1423,001423,"Kennedy Tce near Jubilee Tce, stop 18", -27.454301, 152.988898
@@ -8024,6 +8021,7 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 3142,003142,"McKeering St at Shane Street, stop 38", -27.318866, 153.041246
 314230,314230,William St near Mons Rd, -26.694244, 153.039073
 314239,314239,Buderim Pines Dr near Treefern Ct, -26.686200, 153.087786
+314258,314258,Jones Rd at Horseshoe Bend, -26.670080, 153.053636
 314289,314289,Tallebudgera Creek Rd at Tsipura Drive, -28.109740, 153.441132
 3143,003143,"Gawain Rd at Ettare Street, stop 42", -27.315790, 153.035362
 314301,314301,Dunlin Dr at Courser Court, -28.082632, 153.434484
@@ -8643,6 +8641,7 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 3190,003190,"Board St near Ibis Ave, stop 28", -27.325790, 153.057968
 319009,319009,"Capalaba park 'n' ride, platform 2", -27.525497, 153.195806
 319010,319010,"Capalaba park 'n' ride, platform 1", -27.524947, 153.195393
+319015,319015,Hope Island Rd near Magnolia Dr hail 'n' ride, -27.879005, 153.337603
 319029,319029,Orient Dr near Wollomia Way, -26.423029, 153.105036
 319031,319031,Hargraves Rd at Con Brio Bvd, -27.876602, 153.304078
 319034,319034,Dixon Drive at Pimpama State Secondary College, -27.834225, 153.316735
@@ -8973,7 +8972,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 319586,319586,Milton ferry terminal, -27.473584, 153.005633
 3196,003196,"Deagon St near Albion St, stop 38", -27.314100, 153.059899
 319629,319629,Donnybrook Community Library hail 'n' ride, -27.003541, 153.068434
-319634,319634,Caboolture station, -27.082134, 152.953212
 319637,319637,QUT Gardens Point ferry terminal, -27.478495, 153.026226
 319639,319639,Foxwell Rd at Oakey Creek Road, -27.852245, 153.335276
 319647,319647,Rothwell station, -27.223072, 153.048128
@@ -9061,7 +9059,7 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 319777,319777,Old Maroochydore Rd at Vise Road, -26.670947, 153.018140
 319778,319778,Old Maroochydore Rd at Vise Road, -26.671129, 153.018104
 319795,319795,"Kippa-Ring station, stop A", -27.225283, 153.081652
-319796,319796,"Kippa-Ring station, stop B", -27.225051, 153.082108
+319796,319796,"Kippa-Ring stations, stop B", -27.225051, 153.082108
 319797,319797,Duffield Rd near Elizabeth Ave, -27.241838, 153.085724
 319804,319804,Bluewater Square, -27.229951, 153.115423
 319805,319805,"North Lakes station, platform 2", -27.237904, 153.017385
@@ -9120,12 +9118,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 320000,320000,Helensvale Rd at Calmwater Crescent, -27.888675, 153.352996
 320001,320001,Helensvale Rd at Saltwater Park, -27.880983, 153.361722
 320002,320002,Helensvale Rd at Saltwater Park, -27.882375, 153.362599
-320003,320003,Thomas Street station - Tallon St, -27.614505, 152.745063
-320004,320004,Wulkuraka station, -27.614116, 152.733783
-320005,320005,Karrabin station, -27.604226, 152.708998
-320007,320007,Thagoona station, -27.626053, 152.630594
-320008,320008,Clayfield Station - Alexandra Rd, -27.417952, 153.057290
-320009,320009,Hendra station - Chermside St, -27.422110, 153.062438
 320010,320010,Gardner Road at Lorisch Way, -27.569910, 153.116473
 320011,320011,Helensvale Rd at Calmwater Crescent, -27.887895, 153.351365
 320012,320012,Helensvale Rd at Monterey Keys Drive, -27.892287, 153.338931
@@ -9170,11 +9162,8 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 320282,320282,Willmer Rd near Marxsen St hail 'n' ride, -27.036546, 153.100169
 320284,320284,Dixon Dr at Pimpama Junction, -27.826007, 153.316999
 320287,320287,Kerkin Rd South at St Joseph's College, -27.831777, 153.332031
-320292,320292,Oxford Park station - Blaker Rd, -27.404623, 152.968785
 320293,320293,Baringa Dr at Marybell Drive, -26.807978, 153.076984
 3203,003203,"Brighton Rd at Sandgate, stop 34", -27.318508, 153.068144
-320300,320300,Windsor station - Prospect Rd, -27.435519, 153.029125
-320301,320301,Windsor station - Prospect Rd, -27.435661, 153.029020
 320302,320302,William Bvd at Tierney Way, -27.828251, 153.318323
 320303,320303,William Bvd at Tierney Way, -27.828464, 153.318524
 320304,320304,William Bvd at Carnarvon Court, -27.830685, 153.323586
@@ -9182,31 +9171,16 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 320306,320306,Cunningham Dr at Arcadia Boulevard, -27.826143, 153.325231
 320307,320307,Cunningham Dr at Arcadia Boulevard, -27.826527, 153.324889
 320311,320311,Kerkin Rd South at St Joseph's College, -27.831170, 153.331825
-320312,320312,Mitchelton station - McConaghy St, -27.411397, 152.976395
-320323,320323,Auchenflower station - Auchenflower Tce, -27.475637, 152.996717
-320328,320328,Ipswich station - Bell St, -27.613125, 152.760301
 320329,320329,Pimpama Jacobs Well Rd at Pimpama City, -27.812723, 153.291708
 320330,320330,Pimpama Jacobs Well Rd at Pimpama City, -27.812810, 153.291473
 320332,320332,Dixon Dr at Pimpama State Primary College, -27.834395, 153.319906
 320335,320335,Harmony Cr at Greenview Avenue, -27.690728, 152.812110
 320352,320352,Parklands Bvd at Meridan State College, -26.774130, 153.102785
 320355,320355,Holland St at Northgate station, -27.392993, 153.070191
-320356,320356,Gympie North station - Station Rd, -26.159476, 152.683206
-320357,320357,Brisbane Domestic Airport, -27.385300, 153.118508
-320358,320358,Brisbane International Airport, -27.404467, 153.108597
-320359,320359,Nudgee station - St Achs St, -27.366942, 153.083177
-320361,320361,Wooloowin station - Chalk St, -27.422301, 153.042241
-320362,320362,Strathpine station - ATS, -27.311048, 152.989652
-320363,320363,Geebung station - Fossil St, -27.368591, 153.047484
-320364,320364,Sunshine station - Bilsen Rd, -27.375338, 153.055364
 320365,320365,Deagon station - Albury St, -27.327625, 153.063453
 320366,320366,North Boondall station - Peacock St, -27.338297, 153.060376
 320367,320367,North Boondall station - Lyndhurst Rd, -27.338922, 153.060307
-320368,320368,Dakabin station, -27.230403, 152.975443
-320369,320369,Eumundi station, -26.480070, 152.954550
 320371,320371,Shorncliffe station - Railway Pde, -27.326958, 153.080590
-320373,320373,Grovely station - Blaker Rd, -27.405021, 152.962619
-320374,320374,Grovely station - Blaker Rd, -27.404776, 152.962915
 320375,320375,Kuraby station - Jacob Lane, -27.604763, 153.091500
 320385,320385,Aerodrome Rd at Maud Street, -26.657097, 153.093904
 320386,320386,Aerodrome Rd at Maud Street, -26.657162, 153.093542
@@ -9252,14 +9226,12 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 320470,320470,Aspland St at Little Bade Street, -26.628117, 152.965927
 320471,320471,Aspland St at Bade Street, -26.628260, 152.966044
 320472,320472,Isabella Av at Albatross Avenue, -26.624670, 152.940661
-320473,320473,Albion station, -27.429376, 153.040449
 320474,320474,Harmony Bvd at Sienna Crescent, -26.737540, 153.064140
 320475,320475,Harmony Bvd at Sienna Crescent, -26.737630, 153.064250
 320476,320476,Harmony Bvd at Spinifex Street, -26.736630, 153.060890
 320477,320477,Harmony Bvd at Spinifex Street, -26.736530, 153.061020
 320478,320478,Tranquility Way at Greenview Terrace, -26.738540, 153.059220
 320479,320479,Tranquility Way at Greenview Tce, -26.738365, 153.058852
-320480,320480,Auchenflower station - Auchenflower Tce, -27.475666, 152.996565
 320482,320482,Gilston Rd at Longhill Road, -28.020471, 153.311019
 320483,320483,Gilston Rd at Longhill Road, -28.020492, 153.310855
 320485,320485,Parklakes Dr at Good Samaritan Catholic College, -26.596896, 153.020767
@@ -9267,7 +9239,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 320498,320498,Sippy Downs Dr at Fairfax Street, -26.714606, 153.061482
 320499,320499,Nicklin Way at Beach Drive, -26.742043, 153.128967
 3205,003205,"Brighton Rd at Sandgate Central, stop 34/33", -27.320388, 153.070041
-320502,320502,Oxford Park station - Blaker Rd, -27.404469, 152.968431
 320506,320506,Health Care Dr at Nightingale Avenue, -27.688824, 152.910146
 320507,320507,Health Care Dr at Mater Private Hospital, -27.687145, 152.908534
 320508,320508,Health Care Dr at Mater Private Hospital, -27.687070, 152.908866
@@ -9604,11 +9575,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 322021,322021,Waterford Tamborine Rd at Pioneer Dr, -27.785074, 153.099695
 322022,322022,Waterford Tamborine Rd at Hotz Rd, -27.787047, 153.100323
 322023,322023,Waterford Tamborine Rd at Hotz Rd, -27.788224, 153.100837
-322032,322032,Riverview station - McEwan St, -27.595908, 152.849904
-322033,322033,Riverview station - McEwan St, -27.595992, 152.849648
-322034,322034,Thomas Street station - Tallon St, -27.614419, 152.745619
-322035,322035,Walloon station - Queen St, -27.605893, 152.666595
-322036,322036,Walloon station - Queen St, -27.605978, 152.666295
 322037,322037,Barrams Rd at Olympus Drive, -27.694005, 152.829753
 322038,322038,Barrams Rd at Olympus Drive, -27.694589, 152.828407
 322039,322039,Sandstone Boulevard, -27.685379, 152.833047
@@ -9619,7 +9585,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 322057,322057,Wentland Av at South Rock State School, -27.827271, 153.132904
 322064,322064,Loganlea Rd near Golf Course Dr, -27.656245, 153.144047
 3221,003221,"Queens Pde near Seaview St, stop 46", -27.300596, 153.058233
-322100,322100,"Redbank station, northern side", -27.599359, 152.871997
 322103,322103,Dreamworld Parkway at Autovillage, -27.878788, 153.315436
 322104,322104,Dreamworld Parkway at Autovillage, -27.880398, 153.315854
 322120,322120,Andrew Rd at Baratt Dr, -27.710149, 153.023931
@@ -9692,6 +9657,8 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 322308,322308,School Rd at Mountview Shopping Centre, -27.663573, 152.850130
 322309,322309,School Rd at Mountview Shopping Centre, -27.664583, 152.850697
 322310,322310,Ingles Dr at McNamara Place, -27.657488, 152.845617
+322313,322313,Brookwater Dr at Oakview Circuit hail 'n' ride, -27.657887, 152.894327
+322314,322314,Brookwater Dr at Oakview Circuit hail 'n' ride, -27.657776, 152.894062
 322315,322315,Cadoc St at Zamma Street, -27.658043, 152.877862
 322316,322316,Regents Dr at Fernbrooke Boulevard, -27.659938, 152.844068
 322317,322317,Regents Dr at Fernbrooke Boulevard, -27.659962, 152.843895
@@ -9716,8 +9683,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 322500,322500,Dalton Dr at Newspaper Place, -26.667206, 153.090847
 322501,322501,Dalton Dr at Maroochydore Community Health, -26.666154, 153.085979
 322509,322509,Leagues Club Dr at Nerang station HnR, -27.994742, 153.349613
-322514,322514,Chambers Flat Rd at Entrance Street, -27.692531, 153.102577
-322515,322515,Chambers Flat Rd at Entrance Street, -27.691850, 153.102523
 322523,322523,"Hope Island station, stop A", -27.879794, 153.331082
 322524,322524,"Hope Island station, stop B", -27.879547, 153.331024
 322525,322525,Hope Island station, -27.879205, 153.330923
@@ -9738,6 +9703,8 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 322553,322553,Koplick Rd near Chambers Flat Rd hail 'n' ride, -27.720918, 153.087535
 322554,322554,Mt Archer Rd at White Ash Way, -27.710984, 153.084797
 322555,322555,Koplick Rd near Chambers Flat Rd hail 'n' ride, -27.721062, 153.088317
+322562,322562,Second Ave at Memorial Ave, -26.656155, 153.095573
+322563,322563,The Esplanade at First Avenue, -26.654231, 153.093650
 322568,322568,Sickle Ave at Ballybunyon Cr, -27.870595, 153.366642
 322598,322598,Loganlea station, -27.671040, 153.137933
 322599,322599,Loganlea station, -27.671160, 153.137771
@@ -9747,6 +9714,7 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 322614,322614,"GCUH, platform 4", -27.960682, 153.381128
 322615,322615,"GCUH, platform 3", -27.960771, 153.380749
 322630,322630,Wendron St at Rochedale South State School (Temporary stop), -27.590575, 153.130947
+322694,322694,Ernest St near Hilton Tce, -26.397641, 153.044682
 322695,322695,Margaret Street stop 94a, -27.473006, 153.027656
 3227,003227,"Nathan St near Saul St, stop 49", -27.304337, 153.052965
 322710,322710,Minchinton St near Omrah Av, -26.803134, 153.131470
@@ -11194,7 +11162,6 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 51693,051693,Pallara Ave near Pipet Cr, -27.607853, 153.016332
 51694,051694,Fairfield Rd at Yeronga station, -27.516518, 153.017687
 51695,051695,Fairfield Rd at Yeronga station, -27.517204, 153.016875
-51696,051696,Ipswich Rd at Moorooka station, -27.536297, 153.014046
 51702,051702,College Ave near Oxley Place, -27.612308, 152.972581
 5171,005171,King Ave near Sherbrooke Rd, -27.594246, 153.003131
 51710,051710,Learoyd Rd near Gooderham Rd, -27.598185, 153.011359
@@ -11913,25 +11880,32 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 600282,600282,"Milton station, platform 4", -27.468852, 153.005125
 600283,600283,"Auchenflower station, platform 1", -27.476098, 152.996936
 600284,600284,"Auchenflower station, platform 2", -27.476127, 152.996928
+600285,600285,"Auchenflower station, platform 3", -27.476100, 152.996863
 600286,600286,"Auchenflower station, platform 4", -27.476070, 152.996875
 600287,600287,"Toowong station, platform 1", -27.485334, 152.993169
 600288,600288,"Toowong station, platform 2", -27.485269, 152.993086
+600289,600289,"Toowong station, platform 3", -27.485376, 152.993056
 600290,600290,"Toowong station, platform 4", -27.485310, 152.992970
 600291,600291,"Taringa station, platform 1", -27.493243, 152.981426
 600292,600292,"Taringa station, platform 2", -27.493172, 152.981428
+600293,600293,"Taringa station, platform 3", -27.493188, 152.981371
 600294,600294,"Taringa station, platform 4", -27.493115, 152.981372
 600295,600295,"Indooroopilly station, platform 1", -27.503071, 152.975837
 600296,600296,"Indooroopilly station, platform 2", -27.503012, 152.975773
+600297,600297,"Indooroopilly station, platform 3", -27.503060, 152.975732
 600298,600298,"Indooroopilly station, platform 4", -27.502975, 152.975693
 600299,600299,"Chelmer station, platform 1", -27.512172, 152.972908
 6003,006003,"Belmont Rd at Eversholt St, stop 56/52", -27.483326, 153.127037
 600300,600300,"Chelmer station, platform 2", -27.512160, 152.972761
+600301,600301,"Chelmer station, platform 3", -27.512230, 152.972761
 600302,600302,"Chelmer station, platform 4", -27.512188, 152.972629
 600303,600303,"Graceville station, platform 1", -27.520674, 152.976024
 600304,600304,"Graceville station, platform 2", -27.520676, 152.975915
+600305,600305,"Graceville station, platform 3", -27.520823, 152.975982
 600306,600306,"Graceville station, platform 4", -27.520759, 152.975841
 600309,600309,"Sherwood station, platform 1", -27.531230, 152.979649
 600310,600310,"Sherwood station, platform 2", -27.531152, 152.979492
+600311,600311,"Sherwood station, platform 3", -27.531351, 152.979512
 600312,600312,"Sherwood station, platform 4", -27.531257, 152.979386
 600314,600314,"Corinda station, platform 2", -27.539174, 152.980089
 600315,600315,"Corinda station, platform 3", -27.539106, 152.980099
@@ -11942,6 +11916,7 @@ stop_id,stop_code,stop_name,stop_lat,stop_lon
 600320,600320,"Oxley station, platform 3", -27.552284, 152.973665
 600321,600321,"Darra station, platform 1", -27.565959, 152.952488
 600322,600322,"Darra station, platform 2", -27.565946, 152.952571
+600323,600323,"Darra station, platform 3", -27.565767, 152.952431
 600324,600324,"Darra station, platform 4", -27.565749, 152.952517
 600325,600325,"Richlands station, platform 1", -27.596197, 152.946944
 600326,600326,"Richlands station, platform 2", -27.596148, 152.946756
