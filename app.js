@@ -9,6 +9,41 @@ window.addEventListener('unhandledrejection', (event) => {
   console.error('❌ UNHANDLED PROMISE REJECTION:', event.reason);
 });
 
+const HARDWARE_INPUT_DELAY_MS = 70;
+
+document.addEventListener('click', (event) => {
+  if (event.qvasHardwareReplay) return;
+
+  const target = event.target instanceof Element
+    ? event.target.closest('button, [role="button"], a')
+    : null;
+  if (!target) return;
+
+  event.preventDefault();
+  event.stopImmediatePropagation();
+
+  window.setTimeout(() => {
+    const replay = new MouseEvent('click', {
+      bubbles: true,
+      cancelable: true,
+      view: window,
+      detail: event.detail,
+      screenX: event.screenX,
+      screenY: event.screenY,
+      clientX: event.clientX,
+      clientY: event.clientY,
+      ctrlKey: event.ctrlKey,
+      shiftKey: event.shiftKey,
+      altKey: event.altKey,
+      metaKey: event.metaKey,
+      button: event.button,
+      buttons: event.buttons
+    });
+    replay.qvasHardwareReplay = true;
+    target.dispatchEvent(replay);
+  }, HARDWARE_INPUT_DELAY_MS);
+}, true);
+
 // Run Code Parser - Queensland Rail Run Number Guide
 const runCodeGuide = {
   firstChar: {
@@ -90,6 +125,166 @@ let currentGTFSTrip = null;
 let globalGTFSData = null;
 let tripIdMap = {}; // Map trip_id to route_id for fast lookup
 let currentManualRoute = null;
+let currentManualFormFile = null;
+let routeTopologyPaths = [];
+let mtgOnlyRouteCodes = new Set();
+
+async function loadMtgOnlyRouteConfig() {
+  try {
+    const response = await fetch('/mtg-only-routes.json');
+    if (!response.ok) throw new Error(`MTG-only route configuration unavailable (${response.status})`);
+    const data = await response.json();
+    mtgOnlyRouteCodes = new Set(
+      (Array.isArray(data.routes) ? data.routes : [])
+        .map(route => String(route).trim().toUpperCase())
+        .filter(Boolean)
+    );
+    console.log(`[MTG] Loaded ${mtgOnlyRouteCodes.size} MTG-only route codes`);
+  } catch (error) {
+    console.warn('[MTG] Could not load MTG-only route configuration:', error.message);
+  }
+}
+
+let announcementDisableRules = { routes: {} };
+
+async function loadAnnouncementDisableRules() {
+  try {
+    const response = await fetch('/announcement-disable-rules.json');
+    if (!response.ok) throw new Error(`Announcement disable rules unavailable (${response.status})`);
+    const data = await response.json();
+    announcementDisableRules = data && typeof data === 'object' ? data : { routes: {} };
+    if (!announcementDisableRules.routes) announcementDisableRules.routes = {};
+    console.log(`[ANNOUNCEMENTS] Loaded route disable rules for ${Object.keys(announcementDisableRules.routes).length} route(s)`);
+  } catch (error) {
+    console.warn('[ANNOUNCEMENTS] Could not load route disable rules:', error.message);
+    announcementDisableRules = { routes: {} };
+  }
+}
+
+function normalizeRuleKey(value) {
+  return String(value ?? '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, ' ')
+    .replace(/\s+/g, ' ');
+}
+
+function normalizeAnnouncementTypeKey(value) {
+  const raw = String(value ?? '').trim().toLowerCase().replace(/[^a-z]+/g, '');
+  const aliases = {
+    tns: 'tns',
+    nextstation: 'tns',
+    arrival: 'naa',
+    naa: 'naa',
+    nowarriving: 'naa',
+    mtg: 'mtg',
+    mindthegap: 'mtg',
+    form: 'form',
+    station: 'form'
+  };
+  return aliases[raw] || raw;
+}
+
+function getAnnouncementRuleForStation(routeName, stationName) {
+  const routeKeys = [];
+  if (routeName) routeKeys.push(String(routeName).trim());
+  if (currentRouteFormCode) routeKeys.push(String(currentRouteFormCode).trim());
+  if (currentRouteLongName) routeKeys.push(String(currentRouteLongName).trim());
+
+  const stationEntries = [];
+  if (stationName) {
+    stationEntries.push(String(stationName).trim());
+    stationEntries.push(normalizeRuleKey(stationName));
+  }
+
+  const routes = announcementDisableRules?.routes || {};
+  for (const routeKey of routeKeys) {
+    const routeRules = routes[routeKey] || routes[normalizeRuleKey(routeKey)];
+    if (!routeRules || typeof routeRules !== 'object') continue;
+
+    for (const candidate of stationEntries) {
+      if (routeRules[candidate]) return routeRules[candidate];
+      const directMatch = Object.keys(routeRules).find(key => normalizeRuleKey(key) === normalizeRuleKey(candidate));
+      if (directMatch) return routeRules[directMatch];
+    }
+  }
+
+  return null;
+}
+
+function isAnnouncementTypeDisabledForStation(stationName, announcementType) {
+  const typeKey = normalizeAnnouncementTypeKey(announcementType);
+  const rule = getAnnouncementRuleForStation(currentManualRoute?.name || currentRouteLongName || currentRouteFormCode || '', stationName);
+  if (!rule) return false;
+
+  if (rule === true) return true;
+  if (Array.isArray(rule)) return rule.some(item => normalizeAnnouncementTypeKey(item) === typeKey);
+  if (typeof rule === 'object') {
+    if (Object.prototype.hasOwnProperty.call(rule, typeKey)) return !!rule[typeKey];
+    if (Array.isArray(rule.disabled)) return rule.disabled.some(item => normalizeAnnouncementTypeKey(item) === typeKey);
+    if (Array.isArray(rule.types)) return rule.types.some(item => normalizeAnnouncementTypeKey(item) === typeKey);
+    if (Array.isArray(rule.announcements)) return rule.announcements.some(item => normalizeAnnouncementTypeKey(item) === typeKey);
+    for (const [key, value] of Object.entries(rule)) {
+      if (normalizeAnnouncementTypeKey(key) === typeKey) return !!value;
+    }
+  }
+
+  return false;
+}
+
+function resolveAnnouncementTypeForStation(stationName, announcementType) {
+  const baseType = normalizeAnnouncementTypeKey(announcementType);
+  let resolvedType = baseType;
+  const seen = new Set();
+
+  while (!seen.has(resolvedType)) {
+    seen.add(resolvedType);
+    const ruleValues = getAnnouncementRuleForStation(currentManualRoute?.name || currentRouteLongName || currentRouteFormCode || '', stationName);
+    const disabledTypes = [];
+
+    if (Array.isArray(ruleValues)) {
+      disabledTypes.push(...ruleValues);
+    } else if (typeof ruleValues === 'boolean') {
+      if (ruleValues) disabledTypes.push('tns', 'naa', 'mtg', 'form');
+    } else if (ruleValues && typeof ruleValues === 'object') {
+      if (Array.isArray(ruleValues.disabled)) disabledTypes.push(...ruleValues.disabled);
+      else if (Array.isArray(ruleValues.types)) disabledTypes.push(...ruleValues.types);
+      else if (Array.isArray(ruleValues.announcements)) disabledTypes.push(...ruleValues.announcements);
+      else {
+        Object.entries(ruleValues)
+          .filter(([, enabled]) => !!enabled)
+          .forEach(([key]) => disabledTypes.push(key));
+      }
+    }
+
+    const disabledSet = new Set(disabledTypes.map(normalizeAnnouncementTypeKey));
+    if (!disabledSet.has(resolvedType)) return resolvedType;
+
+    const fallbackMap = {
+      tns: 'naa',
+      naa: 'form',
+      form: 'naa',
+      mtg: 'naa'
+    };
+    const fallback = fallbackMap[resolvedType];
+    if (!fallback || fallback === resolvedType) return resolvedType;
+    resolvedType = fallback;
+  }
+
+  return resolvedType;
+}
+
+function isMtgOnlyRoute(routeCode) {
+  return !!currentManualRoute?.tnsMtgOnly
+    || (!!routeCode && mtgOnlyRouteCodes.has(String(routeCode).trim().toUpperCase()));
+}
+
+loadMtgOnlyRouteConfig();
+loadAnnouncementDisableRules();
+window.addEventListener('focus', () => {
+  loadMtgOnlyRouteConfig();
+  loadAnnouncementDisableRules();
+});
 
 // ==================== STATION NAME NORMALIZATION ====================
 // Normalize station names: "Beenleigh station, platform 2" -> "Beenleigh"
@@ -756,6 +951,14 @@ function getSelectedDayType() {
   return 'M-F';
 }
 
+function getRoutePreviewDayCode() {
+  const dayCode = getSelectedDayType();
+  if (dayCode === 'SAT') return 'SA';
+  if (dayCode === 'SUN') return 'SU';
+  if (dayCode === 'M-F') return 'MF';
+  return dayCode;
+}
+
 function getActiveServiceIdsForDay(dayType, gtfsData = globalGTFSData) {
   if (!gtfsData || !gtfsData.calendar) {
     return null;
@@ -1013,11 +1216,27 @@ let runInput = null; // Global reference to run number input field
 let currentAnnouncementType = null; // Track current announcement type (TNS, NAA, MTG, form, etc.)
 let currentAnnouncementAudioPath = null; // Track audio path for looping
 let currentAnnouncementDisplayText = null; // Track display text for looping
+let currentAnnouncementStation = null;
+let currentAnnouncementSpecialMessageId = null;
+const pendingStatusAlerts = [];
 let announcementLoopTimer = null; // Timer ID for announcement loop
 let isLoopingAnnouncement = false; // Flag to indicate if we're currently looping
 let isPlayingArrivalAnnouncement = false; // Flag to track if we're playing an arrival announcement (NAA)
 let shouldPlayExitButtons = false; // Flag to track if current train number starts with "D"
 let ngrButtonMessageEnabled = false; // Flag to track NGR Button Message toggle state
+
+function queueAlertSoundTest() {
+  const testSequence = [
+    { audioPath: 'QR_PIDS_AudioFiles/GPS.mp3', displayText: 'GPS signal acquired', announcementType: 'GPS' },
+    { audioPath: 'QR_PIDS_AudioFiles/NO_GPS.MP3', displayText: 'GPS signal lost', announcementType: 'GPS' },
+    { audioPath: 'QR_PIDS_AudioFiles/Battery Low.MP3', displayText: 'Battery low', announcementType: 'BATTERY' },
+    { audioPath: 'QR_PIDS_AudioFiles/Battery Critical.MP3', displayText: 'Battery critical', announcementType: 'BATTERY' },
+    { audioPath: 'QR_PIDS_AudioFiles/System Ready.MP3', displayText: 'System ready', announcementType: 'SYSTEM_READY' }
+  ];
+
+  pendingStatusAlerts.push(...testSequence);
+  playNextStatusAlert();
+}
 
 function clearPendingAnnouncement() {
   pendingAnnouncementPath = null;
@@ -1028,10 +1247,15 @@ function clearPendingAnnouncement() {
   currentAnnouncementAudioPath = null;
   currentAnnouncementDisplayText = null;
   currentAnnouncementType = null;
+  currentAnnouncementStation = null;
+  currentAnnouncementSpecialMessageId = null;
   isLoopingAnnouncement = false;
   isPlayingArrivalAnnouncement = false;
   shouldPlayExitButtons = false;
   stopAudio();
+  if (typeof updateAppState === 'function') {
+    updateAppState({ announcement: null, announcementClearedAt: Date.now() });
+  }
 }
 
 // Function to stop any currently playing audio
@@ -1054,16 +1278,67 @@ function stopAudio() {
   updateStopButtonColor(); // Update button color when audio is stopped
 }
 
+function queueStatusAlert(audioPath, displayText, announcementType = 'GPS') {
+  pendingStatusAlerts.push({ audioPath, displayText, announcementType });
+  playNextStatusAlert();
+}
+
+function playNextStatusAlert(endedAudio = null) {
+  if (endedAudio && currentAudio !== endedAudio) return;
+  if (currentAudio && !currentAudio.paused && !currentAudio.ended) return;
+
+  const alert = pendingStatusAlerts.shift();
+  if (!alert) return;
+
+  currentAnnouncementType = alert.announcementType;
+  currentAnnouncementAudioPath = alert.audioPath;
+  currentAnnouncementDisplayText = alert.displayText;
+  currentAnnouncementStation = '';
+  currentAnnouncementSpecialMessageId = null;
+  playAudio(alert.audioPath);
+}
+
+let lastBatteryAlertBand = null;
+let batteryAlertMonitoringStarted = false;
+
+function startBatteryAlertMonitoring() {
+  if (batteryAlertMonitoringStarted || !navigator.getBattery) return;
+  batteryAlertMonitoringStarted = true;
+
+  navigator.getBattery().then(battery => {
+    const updateBatteryAlert = () => {
+      const level = battery.level * 100;
+      const nextBand = level < 10 ? 'critical' : level < 30 ? 'low' : 'normal';
+      const previousBand = lastBatteryAlertBand;
+      lastBatteryAlertBand = nextBand;
+
+      if (nextBand === 'critical' && previousBand !== 'critical') {
+        queueStatusAlert('QR_PIDS_AudioFiles/Battery Critical.MP3', 'Battery critical', 'BATTERY');
+      } else if (nextBand === 'low' && (previousBand === 'normal' || previousBand === null)) {
+        queueStatusAlert('QR_PIDS_AudioFiles/Battery Low.MP3', 'Battery low', 'BATTERY');
+      }
+    };
+
+    updateBatteryAlert();
+    battery.addEventListener('levelchange', updateBatteryAlert);
+  }).catch(error => {
+    console.warn('Could not monitor battery level:', error.message);
+  });
+}
+
 // Function to manually stop audio (used by stop button clicks)
 function manualStopAudio() {
   stopAudio();
   isPlayingArrivalAnnouncement = false; // Only reset when manually stopped
+  if (typeof updateAppState === 'function') {
+    updateAppState({ announcement: null, announcementClearedAt: Date.now() });
+  }
   console.log('Audio manually stopped - reset flags');
 }
 
 function updateStopButtonColor() {
   // Determine if audio is currently playing
-  const isPlaying = currentAudio && !currentAudio.paused && currentAudio.currentTime > 0;
+  const isPlaying = currentAudio && !currentAudio.paused && !currentAudio.ended;
   
   // Get all stop buttons
   const stopButtons = [
@@ -1072,7 +1347,16 @@ function updateStopButtonColor() {
     document.getElementById('station-stop-btn'),
     document.getElementById('normal-stop-btn'),
     document.getElementById('special-stop-btn'),
-    document.getElementById('cctv-stop-btn')
+    document.getElementById('cctv-stop-btn'),
+    document.getElementById('cctv-select-stop-btn'),
+    document.getElementById('station-code-stop-btn'),
+    document.getElementById('route-selection-stop-btn')
+  ];
+
+  const playButtons = [
+    document.getElementById('play-btn'),
+    document.getElementById('special-play-btn'),
+    document.getElementById('emergency-play-btn')
   ];
   
   // Update color for all stop buttons
@@ -1085,6 +1369,13 @@ function updateStopButtonColor() {
         btn.classList.remove('footer-btn-green');
         btn.classList.add('footer-btn-grey');
       }
+    }
+  });
+
+  playButtons.forEach(btn => {
+    if (btn) {
+      btn.disabled = isPlaying;
+      btn.classList.toggle('footer-btn-grey', isPlaying);
     }
   });
 }
@@ -1138,8 +1429,8 @@ function playAudio(audioPath) {
     const formPathMatch = audioPath.match(/\/Form\/[^\/]+\/([^\/]+)\/[^\/]+\.mp3$/);
     if (formPathMatch) {
       const stationName = formPathMatch[1];
-      // Fallback to standard mind the gap
-      fallbackPath = `QR_PIDS_AudioFiles/mind the gap/${stationName} MTG.mp3`;
+      const mtgFolder = isMtgOnlyRoute(currentRouteFormCode) ? 'Stations' : 'mind the gap';
+      fallbackPath = `QR_PIDS_AudioFiles/${mtgFolder}/${stationName} MTG.mp3`;
     }
   }
   
@@ -1153,7 +1444,25 @@ function playAudioInternal(audioPath, fallbackPath) {
   
   // Broadcast audio to remote devices
   if (typeof updateAppState === 'function') {
-    updateAppState({ audioPath: audioPath });
+    const announcementStartedAt = Date.now();
+    updateAppState({
+      audioPath,
+      announcement: {
+        id: `${announcementStartedAt}-${Math.random().toString(36).slice(2, 8)}`,
+        type: currentAnnouncementType || '',
+        text: currentAnnouncementDisplayText || '',
+        specialMessageId: currentAnnouncementType === 'special' ? currentAnnouncementSpecialMessageId : '',
+        audioPath,
+        station: currentAnnouncementType === 'form' && currentStation
+          ? currentStation
+          : currentAnnouncementStation || currentStation || '',
+        destination: currentDestinationStation || '',
+        formCode: currentRouteFormCode || '',
+        routeName: currentManualRoute?.name || '',
+        ngrButtonMessage: currentAnnouncementType === 'NAA' && ngrButtonMessageEnabled,
+        startedAt: announcementStartedAt
+      }
+    });
   }
   
   try {
@@ -1161,8 +1470,10 @@ function playAudioInternal(audioPath, fallbackPath) {
     let isElectron = false;
     let usingCache = false;
     
-    // Check if file is already preloaded in cache
-    if (audioFileCache[audioPath]) {
+    // Route-specific files can be replaced while the app is running, so do not
+    // reuse a blob that was preloaded before the replacement.
+    const isRouteAudio = /QR_PIDS_AudioFiles\/Route Audio Files\//i.test(audioPath);
+    if (audioFileCache[audioPath] && !isRouteAudio) {
       fileUrl = audioFileCache[audioPath];
       usingCache = true;
       console.log(`   ✓ [CACHED] Using preloaded blob URL (instant playback)`);
@@ -1179,25 +1490,27 @@ function playAudioInternal(audioPath, fallbackPath) {
         try {
           // In Electron: use the current local server origin
           // This works around file:// URL encoding issues
-          fileUrl = `${window.location.origin}/audio/${encodeURI(normalizedPath)}`;
+          fileUrl = `${window.location.origin}/${encodeURI(normalizedPath)}?v=${audioCacheVersion}`;
           isElectron = true;
           console.log('   [Electron] Using local HTTPS server for audio');
         } catch (e) {
           console.log('   Electron detection failed, trying browser mode');
           // Fallback to browser path
-          fileUrl = `/audio/${encodeURI(normalizedPath)}`;
+          fileUrl = `/${encodeURI(normalizedPath)}?v=${audioCacheVersion}`;
         }
       } else {
         // Browser mode: use relative path
-        fileUrl = `/audio/${encodeURI(normalizedPath)}`;
-        console.log('   [Browser] Using local /audio endpoint');
+        fileUrl = `/${encodeURI(normalizedPath)}?v=${audioCacheVersion}`;
+        console.log('   [Browser] Using local audio path');
       }
     }
     
     const audio = new Audio(fileUrl);
     currentAudio = audio; // Track the audio instance
-    // Use cabin volume from Fn settings, default to 50%
-    audio.volume = (window.vasVolume !== undefined) ? window.vasVolume : 0.5;
+    // GPS status alerts use Alert Volume; all other announcements use cabin volume.
+    audio.volume = currentAnnouncementType === 'GPS'
+      ? (window.gpsAlertVolume !== undefined ? window.gpsAlertVolume : 0.5)
+      : (window.vasVolume !== undefined ? window.vasVolume : 0.5);
     
     // Set audio output device if one is selected
     if (selectedAudioDevice && typeof audio.setSinkId === 'function') {
@@ -1245,6 +1558,7 @@ function playAudioInternal(audioPath, fallbackPath) {
           console.log(`   ℹ️ Not playing exit buttons - isPlayingArrivalAnnouncement: ${isPlayingArrivalAnnouncement}, ngrButtonMessageEnabled: ${ngrButtonMessageEnabled}`);
         }
       }
+      playNextStatusAlert(audio);
     });
     audio.addEventListener('error', (e) => {
       console.error('   ✗ Audio error:', {
@@ -1261,8 +1575,8 @@ function playAudioInternal(audioPath, fallbackPath) {
         audio.fallbackAttempted = true;
         console.log(`   ➜ Attempting fallback: ${fallbackPath}`);
         playAudioInternal(fallbackPath, null);
-      } else if (/(?:^|[\\/])TNS_Special[\\/]/i.test(audioPath) && !audio.fallbackAttempted) {
-        // Auto-fallback: TNS_Special file not found, try standard folder
+      } else if (/(?:^|[\\/])(?:TNS_Special|Route Audio Files|Manual Route files)[\\/]/i.test(audioPath) && !audio.fallbackAttempted) {
+        // Auto-fallback: route-specific file not found, try the standard folder
         audio.fallbackAttempted = true;
         const normalizedAudioPath = audioPath.replace(/\\/g, '/');
         const match = normalizedAudioPath.match(/([^/]+\.mp3)$/);
@@ -1273,17 +1587,18 @@ function playAudioInternal(audioPath, fallbackPath) {
           if (filename.includes('TNS_')) {
             // TNS file fallback
             const tnsPath = `QR_PIDS_AudioFiles/TNS/${filename}`;
-            console.log(`   ➜ TNS_Special not found, falling back to TNS: ${tnsPath}`);
+            console.log(`   ➜ Route-specific TNS not found, falling back to TNS: ${tnsPath}`);
             playAudioInternal(tnsPath, null);
           } else if (filename.toLowerCase().includes(' mtg')) {
             // MTG file fallback
-            const mtgPath = `QR_PIDS_AudioFiles/mind the gap/${filename}`;
-            console.log(`   ➜ TNS_Special MTG not found, falling back to MTG: ${mtgPath}`);
+            const mtgFolder = isMtgOnlyRoute(currentRouteFormCode) ? 'Stations' : 'mind the gap';
+            const mtgPath = `QR_PIDS_AudioFiles/${mtgFolder}/${filename}`;
+            console.log(`   ➜ Route-specific MTG not found, falling back to ${mtgFolder}: ${mtgPath}`);
             playAudioInternal(mtgPath, null);
           } else {
             // NAA file fallback (just station name)
             const naaPath = `QR_PIDS_AudioFiles/now arriving at/NAA ${filename}`;
-            console.log(`   ➜ TNS_Special NAA not found, falling back to NAA: ${naaPath}`);
+            console.log(`   ➜ Route-specific NAA not found, falling back to NAA: ${naaPath}`);
             playAudioInternal(naaPath, null);
           }
         }
@@ -1309,10 +1624,11 @@ function playAudioInternal(audioPath, fallbackPath) {
           console.warn(`      • QR_PIDS_AudioFiles/Form/{FormCode}/{CurrentStation}/{DestinationStation} station.mp3`);
           console.warn(`\n   To fix: Ensure Form files use the route DESTINATION (last station).`);
           console.warn(`   Example: Form/FGBR/Roma Street/Boggo Road station.mp3`);
-        } else if (audioPath.includes('/mind the gap/')) {
+        } else if (audioPath.includes('/mind the gap/') || audioPath.includes('/Stations/')) {
           console.warn(`\n   💡 This looks like a Mind The Gap (MTG) file.`);
           console.warn(`   📂 Check if the file exists at:`);
-          console.warn(`      • QR_PIDS_AudioFiles/mind the gap/{StationName} MTG.mp3`);
+          console.warn(`      • QR_PIDS_AudioFiles/mind the gap/{StationName} MTG.mp3 (normal routes)`);
+          console.warn(`      • QR_PIDS_AudioFiles/Stations/{StationName} MTG.mp3 (configured MTG-only routes)`);
         }
         console.warn(`   ===========================\n`);
       }
@@ -1386,6 +1702,7 @@ let currentStation = null; // Current/previous station (for Form message generat
 let currentStations = []; // Current list of stations for the route
 let routeAnnouncementCache = {}; // Cache of available announcements per route
 let audioFileCache = {}; // Cache of pre-loaded audio files (filepath -> object URL or blob)
+let audioCacheVersion = Date.now();
 let announcementScanInterval = null; // Interval for periodic scanning
 let pendingAnnouncementPath = null; // Announcement to play when doors unlock
 
@@ -1507,8 +1824,12 @@ async function startAnnouncementScanning(formCode, longName) {
     clearInterval(announcementScanInterval);
   }
   
-  // Clear old cached audio files to free memory
+  // Clear old cached audio files to free memory and pick up replaced files
+  Object.values(audioFileCache).forEach(fileUrl => {
+    if (typeof fileUrl === 'string' && fileUrl.startsWith('blob:')) URL.revokeObjectURL(fileUrl);
+  });
   audioFileCache = {};
+  audioCacheVersion = Date.now();
   console.log(`   Cleared audio cache`);
   
   // Scan immediately and preload files
@@ -1519,6 +1840,11 @@ async function startAnnouncementScanning(formCode, longName) {
   announcementScanInterval = setInterval(async () => {
     console.log(`🔄 Refreshing route announcements for ${formCode}/${longName}`);
     await loadRouteAnnouncements(formCode, longName);
+    Object.values(audioFileCache).forEach(fileUrl => {
+      if (typeof fileUrl === 'string' && fileUrl.startsWith('blob:')) URL.revokeObjectURL(fileUrl);
+    });
+    audioFileCache = {};
+    audioCacheVersion = Date.now();
     await preloadAnnouncementFiles();
   }, 300000); // 5 minutes
 }
@@ -1530,7 +1856,10 @@ function isFirstStation(station) {
     if (!station || typeof currentStations === 'undefined' || !currentStations || currentStations.length === 0) {
       return false;
     }
-    return station === currentStations[0];
+    const firstStation = currentStations[0];
+    if (station === firstStation) return true;
+    if (station.stopId && firstStation.stopId) return station.stopId === firstStation.stopId;
+    return normalizeStationName(station.name) === normalizeStationName(firstStation.name);
   } catch (e) {
     // If currentStations is not accessible, assume it's not the first station
     return false;
@@ -1546,30 +1875,52 @@ function getAnnouncementAudioPath(stationName, type) {
   if (!stationName) return '';
   
   let normalizedName = stationName.trim();
+
+  if (currentManualRoute) {
+    const manualStation = currentStations.find(station =>
+      station && normalizeStationName(station.name).toLowerCase() === normalizeStationName(normalizedName).toLowerCase()
+    );
+    const manualAnnouncements = manualStation?.announcements || {};
+    const manualRouteAudioFolder = currentManualRoute.tnsFolder && !/\.mp3$/i.test(String(currentManualRoute.tnsFolder).trim())
+      ? normalizeManualAudioPath(currentManualRoute.tnsFolder)
+      : (currentManualRoute.name ? `QR_PIDS_AudioFiles/Route Audio Files/${String(currentManualRoute.name).trim()}` : '');
+    if (type === 'form') return currentManualFormFile || '';
+    if (type === 'next' || type === 'nextStation') {
+      return manualRouteAudioFolder
+        ? `${manualRouteAudioFolder}/TNS_${normalizedName}.mp3`
+        : (manualAnnouncements.next?.audio || '');
+    }
+    if (type === 'arrival' || type === 'nowArrivingAt') {
+      return currentManualRoute.tnsMtgOnly ? '' : (manualRouteAudioFolder
+        ? `${manualRouteAudioFolder}/${normalizedName}.mp3`
+        : (manualAnnouncements.arrival?.audio || manualAnnouncements.next?.audio || ''));
+    }
+    if (type === 'mindTheGap') {
+      return manualRouteAudioFolder
+        ? `${manualRouteAudioFolder}/${normalizedName} MTG.mp3`
+        : (manualAnnouncements.mindTheGap?.audio || '');
+    }
+  }
+
   const cacheKey = `${currentRouteFormCode}/${currentRouteLongName}`;
   const routeAnnouncements = routeAnnouncementCache[cacheKey] || {};
   
   if (type === 'mindTheGap') {
-    // Priority 1: Check for route-specific MTG in TNS_Special folder
-    if (currentRouteFormCode && currentDestinationStation) {
-      // MTG format: "{StationName} MTG" (no underscore, station name first then MTG)
-      const mtgLabel = `${normalizedName} MTG`;
-      
-      // Destination folder format: "{DestinationStation} station"
-      let destinationFolder = currentDestinationStation;
-      if (!destinationFolder.toLowerCase().includes('station')) {
-        destinationFolder = `${destinationFolder} station`;
+    if (isMtgOnlyRoute(currentRouteFormCode)) {
+      if (currentRouteFormCode && currentDestinationStation) {
+        let destinationFolder = currentDestinationStation;
+        if (!destinationFolder.toLowerCase().includes('station')) {
+          destinationFolder = `${destinationFolder} station`;
+        }
+        const tnsSpecialPath = `QR_PIDS_AudioFiles/TNS_Special/${currentRouteFormCode}/${destinationFolder}/${normalizedName} MTG.mp3`;
+        console.log(`   [MTG-ONLY] Checking TNS_Special for MTG: ${tnsSpecialPath}`);
+        return tnsSpecialPath;
       }
-      
-      const tnsSpecialPath = `QR_PIDS_AudioFiles/TNS_Special/${currentRouteFormCode}/${destinationFolder}/${mtgLabel}.mp3`;
-      console.log(`   Checking TNS_Special for MTG: ${tnsSpecialPath}`);
-      return tnsSpecialPath;
+
+      console.log(`   [MTG-ONLY] Using Stations audio for ${normalizedName}`);
+      return `QR_PIDS_AudioFiles/Stations/${normalizedName} MTG.mp3`;
     }
-    // Fallback: Check for route-specific MTG in routeAnnouncements
-    if (routeAnnouncements[`MTG_${normalizedName}`]) {
-      return routeAnnouncements[`MTG_${normalizedName}`];
-    }
-    // Otherwise use standard path
+
     return `QR_PIDS_AudioFiles/mind the gap/${normalizedName} MTG.mp3`;
     
   } else if (type === 'arrival' || type === 'nowArrivingAt') {
@@ -1658,6 +2009,19 @@ function getAnnouncementAudioPath(stationName, type) {
   return '';
 }
 
+function normalizeManualAudioPath(audioPath) {
+  const normalizedPath = String(audioPath || '').replace(/\\/g, '/').replace(/"$/, '');
+  const legacyRoutePath = normalizedPath.match(/^QR_PIDS_AudioFiles\/(?!Route Audio Files\/|mind the gap\/|now arriving at\/|Special Messages\/|Stations\/|TNS\/)(.+)$/i);
+  return legacyRoutePath
+    ? `QR_PIDS_AudioFiles/Route Audio Files/${legacyRoutePath[1]}`
+    : normalizedPath;
+}
+
+function getFormOrMtgAudioPath(stationName) {
+  return getAnnouncementAudioPath(stationName, 'form')
+    || getAnnouncementAudioPath(stationName, 'mindTheGap');
+}
+
 // Function to preload all announcement audio files for current route (route-specific + fallbacks)
 async function preloadAnnouncementFiles() {
   const cacheKey = `${currentRouteFormCode}/${currentRouteLongName}`;
@@ -1699,7 +2063,8 @@ async function preloadAnnouncementFiles() {
   if (stationsToProcess.length > 0) {
     stationsToProcess.forEach(stationName => {
       // Fallback MTG (mind the gap)
-      const mtgPath = `QR_PIDS_AudioFiles/mind the gap/${stationName} MTG.mp3`;
+      const mtgFolder = isMtgOnlyRoute(currentRouteFormCode) ? 'Stations' : 'mind the gap';
+      const mtgPath = `QR_PIDS_AudioFiles/${mtgFolder}/${stationName} MTG.mp3`;
       if (!filesToPreload[`FALLBACK_MTG_${stationName}`]) {
         filesToPreload[`FALLBACK_MTG_${stationName}`] = mtgPath;
         fallbackCount.mtg++;
@@ -1772,7 +2137,7 @@ async function preloadAnnouncementFiles() {
         try {
           const path = window.require('path');
           const absolutePath = path.resolve(audioPath);
-          fileUrl = `file://${absolutePath.replace(/\\/g, '/')}`;
+          fileUrl = `file://${absolutePath.replace(/\\/g, '/')}?v=${audioCacheVersion}`;
           isElectron = true;
           // In Electron, just verify the file exists by creating an Audio object
           const testAudio = new Audio(fileUrl);
@@ -1788,7 +2153,7 @@ async function preloadAnnouncementFiles() {
       // Browser mode: fetch and cache as blob URL
       if (!isElectron) {
         const normalizedPath = audioPath.replace(/\\/g, '/');
-        const apiUrl = `/audio/${encodeURI(normalizedPath)}`;
+            const apiUrl = `/${encodeURI(normalizedPath)}?v=${audioCacheVersion}`;
         
         try {
           const response = await fetch(apiUrl);
@@ -1942,6 +2307,22 @@ function validateRunNumber(run) {
 // ==================== GTFS Patterns Loading System ====================
 // Load extracted GTFS patterns from JSON file for instant route availability
 let gtfsPatterns = null;
+const loadRouteTopology = async () => {
+  try {
+    const response = await fetch('/route-topology.json');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const topology = await response.json();
+    routeTopologyPaths = Array.isArray(topology.paths) ? topology.paths : [];
+    console.log(`✅ Loaded ${routeTopologyPaths.length} route infrastructure paths`);
+    if (typeof updateRouteDisplay === 'function') updateRouteDisplay();
+  } catch (error) {
+    routeTopologyPaths = [];
+    console.warn('Route infrastructure data unavailable:', error.message);
+  }
+};
+
+loadRouteTopology();
+
 const loadGTFSPatterns = async () => {
   try {
     console.log('🔄 Starting GTFS data load from SEQ_GTFS files...');
@@ -2009,6 +2390,140 @@ const audioCache = new Map();
 let totalAudioFiles = 0;
 let loadedAudioFiles = 0;
 
+async function checkRequiredAssets() {
+  try {
+    const response = await fetch('/api/assets-status');
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const status = await response.json();
+    const loadingText = document.getElementById('loading-text');
+    const updateSettings = typeof require === 'function'
+      ? await require('electron').ipcRenderer.invoke('get-update-settings')
+      : { automaticAssets: true, automaticGTFS: true };
+    const assetIPC = window.electron?.ensureAudioAssets
+      ? window.electron
+      : (typeof require === 'function'
+        ? {
+          isOnline: () => require('electron').ipcRenderer.invoke('is-online'),
+            ensureAudioAssets: () => require('electron').ipcRenderer.invoke('ensure-audio-assets'),
+          onAudioAssetsProgress: (callback) => require('electron').ipcRenderer.on('audio-assets-progress', (event, data) => callback(data)),
+          checkAudioAssets: () => require('electron').ipcRenderer.invoke('check-audio-assets'),
+          ensureGTFSData: () => require('electron').ipcRenderer.invoke('ensure-gtfs-data'),
+          updateGTFS: () => require('electron').ipcRenderer.invoke('update-gtfs'),
+          onGTFSUpdateProgress: (callback) => require('electron').ipcRenderer.on('gtfs-update-progress', (event, data) => callback(data))
+          }
+        : null);
+
+    const isOnline = assetIPC?.isOnline
+      ? await assetIPC.isOnline()
+      : navigator.onLine !== false;
+    if (!isOnline) {
+      console.log('Offline: skipping asset and GTFS update checks.');
+      return status;
+    }
+
+    if (updateSettings.automaticAssets && status.missing?.includes('QR_PIDS_AudioFiles') && assetIPC?.ensureAudioAssets) {
+      assetIPC.onAudioAssetsProgress?.(({ status: progressStatus, percent }) => {
+        if (loadingText) loadingText.textContent = `Installing Assets... ${percent}%`;
+        console.log(progressStatus);
+      });
+      const assetResult = await assetIPC.ensureAudioAssets();
+      if (!assetResult.success) throw new Error(assetResult.message);
+    }
+
+    if (updateSettings.automaticGTFS && assetIPC?.ensureGTFSData) {
+      loadingText.textContent = 'Checking GTFS data...';
+      assetIPC.onGTFSUpdateProgress?.(({ status: progressStatus, percent }) => {
+        if (loadingText) loadingText.textContent = `Installing GTFS data... ${percent}%`;
+        console.log(progressStatus);
+      });
+      const gtfsResult = await assetIPC.ensureGTFSData();
+      if (!gtfsResult.success) throw new Error(gtfsResult.message);
+    }
+
+    const refreshedResponse = await fetch('/api/assets-status');
+    const refreshedStatus = await refreshedResponse.json();
+    if (updateSettings.automaticAssets && refreshedStatus.ready && assetIPC?.checkAudioAssets) {
+      const assetUpdate = await assetIPC.checkAudioAssets();
+      if (assetUpdate.success && assetUpdate.updateAvailable && !window.qvasStartupBypassed) {
+        const prompt = document.getElementById('asset-update-prompt');
+        const downloadButton = document.getElementById('asset-update-download-btn');
+        const continueButton = document.getElementById('asset-update-continue-btn');
+        if (prompt && downloadButton && continueButton) {
+          prompt.classList.remove('hide');
+          const shouldDownload = await new Promise((resolve) => {
+            let settled = false;
+            const finish = (download) => {
+              if (settled) return;
+              settled = true;
+              prompt.classList.add('hide');
+              downloadButton.removeEventListener('click', downloadHandler);
+              continueButton.removeEventListener('click', continueHandler);
+              window.removeEventListener('qvas-startup-bypass', bypassHandler);
+              resolve(download);
+            };
+            const downloadHandler = () => finish(true);
+            const continueHandler = () => finish(false);
+            const bypassHandler = () => finish(false);
+            downloadButton.addEventListener('click', downloadHandler);
+            continueButton.addEventListener('click', continueHandler);
+            window.addEventListener('qvas-startup-bypass', bypassHandler);
+          });
+
+          if (shouldDownload) {
+            loadingText.textContent = 'Installing Assets... 0%';
+            assetIPC.onAudioAssetsProgress?.(({ status: progressStatus, percent }) => {
+              loadingText.textContent = `Installing Assets... ${percent}%`;
+              console.log(progressStatus);
+            });
+            const result = await assetIPC.ensureAudioAssets();
+            if (!result.success) throw new Error(result.message);
+          }
+        }
+      }
+    }
+
+    if (!refreshedStatus.ready && loadingText) {
+      loadingText.textContent = 'Installing Assets... 0%';
+      console.warn(`Required assets missing: ${refreshedStatus.missing.join(', ')}`);
+
+      if (updateSettings.automaticAssets && refreshedStatus.missing.includes('QR_PIDS_AudioFiles') && assetIPC?.ensureAudioAssets) {
+        let lastPercent = 0;
+        let progressHeartbeat = 0;
+        const progressTimer = setInterval(() => {
+          progressHeartbeat = Math.min(progressHeartbeat + 1, 87);
+          loadingText.textContent = `Installing Assets... ${Math.max(lastPercent, progressHeartbeat)}%`;
+        }, 2000);
+        try {
+          const result = await assetIPC.ensureAudioAssets();
+          if (!result.success) throw new Error(result.message);
+          loadingText.textContent = 'Installing Assets... 100%';
+        } finally {
+          clearInterval(progressTimer);
+        }
+      }
+
+      if (updateSettings.automaticGTFS && refreshedStatus.missing.includes('SEQ_GTFS') && assetIPC?.updateGTFS) {
+        loadingText.textContent = 'Installing GTFS data... 0%';
+        assetIPC.onGTFSUpdateProgress?.(({ status: progressStatus, percent }) => {
+          loadingText.textContent = `Installing GTFS data... ${percent}%`;
+          console.log(progressStatus);
+        });
+        const result = await assetIPC.updateGTFS();
+        if (!result.success) throw new Error(result.message);
+      }
+
+      const finalResponse = await fetch('/api/assets-status');
+      return await finalResponse.json();
+    }
+    return status;
+  } catch (error) {
+    console.error('Unable to check required assets:', error);
+    const loadingText = document.getElementById('loading-text');
+    if (loadingText) loadingText.textContent = 'Installing Assets...';
+    return { ready: false, missing: ['asset status unavailable'] };
+  }
+}
+
 async function preloadAllAudioFiles() {
   // Startup screens removed - keyboard is shown immediately on load
   // Audio files will load on-demand when needed
@@ -2019,15 +2534,7 @@ async function preloadAllAudioFiles() {
 window.addEventListener('load', preloadAllAudioFiles);
 
 document.addEventListener("DOMContentLoaded", function () {
-  // ==================== LOAD PEAK RUNS ON STARTUP ====================
-  let peakRunsArray = [];
-  fetch('/peakruns.json')
-    .then(response => response.json())
-    .then(data => {
-      peakRunsArray = data;
-      console.log('📋 Peak runs loaded on startup:', peakRunsArray);
-    })
-    .catch(err => console.log('Could not load peakruns.json on startup:', err));
+  const requiredAssetsPromise = checkRequiredAssets();
   
   try {
     console.log('✅ DOMContentLoaded fired - app.js initializing');
@@ -2067,19 +2574,28 @@ document.addEventListener("DOMContentLoaded", function () {
   let currentStations = [];
   let selectedStation = null;
   let currentDestination = null;
+
+  function getDiDisplayDestination(destination) {
+    const normalizedDestination = String(destination || '').replace(/\s+station$/i, '').trim().toLowerCase();
+    if (normalizedDestination === 'varsity lakes') return 'Gold Coast';
+    if (normalizedDestination === 'kippa-ring') return 'Redcliffe';
+    return destination;
+  }
+
   const displayWindow = {
     closed: false,
     postMessage() {}
   };
   let destinationWindow = null;
   let doorsCycled = false; // Track if doors have been cycled (unlock then lock)
-  let cctvOnDoorUnlockEnabled = true; // Toggle for CCTV on door unlock feature
+  let cctvOnDoorUnlockEnabled = false; // Toggle for CCTV on door unlock feature
   let cctvDisplayTimer = null; // Timer for CCTV display delay
   let cctvAutoOpenTimer = null;
   
   // Closest Station Feature
   let manualClosestStationMode = false; // Toggle for manual closest station selection
   let closestStationIndex = 0; // Index of current closest station (default first station)
+  let closestStationAutoChangeAt = 0;
   let stationSelectionConfirmed = false;
 
   // Station Code Mapping
@@ -2131,25 +2647,38 @@ document.addEventListener("DOMContentLoaded", function () {
   const GPS_MAX_ACCURACY_METERS = 1000;
   const GPS_STALE_AFTER_MS = 15000;
   const GPS_UNAVAILABLE_GRACE_MS = 15000;
-  const TSW_TNS_TRIGGER_METERS = 280;
-  const TSW_NAA_TRIGGER_METERS = 180;
-  const TSW_MTG_TRIGGER_METERS = 100;
+  const GPS_ACQUIRED_AUDIO_PATH = 'QR_PIDS_AudioFiles/GPS.mp3';
+  const GPS_LOSS_AUDIO_PATH = 'QR_PIDS_AudioFiles/NO_GPS.MP3';
+  function loadGPSThreshold(storageKey, fallback) {
+    const storedValue = localStorage.getItem(storageKey);
+    const threshold = Number(storedValue);
+    return storedValue !== null && Number.isInteger(threshold) && threshold >= 1 && threshold <= 10000
+      ? threshold
+      : fallback;
+  }
+  let TSW_TNS_TRIGGER_METERS = loadGPSThreshold('gpsTnsTriggerMeters', 320);
+  let TSW_NAA_TRIGGER_METERS = loadGPSThreshold('gpsNaaTriggerMeters', 280);
+  let TSW_MTG_TRIGGER_METERS = loadGPSThreshold('gpsMtgTriggerMeters', 100);
   const TSW_MTG_MAX_SPEED_KMH = 5;
-  const TSW_MTG_MAX_MOVEMENT_METERS = 10;
+  let TSW_MTG_MAX_MOVEMENT_METERS = loadGPSThreshold('gpsMtgMovementMeters', 10);
   const TSW_MTG_DWELL_MS = 2000;
   const TSW_RETRY_COOLDOWN_MS = 15000;
   let tswPollTimer = null;
   let gpsPollTimer = null;
+  let gpsRequestInFlight = false;
   let gpsAvailable = false;
   let gpsLastUpdateAt = 0;
   let gpsFailureStartedAt = 0;
   let gpsModeEnabled = localStorage.getItem('gpsModeEnabled') !== 'false';
-  let gpsSourceMode = localStorage.getItem('gpsSourceMode') === 'this-pc' ? 'this-pc' : 'phone';
+  const savedGPSSourceMode = localStorage.getItem('gpsSourceMode');
+  let gpsSourceMode = ['phone', 'this-pc'].includes(savedGPSSourceMode) ? savedGPSSourceMode : 'phone';
   let tswLiveModeActive = false;
   let tswLastSuccessfulPollAt = 0;
   let tswUnavailableUntil = 0;
   let tswTargetStationIndex = -1;
   let tswPassedStationIndex = -1;
+  let tswStartStationIndex = -1;
+  let tswStartStationPhaseActive = false;
   let tswTnsTriggeredIndices = new Set();
   let tswArrivalTriggeredIndices = new Set();
   let tswMtgTriggeredIndices = new Set();
@@ -2165,18 +2694,35 @@ document.addEventListener("DOMContentLoaded", function () {
   function pollGPSPosition() {
     if (!gpsModeEnabled) return;
     if (gpsSourceMode !== 'this-pc') return;
-    if (!navigator.geolocation) {
-      setGPSUnavailable();
-      return;
-    }
-    navigator.geolocation.getCurrentPosition((position) => processGPSPosition({
-      ...position,
-      source: 'This PC'
-    }), setGPSUnavailable, {
-      enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 10000
-    });
+    if (gpsRequestInFlight) return;
+    gpsRequestInFlight = true;
+    console.log('[GPS] Requesting Windows location');
+    require('electron').ipcRenderer.invoke('get-windows-location')
+      .then((location) => {
+        if (!location.success) {
+          console.error(`[GPS] Windows location failed: ${location.message || 'Unknown error'}`);
+          setGPSUnavailable();
+          return;
+        }
+        console.log(`[GPS] Windows location received: ${location.latitude}, ${location.longitude} (${location.accuracy} m)`);
+        processGPSPosition({
+          coords: {
+            latitude: Number(location.latitude),
+            longitude: Number(location.longitude),
+            accuracy: Number(location.accuracy),
+            speed: Number.isFinite(Number(location.speed)) ? Number(location.speed) : null
+          },
+          timestamp: Date.now(),
+          source: 'This PC'
+        });
+      })
+      .catch((error) => {
+        console.error(`[GPS] Location IPC failed: ${error.message}`);
+        setGPSUnavailable();
+      })
+      .finally(() => {
+        gpsRequestInFlight = false;
+      });
   }
 
   function updateStatusGPSDisplay() {
@@ -2191,6 +2737,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const gpsSpeedElement = document.getElementById('status-gps-speed');
     const gpsAccuracyElement = document.getElementById('status-gps-accuracy');
     const closestStationElement = document.getElementById('status-closest-station');
+    const closestStationRow = document.getElementById('status-closest-station-row');
     const currentStationElement = document.getElementById('status-current-station');
     const targetStationElement = document.getElementById('status-target-station');
     const passedStationElement = document.getElementById('status-passed-station');
@@ -2216,10 +2763,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (closestStationElement) {
       const closestStation = getClosestStationToPosition();
+      if (closestStationRow) closestStationRow.hidden = !(gpsAvailable && closestStation);
       closestStationElement.textContent = closestStation
         ? `${closestStation.name} (${Math.round(closestStation.distance)} m)`
         : 'Unavailable';
     }
+    updateClosestStationTag();
     if (currentStationElement) {
       currentStationElement.textContent = selectedStation ? normalizeStationName(selectedStation.name) : 'Unavailable';
     }
@@ -2238,14 +2787,17 @@ document.addEventListener("DOMContentLoaded", function () {
     if (triggerStateElement) {
       const stateParts = [];
       if (tswPassedStationIndex >= 0) stateParts.push('passed');
-      if (tswArrivalTriggeredIndices.size > 0) stateParts.push('NAA');
+      if (tswArrivalTriggeredIndices.size > 0) stateParts.push(isMtgOnlyRoute(currentRouteFormCode) ? 'TNS' : 'NAA');
       if (tswMtgTriggeredIndices.size > 0) stateParts.push('MTG');
       if (tswTnsTriggeredIndices.size > 0) stateParts.push('TNS');
       triggerStateElement.textContent = stateParts.length > 0 ? stateParts.join(' / ') : 'idle';
     }
 
     if (naaDistanceElement) {
-      if (tswLastPosition && targetStation && Number.isFinite(targetStation.lat) && Number.isFinite(targetStation.lon)) {
+      if (isMtgOnlyRoute(currentRouteFormCode)) {
+        naaDistanceElement.textContent = 'Disabled for this route';
+        naaDistanceElement.title = '';
+      } else if (tswLastPosition && targetStation && Number.isFinite(targetStation.lat) && Number.isFinite(targetStation.lon)) {
         const distanceToStation = haversineDistanceMeters(
           tswLastPosition.latitude,
           tswLastPosition.longitude,
@@ -2268,15 +2820,18 @@ document.addEventListener("DOMContentLoaded", function () {
       const passedStation = tswPassedStationIndex >= 0 && currentStations[tswPassedStationIndex]
         ? currentStations[tswPassedStationIndex]
         : null;
-      if (tswLastPosition && passedStation && Number.isFinite(passedStation.lat) && Number.isFinite(passedStation.lon)) {
+      const tnsUsesArrivalThreshold = isMtgOnlyRoute(currentRouteFormCode);
+      const tnsReferenceStation = tnsUsesArrivalThreshold ? targetStation : passedStation;
+      const tnsThresholdMeters = tnsUsesArrivalThreshold ? TSW_NAA_TRIGGER_METERS : TSW_TNS_TRIGGER_METERS;
+      if (tswLastPosition && tnsReferenceStation && Number.isFinite(tnsReferenceStation.lat) && Number.isFinite(tnsReferenceStation.lon)) {
         const departureDistance = haversineDistanceMeters(
           tswLastPosition.latitude,
           tswLastPosition.longitude,
-          passedStation.lat,
-          passedStation.lon
+          tnsReferenceStation.lat,
+          tnsReferenceStation.lon
         );
-        const remaining = Math.max(0, TSW_TNS_TRIGGER_METERS - departureDistance);
-        tnsDistanceElement.textContent = departureDistance >= TSW_TNS_TRIGGER_METERS
+        const remaining = Math.max(0, tnsThresholdMeters - departureDistance);
+        tnsDistanceElement.textContent = departureDistance >= tnsThresholdMeters
           ? 'TNS due'
           : `${Math.round(remaining)} m`;
       } else {
@@ -2369,11 +2924,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     const normalizedTarget = normalizeStationName(stationName).toLowerCase();
+    const coordinateLookupName = normalizedTarget === 'park road' ? 'boggo road' : normalizedTarget;
     const matchingStops = [];
     for (const stop of Object.values(globalGTFSData.stops)) {
       if (!stop || !stop.stop_name) continue;
       const normalizedStopName = normalizeStationName(stop.stop_name).toLowerCase();
-      if (normalizedStopName !== normalizedTarget) continue;
+      if (normalizedStopName !== coordinateLookupName) continue;
 
       const lat = Number(stop.stop_lat);
       const lon = Number(stop.stop_lon);
@@ -2392,13 +2948,26 @@ document.addEventListener("DOMContentLoaded", function () {
   function enrichStationsWithCoordinates(stations) {
     if (!Array.isArray(stations)) return [];
 
+    const boggoRoadStation = stations.find(station =>
+      station && normalizeStationName(station.name).toLowerCase() === 'boggo road'
+    );
+    const boggoRoadStop = boggoRoadStation?.stopId && globalGTFSData?.stops?.[boggoRoadStation.stopId];
+    const boggoRoadLatitude = Number(boggoRoadStation?.lat ?? boggoRoadStation?.latitude ?? boggoRoadStop?.stop_lat);
+    const boggoRoadLongitude = Number(boggoRoadStation?.lon ?? boggoRoadStation?.longitude ?? boggoRoadStop?.stop_lon);
+    const boggoRoadCoordinates = Number.isFinite(boggoRoadLatitude) && Number.isFinite(boggoRoadLongitude)
+      ? { lat: boggoRoadLatitude, lon: boggoRoadLongitude }
+      : getStationCoordinatesByName('Boggo Road');
+
     return stations.map((station) => {
       if (!station || !station.name) return station;
 
       let lat = Number(station.lat ?? station.latitude);
       let lon = Number(station.lon ?? station.longitude);
 
-      if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+      if (normalizeStationName(station.name).toLowerCase() === 'park road') {
+        lat = boggoRoadCoordinates?.lat ?? null;
+        lon = boggoRoadCoordinates?.lon ?? null;
+      } else if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
         const stop = station.stopId && globalGTFSData?.stops?.[station.stopId];
         const stopLat = Number(stop?.stop_lat);
         const stopLon = Number(stop?.stop_lon);
@@ -2429,6 +2998,8 @@ document.addEventListener("DOMContentLoaded", function () {
   function resetTSWAutomationState() {
     tswTargetStationIndex = -1;
     tswPassedStationIndex = -1;
+    tswStartStationIndex = -1;
+    tswStartStationPhaseActive = false;
     tswTnsTriggeredIndices = new Set();
     tswArrivalTriggeredIndices = new Set();
     tswMtgTriggeredIndices = new Set();
@@ -2461,10 +3032,15 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!gpsFailureStartedAt) gpsFailureStartedAt = now;
     if (now - gpsFailureStartedAt < GPS_UNAVAILABLE_GRACE_MS) return;
 
+    const wasGpsAvailable = gpsAvailable;
     gpsAvailable = false;
+    if (wasGpsAvailable) {
+      queueStatusAlert(GPS_LOSS_AUDIO_PATH, 'GPS signal lost');
+    }
     if (!tswLastPosition || now - tswLastPosition.receivedAt > GPS_STALE_AFTER_MS) {
       tswPositionSource = null;
     }
+    updateClosestStationTag();
     updateStatusGPSDisplay();
     if (!stationSelectionConfirmed && currentStations.length > 0) {
       closestStationIndex = 0;
@@ -2523,12 +3099,27 @@ document.addEventListener("DOMContentLoaded", function () {
       accuracy: Number.isFinite(accuracy) ? accuracy : null
     };
 
+    const isMtgAnnouncement = currentAnnouncementType === 'MTG' || currentAnnouncementType === 'mindTheGap';
+    if (speedKmh > 10 && isMtgAnnouncement && pidDisplay && pidDisplay.textContent !== '-') {
+      pidDisplay.textContent = '-';
+      queuedDvaSelection = null;
+      updateAppState({ pid: '-' });
+      if (displayWindow && !displayWindow.closed) {
+        displayWindow.postMessage({ type: 'STOP' }, '*');
+      }
+    }
+
+    const wasGpsUnavailable = !gpsAvailable;
     gpsAvailable = true;
     gpsLastUpdateAt = Date.now();
     gpsFailureStartedAt = 0;
     tswLiveModeActive = true;
     tswLastSuccessfulPollAt = Date.now();
     tswPositionSource = position.source || 'Phone GPS';
+    if (wasGpsUnavailable) {
+      queueStatusAlert(GPS_ACQUIRED_AUDIO_PATH, 'GPS signal acquired');
+    }
+    updateClosestStationTag();
     updateStatusGPSDisplay();
     const stationItems = currentStations
       .map((station, index) => ({ station, index }))
@@ -2546,12 +3137,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     if (nearestIndex < 0) return;
 
+    const canAutoChangeClosestStation = Date.now() >= closestStationAutoChangeAt;
+    if (!manualClosestStationMode) {
+      closestStationIndex = nearestIndex;
+      updateClosestStationTag();
+    }
     if (!stationSelectionConfirmed) {
-      updateGPSStationHighlight(nearestIndex);
+      if (canAutoChangeClosestStation) updateGPSStationHighlight(nearestIndex);
       highlightStation(nearestIndex);
       tswTargetStationIndex = nearestIndex;
     } else {
-      updateGPSStationHighlight(nearestIndex);
       const currentSpeedKmh = tswLastPosition.speedKmh;
       if (currentSpeedKmh === null || currentSpeedKmh <= 10) {
         tswTargetStationIndex = nearestIndex;
@@ -2580,20 +3175,41 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     tswLastNearestStationIndex = nearestIndex;
 
-    // Do not mark the current station as passed when the NAA zone is reached.
-    // The station is only considered passed once the train has actually moved
-    // beyond it, which keeps the TNS transition aligned with the real geometry.
-    if (stationSelectionConfirmed && targetDistance <= TSW_NAA_TRIGGER_METERS && !tswArrivalTriggeredIndices.has(targetIndex)) {
-      tswArrivalTriggeredIndices.add(targetIndex);
-      selectStationForAutomation(targetIndex, 'arrival');
-      playArrivalAnnouncement();
-    }
-
     const selectedStationIndex = stationSelectionConfirmed && selectedStation
       ? currentStations.findIndex((station) => normalizeStationName(station.name) === normalizeStationName(selectedStation.name))
       : -1;
+
+    const currentSpeedKmh = tswLastPosition.speedKmh;
+    const startStation = tswStartStationIndex >= 0 ? currentStations[tswStartStationIndex] : null;
+    const startStationDistance = startStation && Number.isFinite(startStation.lat) && Number.isFinite(startStation.lon)
+      ? haversineDistanceMeters(latitude, longitude, startStation.lat, startStation.lon)
+      : null;
+    if (tswStartStationPhaseActive
+      && currentSpeedKmh !== null
+      && currentSpeedKmh > 10
+      && startStationDistance !== null
+      && startStationDistance >= TSW_TNS_TRIGGER_METERS) {
+      tswStartStationPhaseActive = false;
+    }
+
+    // The station is only considered passed once the train has actually moved
+    // beyond it, which keeps the TNS transition aligned with the real geometry.
+    if (stationSelectionConfirmed
+      && !tswStartStationPhaseActive
+      && targetDistance <= TSW_NAA_TRIGGER_METERS
+      && !tswArrivalTriggeredIndices.has(targetIndex)) {
+      tswArrivalTriggeredIndices.add(targetIndex);
+      if (isMtgOnlyRoute(currentRouteFormCode)) {
+        selectStationForAutomation(targetIndex, 'nextStation');
+        playNextStation();
+      } else {
+        selectStationForAutomation(targetIndex, 'arrival');
+        playArrivalAnnouncement();
+      }
+    }
+
     const fallbackMtgStationIndex = stationSelectionConfirmed ? targetIndex : nearestIndex;
-    const mtgStationIndex = selectedStationIndex >= 0 && isFirstStation(selectedStation)
+    const mtgStationIndex = stationSelectionConfirmed && selectedStationIndex >= 0
       ? selectedStationIndex
       : fallbackMtgStationIndex;
     const mtgStation = currentStations[mtgStationIndex];
@@ -2601,9 +3217,11 @@ document.addEventListener("DOMContentLoaded", function () {
       ? haversineDistanceMeters(latitude, longitude, mtgStation.lat, mtgStation.lon)
       : null;
 
-    const currentSpeedKmh = tswLastPosition.speedKmh;
-    const isStationaryEnoughForMtg = currentSpeedKmh === null || currentSpeedKmh < TSW_MTG_MAX_SPEED_KMH;
-    if (mtgDistance !== null && mtgDistance <= TSW_MTG_TRIGGER_METERS && isStationaryEnoughForMtg) {
+    const isStationaryEnoughForMtg = currentSpeedKmh !== null && currentSpeedKmh < TSW_MTG_MAX_SPEED_KMH;
+    if (stationSelectionConfirmed
+      && mtgDistance !== null
+      && mtgDistance <= TSW_MTG_TRIGGER_METERS
+      && isStationaryEnoughForMtg) {
       if (tswMtgDwellStationIndex !== mtgStationIndex) {
         tswMtgDwellStationIndex = mtgStationIndex;
         tswMtgStationaryPosition = { latitude, longitude };
@@ -2656,7 +3274,11 @@ document.addEventListener("DOMContentLoaded", function () {
     const passedStationDistance = passedStation && Number.isFinite(passedStation.lat) && Number.isFinite(passedStation.lon)
       ? haversineDistanceMeters(latitude, longitude, passedStation.lat, passedStation.lon)
       : null;
-    if (stationSelectionConfirmed && passedStationDistance !== null && passedStationDistance >= TSW_TNS_TRIGGER_METERS && !tswTnsTriggeredIndices.has(tswPassedStationIndex)) {
+    if (stationSelectionConfirmed
+      && !tswStartStationPhaseActive
+      && passedStationDistance !== null
+      && passedStationDistance >= TSW_TNS_TRIGGER_METERS
+      && !tswTnsTriggeredIndices.has(tswPassedStationIndex)) {
       const passedStationIndex = tswPassedStationIndex;
       const nextIndex = getNextAutomationStationIndex(passedStationIndex);
       tswTnsTriggeredIndices.add(passedStationIndex);
@@ -2671,8 +3293,12 @@ document.addEventListener("DOMContentLoaded", function () {
         tswArrivalTriggeredIndices.clear();
         tswMtgTriggeredIndices.clear();
         tswTargetStationIndex = nextIndex;
-        selectStationForAutomation(nextIndex, 'nextStation');
-        playNextStation();
+        const skipStartStationTns = passedStationIndex === tswStartStationIndex;
+        const skipFirstStationTns = passedStationIndex === selectedStationIndex && isFirstStation(selectedStation);
+        if (!skipStartStationTns && !skipFirstStationTns) {
+          selectStationForAutomation(nextIndex, 'nextStation');
+          if (!isMtgOnlyRoute(currentRouteFormCode)) playNextStation();
+        }
       } else {
         tswTargetStationIndex = -1;
       }
@@ -2685,7 +3311,6 @@ document.addEventListener("DOMContentLoaded", function () {
       setGPSUnavailable();
       return;
     }
-    if (gpsPollTimer !== null) return;
     pollGPSPosition();
     gpsPollTimer = setInterval(pollGPSPosition, GPS_POLL_INTERVAL_MS);
   }
@@ -2693,6 +3318,7 @@ document.addEventListener("DOMContentLoaded", function () {
   function setGPSMode(enabled) {
     gpsModeEnabled = enabled;
     localStorage.setItem('gpsModeEnabled', String(enabled));
+    syncGlobalShortcutsWithGPSMode();
     if (!enabled && gpsPollTimer !== null) {
       clearInterval(gpsPollTimer);
       gpsPollTimer = null;
@@ -2709,8 +3335,20 @@ document.addEventListener("DOMContentLoaded", function () {
     updateStatusGPSDisplay();
   }
 
+  function syncGlobalShortcutsWithGPSMode() {
+    if (typeof require === 'undefined') return;
+    try {
+      require('electron').ipcRenderer.send('set-gps-mode', gpsModeEnabled);
+    } catch (error) {
+      console.warn('Unable to sync GPS Mode with global shortcuts:', error.message);
+    }
+  }
+
+  syncGlobalShortcutsWithGPSMode();
+
   function setGPSSourceMode(source) {
-    gpsSourceMode = source === 'this-pc' ? 'this-pc' : 'phone';
+    gpsSourceMode = ['phone', 'this-pc'].includes(source) ? source : 'phone';
+    console.log(`[GPS] Source changed to ${gpsSourceMode}`);
     localStorage.setItem('gpsSourceMode', gpsSourceMode);
     if (gpsPollTimer !== null) {
       clearInterval(gpsPollTimer);
@@ -2739,7 +3377,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function pollTSWForDistanceTriggers() {
-    if (gpsSourceMode !== 'phone') return;
+    if (!['phone', 'onboard'].includes(gpsSourceMode)) return;
     if (!currentStations || currentStations.length === 0) return;
     if (gpsAvailable) setGPSUnavailable();
 
@@ -2759,7 +3397,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     try {
-      const response = await fetch('/api/tsw/player-position');
+      const response = await fetch(`/api/tsw/player-position?source=${encodeURIComponent(gpsSourceMode)}`);
       if (!response.ok) {
         tswUnavailableUntil = Date.now() + TSW_RETRY_COOLDOWN_MS;
         if (Date.now() - tswLastSuccessfulPollAt > 5000) {
@@ -2827,6 +3465,7 @@ document.addEventListener("DOMContentLoaded", function () {
           // Only process if this is a new key press (not processed before)
           if (keyTimestamp > lastProcessedKeyTime) {
             lastProcessedKeyTime = keyTimestamp;
+            if (gpsModeEnabled) return;
             const key = state.lastKeyPress.key;
             
             console.log(`⌨️ [POLLING] Received key press from server: ${key}`);
@@ -2852,8 +3491,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 break;
               case '7':
               case 'numpad 7':
-                console.log('📣 [POLLING] Key 7 - Next station is');
-                if (typeof playNextStation === 'function') playNextStation();
+                console.log('📣 [POLLING] Advancing DVA selection');
+                document.getElementById('normal-down-btn')?.click();
                 break;
             }
           }
@@ -2885,7 +3524,12 @@ document.addEventListener("DOMContentLoaded", function () {
   // Play startup audio on page load
   setTimeout(() => {
     console.log('🎵 Playing startup audio');
-    playAudio('QR_PIDS_AudioFiles/StartUp.mp3');
+    playAudio('QR_PIDS_AudioFiles/StartUp.MP3');
+    const startupAudio = currentAudio;
+    startupAudio?.addEventListener('ended', () => {
+      queueStatusAlert('QR_PIDS_AudioFiles/System Ready.MP3', 'System ready', 'SYSTEM_READY');
+    }, { once: true });
+    startBatteryAlertMonitoring();
   }, 500);
 
   // Set date and time
@@ -2932,9 +3576,16 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(`✅ Built fast lookup index for ${Object.keys(runCodeIndex).length} route codes`);
       
       mergeGTFSPatterns(gtfsData);
+      if (typeof updateRouteDisplay === 'function') updateRouteDisplay();
+      manualRouteDatabasePromise.then(() => logMatchingManualRoutes(gtfsData));
     }
-  }).finally(() => {
-    hideLoadingScreen();
+  }).finally(async () => {
+    const assetStatus = await requiredAssetsPromise;
+    if (assetStatus.ready) {
+      hideLoadingScreen();
+    } else {
+      console.warn('Keeping startup screen visible until required assets are installed.');
+    }
   });
 
   // Handle run number input changes - show/hide manual button and change enter button color
@@ -3007,8 +3658,15 @@ document.addEventListener("DOMContentLoaded", function () {
   
   if (runInput) {
     console.log('✅ Attaching event listeners to runInput element');
-    runInput.addEventListener('input', updateRouteInputUI);
-    runInput.addEventListener('change', updateRouteInputUI);
+    const refreshRunPreview = () => {
+      routeConfirmed = false;
+      currentManualRoute = null;
+      currentManualFormFile = null;
+      updateRouteDisplay();
+      updateRouteInputUI();
+    };
+    runInput.addEventListener('input', refreshRunPreview);
+    runInput.addEventListener('change', refreshRunPreview);
     console.log('✅ Event listeners attached - input and change');
   } else {
     console.error('❌ runInput element not found!');
@@ -3028,6 +3686,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const routeSelectionMorePrev = document.getElementById('route-selection-more-prev');
   const routeSelectionMoreNext = document.getElementById('route-selection-more-next');
   let routeSelectionLines = [];
+  let manualRouteEntries = [];
+  let manualRouteMatchesLogged = false;
   let routeSelectionLevel = 'lines';
   let routeSelectionIndex = 0;
   let routeSelectionLineIndex = 0;
@@ -3040,6 +3700,53 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!response.ok) throw new Error(`Manual route database unavailable (${response.status})`);
     const database = await response.json();
     routeSelectionLines = Array.isArray(database.routes) ? database.routes : [];
+    manualRouteEntries = routeSelectionLines.flatMap(line =>
+      Array.isArray(line?.runs) ? line.runs : []
+    );
+  }
+
+  const manualRouteDatabasePromise = loadManualRouteDatabase()
+    .then(() => {
+      if (typeof updateRouteDisplay === 'function') updateRouteDisplay();
+      if (globalGTFSData) logMatchingManualRoutes(globalGTFSData);
+    })
+    .catch(error => console.warn('Could not preload manual route database:', error));
+
+  function buildManualRoutePattern(manualRoute) {
+    if (!manualRoute) return [];
+    const manualTnsFolder = manualRoute.tnsFolder && !/\.mp3$/i.test(String(manualRoute.tnsFolder).trim())
+      ? normalizeManualAudioPath(manualRoute.tnsFolder)
+      : (manualRoute.name ? `QR_PIDS_AudioFiles/Route Audio Files/${String(manualRoute.name).trim()}` : '');
+    const stationEntries = (Array.isArray(manualRoute.stations) ? manualRoute.stations : [manualRoute.stations || ''])
+      .flatMap(station => typeof station === 'string' ? station.split(/\r?\n|\\n/) : [station])
+      .filter(station => station && (typeof station !== 'string' || station.trim()));
+
+    const manualFormFile = getManualFormFile(manualRoute);
+
+    return stationEntries.map((station, index) => ({
+      name: typeof station === 'string' ? station : station.name,
+      code: typeof station === 'string' ? '' : (station.code || ''),
+      stopId: typeof station === 'string' ? `manual-${index}` : (station.stopId || `manual-${index}`),
+      announcements: typeof station === 'string' ? {
+        next: { audio: manualTnsFolder ? `${manualTnsFolder}/TNS_${station}.mp3` : '' },
+        arrival: { audio: manualTnsFolder ? `${manualTnsFolder}/${station}.mp3` : '' },
+        mindTheGap: { audio: manualRoute.tnsMtgOnly
+          ? `QR_PIDS_AudioFiles/Stations/${station} MTG.mp3`
+          : (manualTnsFolder ? `${manualTnsFolder}/${station} MTG.mp3` : '') },
+        form: { audio: manualFormFile }
+      } : (station.announcements || {})
+    }));
+  }
+
+  function getManualFormFile(manualRoute) {
+    if (!manualRoute) return '';
+    if (manualRoute.formFile) {
+      return normalizeManualAudioPath(manualRoute.formFile);
+    }
+    if (manualRoute.name) {
+      return `QR_PIDS_AudioFiles/Route Audio Files/${String(manualRoute.name).trim()}/Form.mp3`;
+    }
+    return '';
   }
 
   function getRouteSelectionOptions() {
@@ -3074,9 +3781,11 @@ document.addEventListener("DOMContentLoaded", function () {
     });
     const totalPages = Math.ceil(routeSelectionOptions.length / ROUTE_SELECTION_ITEMS_PER_PAGE);
     const pageIndicator = document.getElementById('route-selection-page-indicator');
-    if (pageIndicator) pageIndicator.textContent = `Page ${routeSelectionOptions.length > 0 ? routeSelectionPage + 1 : 1}/${Math.max(1, totalPages)}`;
-    if (routeSelectionMorePrev) routeSelectionMorePrev.style.display = routeSelectionPage > 0 ? 'block' : 'none';
-    if (routeSelectionMoreNext) routeSelectionMoreNext.style.display = routeSelectionPage < totalPages - 1 ? 'block' : 'none';
+    const routeSelectionPageText = `Page: ${routeSelectionOptions.length > 0 ? routeSelectionPage + 1 : 1}/${Math.max(1, totalPages)}`;
+    if (pageIndicator) pageIndicator.textContent = routeSelectionPageText;
+    document.getElementById('route-selection-page-indicator-bottom')?.replaceChildren(routeSelectionPageText);
+    if (routeSelectionMorePrev) routeSelectionMorePrev.style.visibility = routeSelectionPage > 0 ? 'visible' : 'hidden';
+    if (routeSelectionMoreNext) routeSelectionMoreNext.style.visibility = routeSelectionPage < totalPages - 1 ? 'visible' : 'hidden';
     if (routeSelectionUpBtn) {
       routeSelectionUpBtn.classList.toggle('footer-btn-grey', routeSelectionIndex === 0);
       routeSelectionUpBtn.classList.toggle('footer-btn-green', routeSelectionIndex !== 0);
@@ -3191,48 +3900,49 @@ document.addEventListener("DOMContentLoaded", function () {
       routeSelectionLevel = 'runs';
       routeSelectionIndex = 0;
       routeSelectionPage = 0;
-      if (routeSelectionTitle) routeSelectionTitle.textContent = `${option.name} Runs`;
+      if (routeSelectionTitle) routeSelectionTitle.textContent = 'List Of Routes';
       renderRouteSelectionPage();
       return;
     }
 
     if (!option.manualRoute || !runInput) return;
     const manualRoute = option.manualRoute;
-    const stationEntries = (Array.isArray(manualRoute.stations) ? manualRoute.stations : [manualRoute.stations || ''])
-      .flatMap(station => typeof station === 'string' ? station.split(/\r?\n|\\n/) : [station])
-      .filter(station => station && (typeof station !== 'string' || station.trim()));
-    const pattern = stationEntries.map((station, index) => ({
-      name: typeof station === 'string' ? station : station.name,
-      code: typeof station === 'string' ? '' : (station.code || ''),
-      stopId: typeof station === 'string' ? `manual-${index}` : (station.stopId || `manual-${index}`),
-      announcements: typeof station === 'string' ? {
-        next: { audio: manualRoute.tnsFolder ? `${manualRoute.tnsFolder}/TNS_${station}.mp3` : '' },
-        arrival: { audio: manualRoute.tnsFolder ? `${manualRoute.tnsFolder}/${station}.mp3` : '' },
-        mindTheGap: { audio: manualRoute.tnsFolder ? `${manualRoute.tnsFolder}/${station} MTG.mp3` : '' },
-        form: { audio: manualRoute.formFile || '' }
-      } : (station.announcements || {})
-    }));
+    const pattern = buildManualRoutePattern(manualRoute);
     if (pattern.length === 0) return;
 
-    runInput.value = (manualRoute.id || '').slice(0, 4).toUpperCase();
-    updateRouteInputUI();
+    const typedRunNumber = runInput.value.trim().toUpperCase();
+    if (!typedRunNumber && manualRoute.id) {
+      runInput.value = String(manualRoute.id).slice(0, 4).toUpperCase();
+    }
     currentStations = enrichStationsWithCoordinates(pattern);
+    const destination = currentStations[currentStations.length - 1]?.name || '';
+    currentDestination = destination;
+    currentDestinationStation = destination;
+    const diDestination = getDiDisplayDestination(destination);
+    if (diDisplay) diDisplay.textContent = diDestination;
+    if (typeof updateAppState === 'function') {
+      updateAppState({ DI: diDestination });
+    }
     selectedStation = null;
     stationSelectionConfirmed = false;
     currentHighlightIndex = 0;
     const formCode = manualRoute.formCode || null;
     currentManualRoute = manualRoute;
+    currentManualFormFile = getManualFormFile(manualRoute);
+    routeConfirmed = true;
+    updateRouteInputUI();
+    updateRouteDisplay();
     const routeLongName = buildRouteLongName(currentStations);
     currentRouteFormCode = formCode;
     currentRouteLongName = routeLongName;
-    if (formCode && routeLongName) {
+      if (formCode && routeLongName && !currentManualRoute) {
       startAnnouncementScanning(formCode, routeLongName)
         .catch(error => console.log('Could not load manually selected route announcements:', error));
     }
-    renderStations(currentStations);
     updateClosestStationTag();
     closeRouteSelectionPanel();
     switchToStationSelectMode();
+    renderStationsAfterHardwareDelay(currentStations);
     startTSWAutomation();
   }
 
@@ -3279,6 +3989,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     document.getElementById('special-btn')?.click();
   });
+  const routeSelectionPeiBtn = document.getElementById('route-selection-pei-btn');
+  const routeSelectionCctvBtn = document.getElementById('route-selection-cctv-btn');
+  const routeSelectionFnBtn = document.getElementById('route-selection-fn-btn');
+  if (routeSelectionPeiBtn) routeSelectionPeiBtn.addEventListener('click', () => showPeiPanel('route-selection'));
+  if (routeSelectionCctvBtn) routeSelectionCctvBtn.addEventListener('click', showCctvPanel);
+  if (routeSelectionFnBtn) routeSelectionFnBtn.addEventListener('click', showFnPanel);
 
   // Click on left panel (not buttons) to show keyboard
   if (leftPanel) {
@@ -3341,6 +4057,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function showKeyboardMode() {
     console.log('🎯 [showKeyboardMode] Called - hiding system ready and showing keyboard');
+    headerRow2.classList.remove('station-select-mode');
     clearAllUiPanels();
     setPidDiIndicatorVisible(true);
     setPidDiIndicatorTextVisible(false);
@@ -3495,11 +4212,26 @@ document.addEventListener("DOMContentLoaded", function () {
       });
       stationList.appendChild(li);
     });
-    currentStationPage = 0;
+    // Preserve the page containing the currently highlighted station instead of resetting to page 1
+    currentStationPage = Math.floor((currentHighlightIndex >= 0 ? currentHighlightIndex : 0) / STATION_ITEMS_PER_PAGE);
     updateStationDisplayPage();
     
     // Update closest station tag
     updateClosestStationTag();
+  }
+  let stationListRenderTimer = null;
+  function renderStationsAfterHardwareDelay(stations) {
+    if (stationListRenderTimer) {
+      clearTimeout(stationListRenderTimer);
+    }
+    stationList.innerHTML = '';
+    stationListContainer.classList.remove('hide');
+    stationListContainer.classList.add('show');
+    const revealDelay = 250 + Math.floor(Math.random() * 301);
+    stationListRenderTimer = setTimeout(() => {
+      renderStations(stations);
+      stationListRenderTimer = null;
+    }, revealDelay);
   }
 
   // Initial render: hide station list
@@ -3507,6 +4239,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (setRunBtn) setRunBtn.addEventListener("click", async function () {
     currentManualRoute = null;
+    currentManualFormFile = null;
     const run = runInput.value.trim().toUpperCase();
     console.log('Setting run:', run, 'Length:', run.length);
     
@@ -3517,7 +4250,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     if (!isValid) {
       console.log('Run validation failed for:', run);
-      runError.textContent = "Invalid run number. Format: 3 letters/numbers + 1 number (e.g. T6X1)";
+      runError.textContent = '';
       runNumberDisplay.textContent = "ROUTE NOT SET";
       currentStations = [];
       renderStations(currentStations);
@@ -3528,6 +4261,8 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
     runError.textContent = "";
+    routeConfirmed = true;
+    simulateRouteHardwareDelay();
     stopTSWAutomation();
     resetTSWAutomationState();
     console.log('Run validation passed, proceeding with:', run);
@@ -3556,9 +4291,19 @@ document.addEventListener("DOMContentLoaded", function () {
     // If run code matches a stopping pattern, use it
     console.log('Checking stoppingPatterns for:', run);
     const pattern = await getStoppingPattern(run);
+    const routeDataForRun = getRouteDataForRunCode(run);
+    const gtfsPatternForRun = pattern || (routeDataForRun ? getGtfsPreviewPattern(routeDataForRun, run) : null);
+    const matchingManualRoute = getBestMatchingManualRoute(gtfsPatternForRun);
     
-    if (pattern) {
-      currentStations = enrichStationsWithCoordinates(pattern);
+    if (pattern || matchingManualRoute) {
+      const matchedManualPattern = matchingManualRoute
+        ? buildManualRoutePattern(matchingManualRoute)
+        : [];
+      currentManualRoute = matchingManualRoute;
+      currentManualFormFile = getManualFormFile(matchingManualRoute);
+      console.log(`✅ Matched Manual Mode Form file: ${currentManualFormFile || '(none)'}`);
+      updateRouteDisplay();
+      currentStations = enrichStationsWithCoordinates(matchedManualPattern.length > 0 ? matchedManualPattern : (pattern || gtfsPatternForRun));
       const origin = currentStations[0].name;
       const dest = currentStations[currentStations.length-1].name;
       
@@ -3568,13 +4313,13 @@ document.addEventListener("DOMContentLoaded", function () {
       console.log(`\nChecking if route has special announcements:`);
       console.log(`  formCode: ${formCode}`);
       console.log(`  routeLongName: ${routeLongName}`);
-      if (formCode && routeLongName) {
+      if (formCode && routeLongName && !matchingManualRoute) {
         console.log(`  ✓ Calling startAnnouncementScanning()`);
         currentRouteFormCode = formCode;
         currentRouteLongName = routeLongName;
         startAnnouncementScanning(formCode, routeLongName).catch(err => console.log('Could not load route announcements:', err));
       } else {
-        console.log(`  ✗ Missing form code or route name - skipping announcement scanning`);
+        console.log(`  ℹ️ Manual Mode route active or route data incomplete - skipping form-code announcement scanning`);
       }
       
       // Display run info with parsed details
@@ -3625,7 +4370,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
       }
     }
-    renderStations(currentStations);
+    renderStationsAfterHardwareDelay(currentStations);
     updateRouteInputUI();
     if (currentStations.length > 0) {
       startTSWAutomation();
@@ -3658,20 +4403,23 @@ document.addEventListener("DOMContentLoaded", function () {
     const endIndex = Math.min(startIndex + STATION_ITEMS_PER_PAGE, currentStations.length);
     const stationPageIndicator = document.getElementById('station-page-indicator');
     const stationTotalPages = Math.ceil(currentStations.length / STATION_ITEMS_PER_PAGE);
-    if (stationPageIndicator) stationPageIndicator.textContent = `Page ${currentStations.length > 0 ? currentStationPage + 1 : 1}/${Math.max(1, stationTotalPages)}`;
+    const stationPageText = `Page: ${currentStations.length > 0 ? currentStationPage + 1 : 1}/${Math.max(1, stationTotalPages)}`;
+    if (stationPageIndicator) stationPageIndicator.textContent = stationPageText;
+    document.getElementById('station-page-indicator-bottom')?.replaceChildren(stationPageText);
     
     // Show items for current page
     for (let i = startIndex; i < endIndex; i++) {
-      items[i].classList.add('visible');
+      if (items[i]) items[i].classList.add('visible');
     }
     
     // Update -more- button visibility
-    stationMorePrev.style.display = currentStationPage > 0 ? 'block' : 'none';
-    stationMoreNext.style.display = endIndex < currentStations.length ? 'block' : 'none';
+    stationMorePrev.style.visibility = currentStationPage > 0 ? 'visible' : 'hidden';
+    stationMoreNext.style.visibility = endIndex < currentStations.length ? 'visible' : 'hidden';
     
     // Update up/down button colors based on position
     const upBtn = document.getElementById("up-btn");
     const downBtn = document.getElementById("down-btn");
+    const normalDownBtn = document.getElementById("normal-down-btn");
     
     if (upBtn) {
       if (currentHighlightIndex === 0) {
@@ -3691,6 +4439,11 @@ document.addEventListener("DOMContentLoaded", function () {
         downBtn.classList.remove('footer-btn-grey');
         downBtn.classList.add('footer-btn-green');
       }
+    }
+
+    if (normalDownBtn) {
+      normalDownBtn.classList.toggle('footer-btn-grey', currentHighlightIndex >= currentStations.length - 1);
+      normalDownBtn.classList.toggle('footer-btn-green', currentHighlightIndex < currentStations.length - 1);
     }
     
     // Highlight appropriate item on current page
@@ -3722,7 +4475,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     modeTitle.classList.add('hide');
     if (helperBar) helperBar.classList.add('hide');
-    helperBar.textContent = '';
+    helperBar.textContent = 'Select starting station';
     stationListContainer.classList.remove('show');
 
     const manualBtn = document.getElementById('manual-btn');
@@ -3743,22 +4496,29 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('fn-right-panel')?.classList.add('hide');
     setPidDiIndicatorVisible(true);
     setPidDiIndicatorTextVisible(true);
+    headerRow2.classList.add('station-select-mode');
     startupFooter.classList.add('hide');
     stationFooter.classList.remove('hide');
     normalFooter.classList.add('hide');
     modeTitle.classList.remove('hide');
     modeTitle.textContent = 'Select Start Station Mode';
     if (helperBar) {
-      helperBar.textContent = 'Use Up/Down to navigate. Select to confirm start station.';
+      helperBar.textContent = 'Select starting station';
       helperBar.classList.remove('hide');
     }
     document.getElementById('touch-keyboard').classList.add('hide');
     stationListContainer.classList.remove('hide');
     stationListContainer.classList.add('show');
     
-    // Hide the Skip button in station select mode.
+    // Hide the manual and skip buttons in station select mode, but keep their layout space.
     const manualBtn = document.getElementById('manual-btn');
+    const cctvBtn = document.getElementById('cctv-btn');
     if (manualBtn) manualBtn.classList.add('hidden');
+    if (cctvBtn) cctvBtn.classList.remove('station-select-hidden');
+
+    const cctvPanel = document.getElementById('cctv-panel');
+    if (cctvPanel) cctvPanel.classList.add('hide');
+    document.body.classList.remove('cctv-active');
     
     // Automatically highlight closest station (if stations exist)
     if (currentStations && currentStations.length > 0) {
@@ -3783,13 +4543,14 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById('fn-right-panel')?.classList.add('hide');
     setPidDiIndicatorVisible(true);
     setPidDiIndicatorTextVisible(true);
+    headerRow2.classList.remove('station-select-mode');
     startupFooter.classList.add('hide');
     stationFooter.classList.add('hide');
     normalFooter.classList.remove('hide');
     modeTitle.classList.remove('hide');
     modeTitle.textContent = getNormalModeHeaderText();
     if (helperBar) {
-      helperBar.textContent = 'Use Up/Down to navigate. Play to announce.';
+      helperBar.textContent = '';
       helperBar.classList.remove('hide');
     }
     document.getElementById('touch-keyboard').classList.add('hide');
@@ -3866,6 +4627,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Global variables for manual announcement mode
   let manualAnnouncementHighlightIndex = 0;
   let manualAnnouncements = []; // Array of {station, type, text, audioPath}
+  let queuedDvaSelection = null;
   
   // Manual announcement pagination settings
   const MANUAL_ITEMS_PER_PAGE = 10;
@@ -3884,12 +4646,17 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Show items for current page
     for (let i = startIndex; i < endIndex; i++) {
-      items[i].classList.add('visible');
+      if (items[i]) items[i].classList.add('visible');
     }
     
     // Update -more- button visibility
-    if (manualMorePrev) manualMorePrev.style.display = currentManualPage > 0 ? 'block' : 'none';
-    if (manualMoreNext) manualMoreNext.style.display = endIndex < manualAnnouncements.length ? 'block' : 'none';
+    if (manualMorePrev) manualMorePrev.style.visibility = currentManualPage > 0 ? 'visible' : 'hidden';
+    if (manualMoreNext) manualMoreNext.style.visibility = endIndex < manualAnnouncements.length ? 'visible' : 'hidden';
+    const manualPageIndicator = document.getElementById('manual-page-indicator');
+    const manualTotalPages = Math.ceil(manualAnnouncements.length / MANUAL_ITEMS_PER_PAGE);
+    const manualPageText = `Page: ${manualAnnouncements.length > 0 ? currentManualPage + 1 : 1}/${Math.max(1, manualTotalPages)}`;
+    if (manualPageIndicator) manualPageIndicator.textContent = manualPageText;
+    document.getElementById('manual-page-indicator-bottom')?.replaceChildren(manualPageText);
     
     // Update up/down button colors based on position (when in manual mode)
     const manualListContainer = document.getElementById('manual-list-container');
@@ -3931,57 +4698,62 @@ document.addEventListener("DOMContentLoaded", function () {
     // For each station, add announcement options
     currentStations.forEach((station, index) => {
       const isFirstStation = (index === 0);
-      
-      // For first station, only add Form message via MTG slot
-      // For other stations, add TNS, NAA, and MTG
-      
+
       if (isFirstStation) {
-        // At first station: only Form message for destination
+        // At first station, the manual list starts with the Form announcement.
         const firstStationName = currentStations[0].name;
         const destinationStation = currentStations[currentStations.length - 1].name;
-        
-        // Ensure currentStation is set for Form path generation
-        currentStation = firstStationName;
-        
-        const formPath = getAnnouncementAudioPath(destinationStation, 'form');
-        console.log(`📋 [MANUAL] First station Form: dest="${destinationStation}", path="${formPath}"`);
-        
-        manualAnnouncements.push({
-          station: firstStationName,
-          type: 'Form',
-          text: `${firstStationName} station.`,
-          audioPath: formPath,
-          currentStation: firstStationName
-        });
+
+        if (!isAnnouncementTypeDisabledForStation(destinationStation, 'form')) {
+          // Ensure currentStation is set for Form path generation
+          currentStation = firstStationName;
+
+          const formPath = getFormOrMtgAudioPath(destinationStation);
+          console.log(`📋 [MANUAL] First station Form: dest="${destinationStation}", path="${formPath}"`);
+
+          manualAnnouncements.push({
+            station: firstStationName,
+            type: 'Form',
+            text: `${firstStationName} station.`,
+            audioPath: formPath,
+            currentStation: firstStationName
+          });
+        }
       } else {
         // Previous station (where we currently are)
         const previousStation = currentStations[index - 1].name;
         // Only use Form path if announcing from the first station (index 1)
         const useFormPath = (index === 1);
-        
-        // TNS: "The next station is Station Name"
-        manualAnnouncements.push({
-          station: station.name,
-          type: 'TNS',
-          text: `The next station is ${station.name}`,
-          audioPath: getPatternAnnouncementAudioPath(station, 'nextStation') || getAnnouncementAudioPath(station.name, 'nextStation', useFormPath ? previousStation : null)
-        });
+        const mtgOnlyRoute = isMtgOnlyRoute(currentRouteFormCode);
 
-        // NAA: "Arriving at Station Name"
-        manualAnnouncements.push({
-          station: station.name,
-          type: 'NAA',
-          text: `Arriving at ${station.name}`,
-          audioPath: getPatternAnnouncementAudioPath(station, 'arrival') || getAnnouncementAudioPath(station.name, 'arrival')
-        });
+        if (!isAnnouncementTypeDisabledForStation(station.name, 'tns')) {
+          manualAnnouncements.push({
+            station: station.name,
+            type: 'TNS',
+            text: `The next station is ${station.name}`,
+            audioPath: getPatternAnnouncementAudioPath(station, 'nextStation') || getAnnouncementAudioPath(station.name, 'nextStation', useFormPath ? previousStation : null)
+          });
+        }
 
-        // MTG: "Station Name station." (mind the gap)
-        manualAnnouncements.push({
-          station: station.name,
-          type: 'MTG',
-          text: `${station.name} station.`,
-          audioPath: getPatternAnnouncementAudioPath(station, 'mindTheGap') || getAnnouncementAudioPath(station.name, 'mindTheGap')
-        });
+        if (!mtgOnlyRoute && !isAnnouncementTypeDisabledForStation(station.name, 'naa')) {
+          // NAA: "Arriving at Station Name"
+          manualAnnouncements.push({
+            station: station.name,
+            type: 'NAA',
+            text: `Arriving at ${station.name}`,
+            audioPath: getPatternAnnouncementAudioPath(station, 'arrival') || getAnnouncementAudioPath(station.name, 'arrival')
+          });
+        }
+
+        if (!isAnnouncementTypeDisabledForStation(station.name, 'mtg')) {
+          // MTG: "Station Name station." (mind the gap)
+          manualAnnouncements.push({
+            station: station.name,
+            type: 'MTG',
+            text: `${station.name} station.`,
+            audioPath: getPatternAnnouncementAudioPath(station, 'mindTheGap') || getAnnouncementAudioPath(station.name, 'mindTheGap')
+          });
+        }
       }
     });
     
@@ -4128,7 +4900,13 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function isSelectedStationFirstStation() {
-    return !!(selectedStation && isFirstStation(selectedStation));
+    if (!selectedStation || currentStations.length === 0) return false;
+    const firstStation = currentStations[0];
+    if (selectedStation === firstStation) return true;
+    if (selectedStation.stopId && firstStation.stopId) {
+      return selectedStation.stopId === firstStation.stopId;
+    }
+    return normalizeStationName(selectedStation.name) === normalizeStationName(firstStation.name);
   }
 
   function getPatternAnnouncementAudioPath(stationRef, announcementType) {
@@ -4138,8 +4916,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!stationObj || !stationObj.announcements) return null;
 
+    const resolvedAnnouncementType = resolveAnnouncementTypeForStation(stationObj.name, announcementType);
+    if (resolvedAnnouncementType !== normalizeAnnouncementTypeKey(announcementType)) {
+      return getPatternAnnouncementAudioPath(stationObj, resolvedAnnouncementType);
+    }
+
+    if (currentManualRoute) {
+      const announcementTypeKey = normalizeAnnouncementTypeKey(announcementType);
+      if (announcementTypeKey === 'form') return currentManualFormFile || stationObj.announcements.form?.audio || null;
+      if (announcementTypeKey === 'mtg') return getAnnouncementAudioPath(stationObj.name, 'mindTheGap');
+      if (announcementTypeKey === 'naa') {
+        if (currentManualRoute.tnsMtgOnly) return null;
+        return getAnnouncementAudioPath(stationObj.name, 'arrival');
+      }
+      return getAnnouncementAudioPath(stationObj.name, 'next');
+    }
+
     if (announcementType === 'mindTheGap' || announcementType === 'MTG') {
-      return stationObj.announcements.mindTheGap?.audio || null;
+      if (isMtgOnlyRoute(currentRouteFormCode)) {
+        return getAnnouncementAudioPath(normalizeStationName(stationObj.name), 'mindTheGap');
+      }
+      const stationName = normalizeStationName(stationObj.name);
+      return `QR_PIDS_AudioFiles/mind the gap/${stationName} MTG.mp3`;
     }
 
     if (announcementType === 'nextStation' || announcementType === 'next' || announcementType === 'TNS') {
@@ -4151,7 +4949,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     if (announcementType === 'form') {
-      return stationObj.announcements.form?.audio || null;
+      return currentManualFormFile || stationObj.announcements.form?.audio || null;
     }
 
     return null;
@@ -4159,20 +4957,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function getAnnouncementPreviewData(stationRef, announcementType) {
     const stationName = typeof stationRef === 'object' ? stationRef.name : stationRef;
-    const patternAudioPath = getPatternAnnouncementAudioPath(stationRef, announcementType);
+    const normalizedType = normalizeAnnouncementTypeKey(announcementType);
+    const resolvedType = resolveAnnouncementTypeForStation(stationName, normalizedType);
+    if (resolvedType !== normalizedType) {
+      return getAnnouncementPreviewData(stationRef, resolvedType);
+    }
 
-    switch (announcementType) {
-      case 'NAA':
-      case 'arrival':
+    const patternAudioPath = getPatternAnnouncementAudioPath(stationRef, normalizedType);
+
+    switch (normalizedType) {
+      case 'naa':
         return { type: 'NAA', displayText: `Arriving at ${stationName}`, audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'arrival') };
-      case 'MTG':
-      case 'mindTheGap':
+      case 'mtg':
         return { type: 'MTG', displayText: `${stationName}... Please mind the gap between the train and the platform.`, audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'mindTheGap') };
       case 'form':
-        return { type: 'form', displayText: `${stationName} station`, audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'form') };
-      case 'TNS':
-      case 'next':
-      case 'nextStation':
+        return { type: 'form', displayText: `${stationName} station`, audioPath: patternAudioPath || getFormOrMtgAudioPath(stationName) };
+      case 'tns':
       default:
         return { type: 'TNS', displayText: `The next station is ${stationName}`, audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'nextStation') };
     }
@@ -4186,7 +4986,11 @@ document.addEventListener("DOMContentLoaded", function () {
     return {
       type: 'form',
       displayText: `${destinationStation} station`,
-      audioPath: getAnnouncementAudioPath(destinationStation, 'form')
+      audioPath: currentManualRoute?.tnsMtgOnly
+        ? ''
+        : currentManualFormFile
+        ? currentManualFormFile
+        : getFormOrMtgAudioPath(destinationStation)
     };
   }
 
@@ -4204,6 +5008,55 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function replayCurrentAnnouncement() {
+    if (queuedDvaSelection && currentStations.includes(queuedDvaSelection.station)) {
+      const queued = queuedDvaSelection;
+      queuedDvaSelection = null;
+      selectedStation = queued.station;
+      currentHighlightIndex = currentStations.indexOf(queued.station);
+      currentStationPage = Math.floor(currentHighlightIndex / STATION_ITEMS_PER_PAGE);
+      updateStationDisplayPage();
+
+      currentAnnouncementType = queued.type;
+      currentAnnouncementDisplayText = queued.displayText;
+      currentAnnouncementAudioPath = queued.audioPath;
+      currentAnnouncementStation = queued.station.name;
+      updatePIDDisplay(queued.station.name, queued.type);
+
+      if (!displayWindow || displayWindow.closed) {
+      }
+
+      setTimeout(() => {
+        displayWindow.postMessage(queued.displayText, '*');
+      }, 300);
+
+      if (queued.audioPath) {
+        setTimeout(() => {
+          playAudio(queued.audioPath);
+        }, 500);
+      }
+      return true;
+    }
+    queuedDvaSelection = null;
+
+    if (currentAnnouncementDisplayText && pidDisplay?.textContent !== '-') {
+      const displayText = currentAnnouncementDisplayText;
+      const audioPath = currentAnnouncementAudioPath;
+
+      if (!displayWindow || displayWindow.closed) {
+      }
+
+      setTimeout(() => {
+        displayWindow.postMessage(displayText, '*');
+      }, 300);
+
+      if (audioPath) {
+        setTimeout(() => {
+          playAudio(audioPath);
+        }, 500);
+      }
+      return true;
+    }
+
     if (!selectedStation) {
       runError.textContent = 'Select a station to display.';
       return false;
@@ -4214,6 +5067,8 @@ document.addEventListener("DOMContentLoaded", function () {
     currentAnnouncementType = preview.type;
     currentAnnouncementDisplayText = preview.displayText;
     currentAnnouncementAudioPath = preview.audioPath;
+    currentAnnouncementStation = selectedStation.name;
+    updatePIDDisplay(selectedStation.name, preview.type);
 
     if (!displayWindow || displayWindow.closed) {
     }
@@ -4261,7 +5116,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  function cycleAnnouncementAndPlay(direction = 1) {
+  function cycleAnnouncementSelection(direction = 1) {
     if (!selectedStation) return false;
 
     const currentIndex = currentStations.findIndex(station => station === selectedStation);
@@ -4273,11 +5128,16 @@ document.addEventListener("DOMContentLoaded", function () {
         currentAnnouncementType = mtgPreview.type;
         currentAnnouncementDisplayText = mtgPreview.displayText;
         currentAnnouncementAudioPath = mtgPreview.audioPath;
+        queuedDvaSelection = {
+          station: selectedStation,
+          type: mtgPreview.type,
+          displayText: mtgPreview.displayText,
+          audioPath: mtgPreview.audioPath
+        };
         updatePIDDisplay(selectedStation.name, mtgPreview.type);
-        if (mtgPreview.audioPath) setTimeout(() => playAudio(mtgPreview.audioPath), 500);
+        setTimeout(() => displayWindow.postMessage(mtgPreview.displayText, '*'), 300);
         return true;
       }
-      return false;
     }
 
     const shouldMoveToAdjacentStation =
@@ -4313,6 +5173,12 @@ document.addEventListener("DOMContentLoaded", function () {
           currentAnnouncementType = movedPreview.type;
           currentAnnouncementDisplayText = movedPreview.displayText;
           currentAnnouncementAudioPath = movedPreview.audioPath;
+          queuedDvaSelection = {
+            station: selectedStation,
+            type: movedPreview.type,
+            displayText: movedPreview.displayText,
+            audioPath: movedPreview.audioPath
+          };
           selectedStation.currentMode = 'next';
           updatePIDDisplay(selectedStation.name, movedPreview.type);
 
@@ -4322,12 +5188,6 @@ document.addEventListener("DOMContentLoaded", function () {
           setTimeout(() => {
             displayWindow.postMessage(movedPreview.displayText, '*');
           }, 300);
-
-          if (movedPreview.audioPath) {
-            setTimeout(() => {
-              playAudio(movedPreview.audioPath);
-            }, 500);
-          }
 
           return true;
         }
@@ -4354,6 +5214,12 @@ document.addEventListener("DOMContentLoaded", function () {
           currentAnnouncementType = movedPreview.type;
           currentAnnouncementDisplayText = movedPreview.displayText;
           currentAnnouncementAudioPath = movedPreview.audioPath;
+          queuedDvaSelection = {
+            station: selectedStation,
+            type: movedPreview.type,
+            displayText: movedPreview.displayText,
+            audioPath: movedPreview.audioPath
+          };
           selectedStation.currentMode = 'next';
           updatePIDDisplay(selectedStation.name, movedPreview.type);
 
@@ -4363,12 +5229,6 @@ document.addEventListener("DOMContentLoaded", function () {
           setTimeout(() => {
             displayWindow.postMessage(movedPreview.displayText, '*');
           }, 300);
-
-          if (movedPreview.audioPath) {
-            setTimeout(() => {
-              playAudio(movedPreview.audioPath);
-            }, 500);
-          }
 
           return true;
         }
@@ -4384,6 +5244,12 @@ document.addEventListener("DOMContentLoaded", function () {
     currentAnnouncementType = preview.type;
     currentAnnouncementDisplayText = preview.displayText;
     currentAnnouncementAudioPath = preview.audioPath;
+    queuedDvaSelection = {
+      station: selectedStation,
+      type: preview.type,
+      displayText: preview.displayText,
+      audioPath: preview.audioPath
+    };
     selectedStation.currentMode = preview.type === 'NAA' ? 'arrival' : preview.type === 'MTG' ? 'mindTheGap' : preview.type === 'form' ? 'form' : 'next';
 
     updatePIDDisplay(selectedStation.name, preview.type);
@@ -4395,18 +5261,12 @@ document.addEventListener("DOMContentLoaded", function () {
       displayWindow.postMessage(preview.displayText, '*');
     }, 300);
 
-    if (preview.audioPath) {
-      setTimeout(() => {
-        playAudio(preview.audioPath);
-      }, 500);
-    }
-
     updateNormalUpButtonLabel();
     return true;
   }
 
-  function playPreviousAnnouncement() {
-    return cycleAnnouncementAndPlay(-1);
+  function selectPreviousAnnouncement() {
+    return cycleAnnouncementSelection(-1);
   }
   
   function toggleStationSkip() {
@@ -4437,6 +5297,7 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Track the current announcement type for looping
     currentAnnouncementType = announcementType;
+    currentAnnouncementStation = stationName;
     
     switch(announcementType) {
       case 'nextStation':
@@ -4452,7 +5313,7 @@ document.addEventListener("DOMContentLoaded", function () {
         pidDisplay.textContent = `${stationName} station`;
         break;
       case 'form':
-        pidDisplay.textContent = `${stationName} station`;
+        pidDisplay.textContent = `${selectedStation?.name || currentStation || stationName} station`;
         break;
       case 'special':
         pidDisplay.textContent = stationName;
@@ -4468,7 +5329,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (!selectedStation) return;
     
     // Check if at first station - if so, play Form announcement instead
-    const isAtFirstStation = (currentStations.length > 0 && selectedStation === currentStations[0]);
+    const isAtFirstStation = isSelectedStationFirstStation();
     
     if (isAtFirstStation) {
       // At first station: play Form announcement for destination
@@ -4478,7 +5339,7 @@ document.addEventListener("DOMContentLoaded", function () {
       updatePIDDisplay(destinationStation, 'form');
       
       let displayText = `${destinationStation} station`;
-      let audioPath = getAnnouncementAudioPath(destinationStation, "form");
+      let audioPath = getFormOrMtgAudioPath(destinationStation);
       
       console.log(`🎵 [MTG->FORM] At first station, playing Form announcement for: ${destinationStation}`);
       console.log(`   Audio path: ${audioPath}`);
@@ -4600,30 +5461,42 @@ document.addEventListener("DOMContentLoaded", function () {
     
     if (!isValid) {
       console.log('❌ Run validation failed for:', run);
-      runError.textContent = "Invalid run number. Format: 3 letters/numbers + 1 number (e.g. T6X1)";
+      runError.textContent = '';
       currentStations = [];
       renderStations(currentStations);
       return;
     }
     runError.textContent = "";
+    routeConfirmed = true;
+    simulateRouteHardwareDelay();
     
     // Clear pending announcement on new route
     pendingAnnouncementPath = null;
+    currentManualRoute = null;
+    currentManualFormFile = null;
     
     // ⚡ FAST PATH: Check hardcoded patterns first (instant, no network delay)
     const pattern = await getStoppingPattern(run);
     if (pattern) {
       console.log('✓ [FAST PATH] Using hardcoded pattern for:', run);
-      currentStations = enrichStationsWithCoordinates(pattern);
+      const routeDataForRun = getRouteDataForRunCode(run);
+      const gtfsPatternForRun = routeDataForRun ? getGtfsPreviewPattern(routeDataForRun, run) : pattern;
+      const matchingManualRoute = getBestMatchingManualRoute(gtfsPatternForRun || pattern);
+      currentManualRoute = matchingManualRoute;
+      currentManualFormFile = getManualFormFile(matchingManualRoute);
+      updateRouteDisplay();
+      const manualPattern = matchingManualRoute ? buildManualRoutePattern(matchingManualRoute) : [];
+      currentStations = enrichStationsWithCoordinates(manualPattern.length > 0 ? manualPattern : pattern);
       const origin = currentStations[0].name;
       const dest = currentStations[currentStations.length-1].name;
       
       // Display route immediately (NON-BLOCKING)
-      runNumberDisplay.textContent = run.split('').join(' ');
+      runNumberDisplay.textContent = run;
       currentDestination = dest;
       currentDestinationStation = dest; // Update global for Form messages
+      const diDestination = getDiDisplayDestination(dest);
       if (diDisplay) {
-        diDisplay.textContent = dest;
+        diDisplay.textContent = diDestination;
       }
       
       // Auto-select special message matching this destination
@@ -4634,14 +5507,14 @@ document.addEventListener("DOMContentLoaded", function () {
         updateAppState({ 
           route: run, 
           station: origin,
-          DI: dest,
+          DI: diDestination,
           inputValue: run
         });
       }
       
-      // Show stations immediately
-      renderStations(currentStations);
+      // Show stations after the simulated hardware response delay
       switchToStationSelectMode();
+      renderStationsAfterHardwareDelay(currentStations);
       startTSWAutomation();
       // Don't auto-select first station - wait for user to click
       // highlightStation(0);
@@ -4649,7 +5522,7 @@ document.addEventListener("DOMContentLoaded", function () {
       // ⏳ Load announcements in BACKGROUND (non-blocking)
       const formCode = getFormCodeForRoute(run);
       const routeLongName = buildRouteLongName(currentStations);
-      if (formCode && routeLongName) {
+      if (formCode && routeLongName && !currentManualRoute) {
         currentRouteFormCode = formCode;
         currentRouteLongName = routeLongName;
         console.log(`🔄 Loading announcements in background...`);
@@ -4685,13 +5558,18 @@ document.addEventListener("DOMContentLoaded", function () {
       const stoppingPattern = await getStoppingPatternFromGTFS(gtfsRun.tripId);
       
       if (stoppingPattern && stoppingPattern.length > 0) {
-        currentStations = enrichStationsWithCoordinates(stoppingPattern.map(stop => ({
+        const matchingManualRoute = getBestMatchingManualRoute(stoppingPattern);
+        currentManualRoute = matchingManualRoute;
+        currentManualFormFile = getManualFormFile(matchingManualRoute);
+        const manualPattern = matchingManualRoute ? buildManualRoutePattern(matchingManualRoute) : [];
+        updateRouteDisplay();
+        currentStations = enrichStationsWithCoordinates((manualPattern.length > 0 ? manualPattern : stoppingPattern.map(stop => ({
           name: stop.name,
           stopId: stop.stopId,
           announcements: stop.announcements,
           arrivalTime: stop.arrivalTime,
           currentMode: "next"
-        })));
+        }))));
         
         const origin = currentStations[0].name;
         const dest = currentStations[currentStations.length-1].name;
@@ -4699,17 +5577,18 @@ document.addEventListener("DOMContentLoaded", function () {
         // Load announcements
         const formCode = extractFormCodeFromGTFS(gtfsRun.routeId);
         const routeLongName = gtfsRun.destination || buildRouteLongName(currentStations);
-        if (formCode && routeLongName) {
+        if (formCode && routeLongName && !currentManualRoute) {
           currentRouteFormCode = formCode;
           currentRouteLongName = routeLongName;
           startAnnouncementScanning(formCode, routeLongName).catch(err => console.log('Could not load announcements:', err));
         }
         
-        runNumberDisplay.textContent = run.split('').join(' ');
+        runNumberDisplay.textContent = run;
         currentDestination = dest;
         currentDestinationStation = dest; // Update global for Form messages
+        const diDestination = getDiDisplayDestination(dest);
         if (diDisplay) {
-          diDisplay.textContent = dest;
+          diDisplay.textContent = diDestination;
         }
         
         // Auto-select special message matching this destination
@@ -4719,13 +5598,13 @@ document.addEventListener("DOMContentLoaded", function () {
           updateAppState({ 
             route: run, 
             station: origin,
-            DI: dest,
+            DI: diDestination,
             inputValue: run
           });
         }
         
-        renderStations(currentStations);
         switchToStationSelectMode();
+        renderStationsAfterHardwareDelay(currentStations);
         startTSWAutomation();
         // Don't auto-select first station - wait for user to click
         // highlightStation(0);
@@ -4735,7 +5614,10 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // ❌ No pattern found anywhere
     currentStations = [];
-    runError.textContent = "Pattern not found for this run code (try GTFS data or add to database).";
+    runError.textContent = '';
+    runNumberDisplay.textContent = run;
+    routeDisplay.classList.add('route-unknown');
+    if (routePreview) routePreview.textContent = '[Not Known]';
   });
   
   // Up button - move selection up
@@ -4808,7 +5690,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     runError.textContent = "";
     stationSelectionConfirmed = true;
+    const selectedStationIndex = currentStations.findIndex((station) => station === selectedStation);
+    if (selectedStationIndex >= 0) {
+      closestStationIndex = selectedStationIndex;
+      currentHighlightIndex = selectedStationIndex;
+      currentStationPage = Math.floor(selectedStationIndex / STATION_ITEMS_PER_PAGE);
+      closestStationAutoChangeAt = gpsModeEnabled ? Date.now() + 200 : 0;
+      updateStationDisplayPage();
+      updateClosestStationTag();
+    }
     resetTSWAutomationState();
+    if (gpsModeEnabled && selectedStationIndex >= 0) {
+      tswStartStationIndex = selectedStationIndex;
+      tswStartStationPhaseActive = true;
+    }
     tswTargetStationIndex = getNextAutomationStationIndex(currentHighlightIndex);
     if (isFirstStation(selectedStation)) {
       tswPassedStationIndex = currentHighlightIndex;
@@ -4823,10 +5718,10 @@ document.addEventListener("DOMContentLoaded", function () {
       switchToNormalMode();
       
       // Play mind the gap immediately
-      playMindTheGap(true);
+      if (!gpsModeEnabled) playMindTheGap(true);
       
       // Then switch to CCTV after 3 seconds
-      helperBar.textContent = 'Switching to CCTV...';
+      helperBar.textContent = '';
       previousScreenBeforeCctv = capturePreviousUiScreen() || 'normal';
       scheduleCctvAutoOpen(3000);
       return;
@@ -4834,8 +5729,8 @@ document.addEventListener("DOMContentLoaded", function () {
     
     // Normal flow (doors locked): Switch to normal mode
     switchToNormalMode();
-    helperBar.textContent = 'Ready for door cycle.';
-    if (isFirstStation(selectedStation)) {
+    helperBar.textContent = '';
+    if (!gpsModeEnabled && isFirstStation(selectedStation)) {
       playMindTheGap();
     }
   });
@@ -4874,13 +5769,7 @@ document.addEventListener("DOMContentLoaded", function () {
       currentManualPage = Math.floor(manualAnnouncementHighlightIndex / MANUAL_ITEMS_PER_PAGE);
       updateManualDisplayPage();
     } else {
-      // In normal mode this button becomes Next for the selected station
-      if (selectedStation) {
-        cycleAnnouncementAndPlay();
-      } else if (currentStations.length > 0) {
-        currentHighlightIndex = Math.max(0, currentHighlightIndex - 1);
-        highlightStation(currentHighlightIndex);
-      }
+      cycleAnnouncementSelection();
     }
   });
 
@@ -4948,7 +5837,7 @@ document.addEventListener("DOMContentLoaded", function () {
       case 'form':
         // Form announcement
         displayText = `${selectedStation.name} station`;
-        audioPath = getAnnouncementAudioPath(selectedStation.name, "form");
+        audioPath = getFormOrMtgAudioPath(selectedStation.name);
         console.log(`   Form announcement for: ${selectedStation.name}, path: ${audioPath}`);
         break;
       
@@ -4992,8 +5881,14 @@ document.addEventListener("DOMContentLoaded", function () {
       const announcement = manualAnnouncements[manualAnnouncementHighlightIndex];
       if (!announcement) return;
       
-      // Always update PID display in manual mode when playing announcement
-      updatePIDDisplay(announcement.station, announcement.type);
+      queuedDvaSelection = null;
+      const announcementType = announcement.type === 'Form' ? 'form' : announcement.type;
+      currentAnnouncementType = announcementType;
+      currentAnnouncementDisplayText = announcement.text;
+      currentAnnouncementAudioPath = announcement.audioPath;
+      currentAnnouncementStation = announcement.station;
+
+      updatePIDDisplay(announcement.station, announcementType);
       
       // Open display window if not already open or closed
       if (!displayWindow || displayWindow.closed) {
@@ -5019,56 +5914,36 @@ document.addEventListener("DOMContentLoaded", function () {
       runError.textContent = "Enter a valid run number first.";
       return;
     }
-    if (isSelectedStationFirstStation()) {
-      currentAnnouncementType = 'form';
-      selectedStation.currentMode = 'form';
-      if (!replayCurrentAnnouncement()) return;
-      return;
-    }
-
     if (!replayCurrentAnnouncement()) {
       return;
     }
   });
 
-  // Stop button event: stop scrolling in display window and stop audio
-  const stopBtn = document.getElementById("stop-btn");
-  if (stopBtn) stopBtn.addEventListener("click", function () {
-    // Stop any playing audio
-    manualStopAudio();
-    
-    // Clear display window
+  function stopCurrentDvaAndPid() {
+    clearPendingAnnouncement();
+    queuedDvaSelection = null;
+    if (pidDisplay) pidDisplay.textContent = '-';
+    updateAppState({ pid: '-', announcement: null, announcementClearedAt: Date.now() });
     if (displayWindow && !displayWindow.closed) {
       displayWindow.postMessage({ type: 'STOP' }, '*');
     }
-  });
+  }
+
+  // Stop button event: stop the active DVA and clear its PID display
+  const stopBtn = document.getElementById("stop-btn");
+  if (stopBtn) stopBtn.addEventListener("click", stopCurrentDvaAndPid);
   
   // Station footer stop button
   const stationStopBtn = document.getElementById("station-stop-btn");
-  if (stationStopBtn) stationStopBtn.addEventListener("click", function () {
-    manualStopAudio();
-    if (displayWindow && !displayWindow.closed) {
-      displayWindow.postMessage({ type: 'STOP' }, '*');
-    }
-  });
+  if (stationStopBtn) stationStopBtn.addEventListener("click", stopCurrentDvaAndPid);
   
   // Normal footer stop button
   const normalStopBtn = document.getElementById("normal-stop-btn");
-  if (normalStopBtn) normalStopBtn.addEventListener("click", function () {
-    manualStopAudio();
-    if (displayWindow && !displayWindow.closed) {
-      displayWindow.postMessage({ type: 'STOP' }, '*');
-    }
-  });
+  if (normalStopBtn) normalStopBtn.addEventListener("click", stopCurrentDvaAndPid);
   
   // Startup footer stop button
   const startupStopBtn = document.getElementById("startup-stop-btn");
-  if (startupStopBtn) startupStopBtn.addEventListener("click", function () {
-    manualStopAudio();
-    if (displayWindow && !displayWindow.closed) {
-      displayWindow.postMessage({ type: 'STOP' }, '*');
-    }
-  });
+  if (startupStopBtn) startupStopBtn.addEventListener("click", stopCurrentDvaAndPid);
 
   // Next button event: cycle through announcement types
   const nextBtn = document.getElementById("next-btn");
@@ -5078,7 +5953,7 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    cycleAnnouncementAndPlay();
+    cycleAnnouncementSelection();
   });
 
   function doorsUnlock() {
@@ -5155,7 +6030,7 @@ document.addEventListener("DOMContentLoaded", function () {
       updatePIDDisplay(destinationStation, 'form');
       
       let displayText = `${destinationStation} station`;
-      let audioPath = getAnnouncementAudioPath(destinationStation, "form");
+      let audioPath = getFormOrMtgAudioPath(destinationStation);
       
       console.log(`🚪 [DOOR UNLOCK AT FIRST STATION] Playing Form for: ${destinationStation}`);
       console.log(`   Audio path: ${audioPath}`);
@@ -5285,9 +6160,14 @@ document.addEventListener("DOMContentLoaded", function () {
         // Update skip button
         updateSkipButton();
 
+        // Keep the station list scrolled to the page containing the newly selected station
+        currentStationPage = Math.floor(nextIndex / STATION_ITEMS_PER_PAGE);
+        updateStationDisplayPage();
+
         // Update closest station in auto-adapt mode (door timer progression)
         if (!manualClosestStationMode) {
           closestStationIndex = nextIndex;
+          renderStations(currentStations);
           updateClosestStationTag();
         }
       }
@@ -5318,10 +6198,11 @@ document.addEventListener("DOMContentLoaded", function () {
     currentAnnouncementAudioPath = null;
     currentAnnouncementDisplayText = null;
     currentAnnouncementType = null;
+    currentAnnouncementStation = null;
     
     // Update remote state
     if (typeof updateAppState === 'function') {
-      updateAppState({ doorCycle: 'N' });
+      updateAppState({ doorCycle: 'N', announcement: null, announcementClearedAt: Date.now() });
     }
     
     // Clear any existing timers
@@ -5405,12 +6286,19 @@ document.addEventListener("DOMContentLoaded", function () {
     stopTSWAutomation();
     resetTSWAutomationState();
     currentManualRoute = null;
+    currentManualFormFile = null;
     
     // Reset door cycle state
     doorsCycled = false;
     
     // Reset UI state
     runInput.value = '';
+    routeConfirmed = false;
+    if (routeHardwareTimer) {
+      clearTimeout(routeHardwareTimer);
+      routeHardwareTimer = null;
+    }
+    if (routeHeader) routeHeader.classList.remove('route-hardware-delay');
     runNumberDisplay.textContent = '_ _ _ _';
     runError.textContent = '';
     selectedStation = null;
@@ -5426,6 +6314,8 @@ document.addEventListener("DOMContentLoaded", function () {
     // Reset PID and DI displays
     if (pidDisplay) pidDisplay.textContent = '-';
     if (diDisplay) diDisplay.textContent = '-';
+    updateRouteInputUI();
+    updateRouteDisplay();
     
     // Force the app back to the normal startup/keyboard screen so it cannot get stuck blank
     showKeyboardMode();
@@ -5553,32 +6443,28 @@ document.addEventListener("DOMContentLoaded", function () {
       
       // Listen for global keyboard events from main process
       ipcRenderer.on('global-key', (event, key) => {
+        if (gpsModeEnabled) return;
         console.log(`🔑 [RENDERER] Global key pressed: ${key}`);
         
         switch(key) {
-      case '3':
-    console.log('🔓 [RENDERER] Triggering doorsUnlock()');
-    doorsUnlock();
-    break;
-
-case '4':
-    console.log('🔒 [RENDERER] Triggering doorsLock()');
-    doorsLock();
-    break;
-
-case '6':
-    console.log('📣 [RENDERER] Triggering playNextStation()');
-    if (typeof playNextStation === 'function') {
-        playNextStation();
-    }
-    break;
-
-case '7':
-    console.log('📢 [RENDERER] Triggering playArrivalAnnouncement()');
-    if (typeof playArrivalAnnouncement === 'function') {
-        playArrivalAnnouncement();
-    }
-    break;
+          case '3':
+            console.log('🔓 [RENDERER] Triggering doorsUnlock()');
+            doorsUnlock(); // Unlock doors
+            break;
+          case '4':
+            console.log('📢 [RENDERER] Triggering playArrivalAnnouncement()');
+            if (typeof playArrivalAnnouncement === 'function') {
+              playArrivalAnnouncement();
+            }
+            break;
+          case '6':
+            console.log('🔒 [RENDERER] Triggering doorsLock()');
+            doorsLock(); // Trigger door lock
+            break;
+          case '7':
+            console.log('📣 [RENDERER] Advancing DVA selection');
+            document.getElementById('normal-down-btn')?.click();
+            break;
           default:
             console.log(`⚠️ [RENDERER] Unmapped key: ${key}`);
         }
@@ -5597,23 +6483,23 @@ case '7':
   // Function to play arrival announcement
   function playArrivalAnnouncement() {
     console.log('🔊 Playing arrival announcement for selected station');
+
+    if (isMtgOnlyRoute(currentRouteFormCode)) {
+      console.log('✗ NAA is disabled for this route');
+      return;
+    }
     
     if (!selectedStation) {
       console.log('✗ No station selected');
       return;
     }
-    
-    // Disable arrival announcements for the first station
-    if (isFirstStation(selectedStation)) {
-      console.log(`⚠️  Skipping arrival announcement - ${selectedStation.name} is the first station`);
-      return;
-    }
-    
+
     // Update PID display with arrival state
     updatePIDDisplay(selectedStation.name, 'NAA');
     
     const displayText = `Now arriving at ${selectedStation.name}`;
-    const audioPath = getPatternAnnouncementAudioPath(selectedStation, 'arrival') || getAnnouncementAudioPath(selectedStation.name, "arrival");
+    const audioPath = getPatternAnnouncementAudioPath(selectedStation, 'arrival')
+      || getAnnouncementAudioPath(selectedStation.name, 'arrival');
     
     console.log(`  Station: ${selectedStation.name}`);
     console.log(`  Audio path: ${audioPath}`);
@@ -5763,6 +6649,19 @@ case '7':
   const routeDisplay = document.getElementById('run-number-display');
   const routePreview = document.getElementById('route-preview');
   const backBtn = document.getElementById('back-btn');
+  const routeHeader = document.getElementById('header-route');
+  let routeConfirmed = false;
+  let routeHardwareTimer = null;
+
+  function simulateRouteHardwareDelay() {
+    if (!routeHeader) return;
+    if (routeHardwareTimer) clearTimeout(routeHardwareTimer);
+    routeHeader.classList.add('route-hardware-delay');
+    routeHardwareTimer = setTimeout(() => {
+      routeHeader.classList.remove('route-hardware-delay');
+      routeHardwareTimer = null;
+    }, 250 + Math.floor(Math.random() * 451));
+  }
   
   // Official Queensland Rail station codes
   const stationAbbreviations = {
@@ -5991,9 +6890,265 @@ case '7':
     // Z
     'Zillmere': 'ZLL'
   };
+
+  let stationCodeOverrides = {};
+  fetch('./station-codes.json')
+    .then(response => response.ok ? response.json() : {})
+    .then(codes => {
+      stationCodeOverrides = codes && typeof codes === 'object' ? codes : {};
+      updateRouteDisplay();
+    })
+    .catch(() => {});
   
   function getStationAbbrev(stationName) {
-    return stationAbbreviations[stationName] || stationName.substring(0, 3).toUpperCase();
+    const originalName = String(stationName || '').trim();
+    const normalizedName = normalizeStationName(originalName).replace(/\s+/g, ' ').trim();
+    const findCode = (mapping) => {
+      const target = normalizedName.toLowerCase();
+      const match = Object.entries(mapping).find(([name]) => name.toLowerCase() === target);
+      return match ? match[1] : null;
+    };
+
+    return findCode(stationCodeOverrides)
+      || findCode(stationAbbreviations)
+      || normalizedName.substring(0, 3).toUpperCase();
+  }
+
+  function getGtfsPreviewPattern(routeData, runCode) {
+    const patterns = Array.isArray(routeData?.patterns) ? routeData.patterns : [];
+    if (patterns.length === 0) return null;
+
+    return patterns.find(pattern => String(pattern.form_code || '').toUpperCase() === runCode)
+      || patterns[0];
+  }
+
+  function getRouteDataForRunCode(runCode) {
+    const upperCode = String(runCode || '').toUpperCase();
+    if (runCodeIndex?.[upperCode]) return runCodeIndex[upperCode];
+
+    if (globalGTFSData?.tripIdMap && globalGTFSData.routes) {
+      for (const [tripId, routeId] of Object.entries(globalGTFSData.tripIdMap)) {
+        if (tripId.toUpperCase().includes(upperCode) && globalGTFSData.routes[routeId]) {
+          return globalGTFSData.routes[routeId];
+        }
+      }
+    }
+
+    return null;
+  }
+
+  function getPreviewStationKey(stationName) {
+    return normalizeStationName(String(stationName || ''))
+      .replace(/\b(st)\b/gi, 'street')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
+
+  function getTopologyNetworkPath(startKey, endKey) {
+    const graph = new Map();
+    const stationNames = new Map();
+    const addEdge = (from, to) => {
+      if (!graph.has(from)) graph.set(from, new Set());
+      graph.get(from).add(to);
+    };
+
+    routeTopologyPaths.forEach(path => {
+      const stations = Array.isArray(path.stations) ? path.stations : [];
+      stations.forEach(station => {
+        const key = getPreviewStationKey(station);
+        stationNames.set(key, station);
+      });
+      for (let index = 1; index < stations.length; index++) {
+        const previousKey = getPreviewStationKey(stations[index - 1]);
+        const currentKey = getPreviewStationKey(stations[index]);
+        addEdge(previousKey, currentKey);
+        addEdge(currentKey, previousKey);
+      }
+    });
+
+    if (!graph.has(startKey) || !graph.has(endKey)) return null;
+
+    const queue = [startKey];
+    const previous = new Map([[startKey, null]]);
+    for (let index = 0; index < queue.length; index++) {
+      const currentKey = queue[index];
+      if (currentKey === endKey) break;
+      for (const nextKey of graph.get(currentKey) || []) {
+        if (!previous.has(nextKey)) {
+          previous.set(nextKey, currentKey);
+          queue.push(nextKey);
+        }
+      }
+    }
+
+    if (!previous.has(endKey)) return null;
+    const pathKeys = [];
+    for (let key = endKey; key !== null; key = previous.get(key)) {
+      pathKeys.push(key);
+    }
+    return pathKeys.reverse().map(key => stationNames.get(key) || key);
+  }
+
+  function getTopologyPath(selectedStops) {
+    if (!routeTopologyPaths.length || selectedStops.length === 0) return null;
+
+    const firstKey = getPreviewStationKey(selectedStops[0].name);
+    const lastKey = getPreviewStationKey(selectedStops[selectedStops.length - 1].name);
+    for (const path of routeTopologyPaths) {
+      const stations = Array.isArray(path.stations) ? path.stations : [];
+      if (stations.length === 0) continue;
+
+      const stationKeys = stations.map(getPreviewStationKey);
+      const firstIndex = stationKeys.indexOf(firstKey);
+      const lastIndex = stationKeys.lastIndexOf(lastKey);
+      if (firstIndex >= 0 && lastIndex > firstIndex) {
+        return stations.slice(firstIndex, lastIndex + 1).map(name => ({ name }));
+      }
+
+      const reverseStartIndex = stationKeys.indexOf(lastKey);
+      const reverseEndIndex = stationKeys.lastIndexOf(firstKey);
+      if (reverseStartIndex >= 0 && reverseEndIndex > reverseStartIndex) {
+        return stations.slice(reverseStartIndex, reverseEndIndex + 1).reverse().map(name => ({ name }));
+      }
+    }
+
+    const networkPath = getTopologyNetworkPath(firstKey, lastKey);
+    if (networkPath) return networkPath.map(name => ({ name }));
+
+    const reverseNetworkPath = getTopologyNetworkPath(lastKey, firstKey);
+    if (reverseNetworkPath) return reverseNetworkPath.reverse().map(name => ({ name }));
+
+    return null;
+  }
+
+  function getGtfsStoppingPreview(routeData, selectedPattern) {
+    const selectedStops = Array.isArray(selectedPattern?.stops) ? selectedPattern.stops : [];
+    if (selectedStops.length === 0) return 'ALL STATIONS';
+
+    const selectedKeys = new Set(selectedStops.map(stop => getPreviewStationKey(stop.name)));
+    const topologyStops = getTopologyPath(selectedStops);
+    const fullPattern = topologyStops
+      ? { stops: topologyStops }
+      : (routeData.patterns || [])
+        .filter(pattern => Array.isArray(pattern.stops) && pattern.stops.length >= selectedStops.length)
+        .filter(pattern => {
+          const stops = pattern.stops;
+          return stops[0] && stops[stops.length - 1]
+            && getPreviewStationKey(stops[0].name) === getPreviewStationKey(selectedStops[0].name)
+            && getPreviewStationKey(stops[stops.length - 1].name) === getPreviewStationKey(selectedStops[selectedStops.length - 1].name);
+        })
+        .sort((left, right) => right.stops.length - left.stops.length)[0];
+
+    if (!fullPattern || fullPattern.stops.every(stop => selectedKeys.has(getPreviewStationKey(stop.name)))) {
+      return 'ALL STATIONS';
+    }
+
+    const expressSegments = [];
+    let skippedStart = null;
+    for (let index = 0; index < fullPattern.stops.length; index++) {
+      const stop = fullPattern.stops[index];
+      const stopKey = getPreviewStationKey(stop.name);
+      if (!selectedKeys.has(stopKey) && skippedStart === null) {
+        skippedStart = index - 1;
+      }
+
+      const isLastStop = index === fullPattern.stops.length - 1;
+      if (skippedStart !== null && (selectedKeys.has(stopKey) || isLastStop)) {
+        const endIndex = selectedKeys.has(stopKey) ? index : index + 1;
+        const startStop = fullPattern.stops[Math.max(0, skippedStart)];
+        const endStop = fullPattern.stops[Math.min(fullPattern.stops.length - 1, endIndex)];
+        if (startStop && endStop) {
+          expressSegments.push(`${getStationAbbrev(startStop.name)}-${getStationAbbrev(endStop.name)}`);
+        }
+        skippedStart = null;
+      }
+    }
+
+    return expressSegments.length > 0 ? `EXP ${expressSegments.join('-')}` : 'ALL STATIONS';
+  }
+
+  function getManualRouteStationKeys(manualRoute) {
+    const stations = Array.isArray(manualRoute?.stations)
+      ? manualRoute.stations
+      : [manualRoute?.stations || ''];
+    return stations
+      .flatMap(station => typeof station === 'string' ? station.split(/\r?\n|\\n/) : [station?.name])
+      .map(station => getPreviewStationKey(station))
+      .filter(Boolean);
+  }
+
+  function getMatchingManualRoute(selectedPattern) {
+    const gtfsStops = Array.isArray(selectedPattern)
+      ? selectedPattern
+      : (Array.isArray(selectedPattern?.stops) ? selectedPattern.stops : []);
+    const gtfsKeys = gtfsStops.map(stop => getPreviewStationKey(stop.name)).filter(Boolean);
+    if (gtfsKeys.length === 0) return null;
+
+    return manualRouteEntries.find(manualRoute => {
+      if (manualRoute.excludeAutomaticMatch) return false;
+      const manualKeys = getManualRouteStationKeys(manualRoute);
+      return manualKeys.length === gtfsKeys.length
+        && manualKeys.every((key, index) => key === gtfsKeys[index]);
+    }) || null;
+  }
+
+  function getBestMatchingManualRoute(selectedPattern) {
+    const exactMatch = getMatchingManualRoute(selectedPattern);
+    if (exactMatch) return exactMatch;
+
+    const gtfsStops = Array.isArray(selectedPattern)
+      ? selectedPattern
+      : (Array.isArray(selectedPattern?.stops) ? selectedPattern.stops : []);
+    const gtfsKeys = gtfsStops.map(stop => getPreviewStationKey(stop.name)).filter(Boolean);
+    if (gtfsKeys.length < 2) return null;
+
+    const gtfsKeySet = new Set(gtfsKeys);
+    const firstGtfsKey = gtfsKeys[0];
+    const lastGtfsCode = getStationAbbrev(gtfsStops[gtfsStops.length - 1].name);
+    const candidates = manualRouteEntries.filter(manualRoute => !manualRoute.excludeAutomaticMatch).map(manualRoute => {
+      const manualKeys = getManualRouteStationKeys(manualRoute);
+      const titleMatch = String(manualRoute.name || '').match(/^[^-]+-([A-Z0-9]+)/i);
+      const overlap = manualKeys.filter(key => gtfsKeySet.has(key)).length;
+      const startsAtSameStation = manualKeys[0] === firstGtfsKey;
+      const hasMatchingDestinationCode = titleMatch
+        && titleMatch[1].toUpperCase() === lastGtfsCode;
+      return {
+        manualRoute,
+        overlap,
+        startsAtSameStation,
+        hasMatchingDestinationCode
+      };
+    });
+
+    const best = candidates
+      .filter(candidate => candidate.startsAtSameStation && candidate.hasMatchingDestinationCode)
+      .sort((left, right) => {
+        const leftScore = left.overlap + (left.hasMatchingDestinationCode ? 100 : 0);
+        const rightScore = right.overlap + (right.hasMatchingDestinationCode ? 100 : 0);
+        return rightScore - leftScore;
+      })[0];
+
+    return best?.manualRoute || null;
+  }
+
+  function logMatchingManualRoutes(gtfsData) {
+    if (manualRouteMatchesLogged || !gtfsData?.routes || manualRouteEntries.length === 0) return;
+    manualRouteMatchesLogged = true;
+
+    let matchCount = 0;
+    console.log('🔎 Comparing GTFS stopping patterns with Manual Mode routes...');
+    Object.entries(gtfsData.routes).forEach(([routeId, routeData]) => {
+      const routeCode = routeId.split('-')[0].toUpperCase();
+      (Array.isArray(routeData.patterns) ? routeData.patterns : []).forEach(pattern => {
+        const manualRoute = getBestMatchingManualRoute(pattern);
+        if (manualRoute) {
+          matchCount++;
+          console.log(`✅ GTFS ${routeCode} (${pattern.form_code || 'pattern'}) matches Manual Mode: ${manualRoute.name}`);
+        }
+      });
+    });
+    console.log(`📊 Manual Mode route matching complete: ${matchCount} GTFS pattern match${matchCount === 1 ? '' : 'es'}`);
   }
 
   // ==================== Express Route Patterns ====================
@@ -6034,6 +7189,9 @@ case '7':
   function updateRouteDisplay() {
     const value = runNumberInput.value;
     const routeLabel = document.getElementById('route-label');
+    routeLabel.classList.toggle('route-confirmed', routeConfirmed);
+    routeDisplay.classList.toggle('route-confirmed', routeConfirmed);
+    routeDisplay.classList.remove('route-unknown');
     
     if (value.length === 0) {
       // Show "Route:" label and placeholder when no input
@@ -6041,20 +7199,29 @@ case '7':
       routeDisplay.textContent = '_ _ _ _';
       if (routePreview) routePreview.textContent = '';
     } else {
-      // Hide "Route:" label and show just train number when input exists
-      if (routeLabel) routeLabel.style.display = 'none';
+      // Keep the label visible while the route number is being entered.
+      if (routeLabel) routeLabel.style.display = routeConfirmed ? 'none' : 'inline';
       
       // Show train number without spaces
       const trainNumber = value.toUpperCase();
-      routeDisplay.textContent = trainNumber;
+      const missingCharacters = Math.max(0, 4 - value.length);
+      const placeholders = missingCharacters === 1
+        ? ' _'
+        : '_'.repeat(missingCharacters).replace(/_/g, (character, index) => index === 0 ? character : ` ${character}`);
+      routeDisplay.textContent = `${trainNumber}${placeholders}`;
 
       if (currentManualRoute?.name && routePreview) {
-        routePreview.textContent = ` ${currentManualRoute.name}`;
+        const dayCode = getRoutePreviewDayCode();
+        routePreview.textContent = routeConfirmed
+          ? `${dayCode}-${currentManualRoute.name}`
+          : `-${currentManualRoute.name}`;
         return;
       }
       
       // Show preview if we have a valid 4-character run code
       if (value.length === 4 && routePreview) {
+        routePreview.textContent = '';
+
         const upperCode = value.toUpperCase();
         let routeData = null;
         
@@ -6065,7 +7232,7 @@ case '7':
         } else if (globalGTFSData && globalGTFSData.tripIdMap) {
           // Search trip ID map for matching run code
           for (const [tripId, routeId] of Object.entries(globalGTFSData.tripIdMap)) {
-            if (tripId.includes(upperCode)) {
+            if (tripId.toUpperCase().includes(upperCode) && isTripServiceActiveForSelectedDay(tripId, globalGTFSData)) {
               if (globalGTFSData.routes && globalGTFSData.routes[routeId]) {
                 routeData = globalGTFSData.routes[routeId];
                 console.log(`✓ Found route data for ${upperCode}: ${routeId}`);
@@ -6076,7 +7243,7 @@ case '7':
         } else if (tripIdMap && Object.keys(tripIdMap).length > 0) {
           // Fallback to tripIdMap if globalGTFSData not available yet
           for (const [tripId, routeId] of Object.entries(tripIdMap)) {
-            if (tripId.includes(upperCode)) {
+            if (tripId.toUpperCase().includes(upperCode) && isTripServiceActiveForSelectedDay(tripId, globalGTFSData)) {
               if (runCodeIndex[routeId]) {
                 routeData = runCodeIndex[routeId];
                 console.log(`✓ Found route data for ${upperCode}: ${routeId}`);
@@ -6087,35 +7254,35 @@ case '7':
         }
         
         if (routeData) {
-          // Get selected day type
-          const selectedDayBtn = document.querySelector('.day-btn.selected');
-          let dayCode = 'M-F';
-          if (selectedDayBtn) {
-            if (selectedDayBtn.id === 'sat-btn') dayCode = 'SAT';
-            else if (selectedDayBtn.id === 'sun-btn') dayCode = 'SUN';
-            else if (selectedDayBtn.id === 'holiday-btn') dayCode = 'PH';
-          }
-          
+          const dayCode = getRoutePreviewDayCode();
           let firstStationCode = 'N/A';
           let lastStationCode = 'N/A';
           
-          // Get first and last station codes from patterns
-          const patterns = Array.isArray(routeData.patterns) ? routeData.patterns : [];
-          if (patterns.length > 0) {
-            const mainPattern = patterns[0];
-            if (mainPattern.stops && Array.isArray(mainPattern.stops)) {
-              const firstStation = mainPattern.stops[0];
-              const lastStation = mainPattern.stops[mainPattern.stops.length - 1];
-              firstStationCode = getStationAbbrev(firstStation.name);
-              lastStationCode = getStationAbbrev(lastStation.name);
-              console.log(`✓ Got stations: ${firstStationCode} to ${lastStationCode}`);
-            }
+          // Use the GTFS pattern for this form code, then derive skipped sections.
+          const selectedPattern = getGtfsPreviewPattern(routeData, upperCode);
+          const matchingManualRoute = getBestMatchingManualRoute(selectedPattern);
+          if (matchingManualRoute?.name) {
+            routePreview.textContent = routeConfirmed
+              ? `${dayCode}-${matchingManualRoute.name}`
+              : `-${matchingManualRoute.name}`;
+            return;
+          }
+          if (selectedPattern?.stops && Array.isArray(selectedPattern.stops) && selectedPattern.stops.length > 0) {
+            const firstStation = selectedPattern.stops[0];
+            const lastStation = selectedPattern.stops[selectedPattern.stops.length - 1];
+            firstStationCode = getStationAbbrev(firstStation.name);
+            lastStationCode = getStationAbbrev(lastStation.name);
+            console.log(`✓ Got GTFS stations: ${firstStationCode} to ${lastStationCode}`);
           }
           
-          // Format: M-F-BHI-RSW (no "Route:" label)
-          routePreview.textContent = ` ${dayCode}-${firstStationCode}-${lastStationCode}`;
+          const stoppingPreview = getGtfsStoppingPreview(routeData, selectedPattern);
+          const routeDescription = `${firstStationCode}-${lastStationCode} (${stoppingPreview})`;
+          routePreview.textContent = routeConfirmed
+            ? `${dayCode}-${routeDescription}`
+            : `-${routeDescription}`;
         } else {
-          routePreview.textContent = '';
+          routeDisplay.classList.add('route-unknown');
+          routePreview.textContent = '[Not Known]';
           console.log(`⚠️  No route data found for ${upperCode}`);
         }
       } else if (routePreview) {
@@ -6130,6 +7297,7 @@ case '7':
       event.preventDefault();
       const currentValue = runNumberInput.value;
       runNumberInput.value = currentValue.slice(0, -1);
+      routeConfirmed = false;
       
       // Update remote state
       if (typeof updateAppState === 'function') {
@@ -6171,6 +7339,8 @@ case '7':
       }
 
       // Update the route display in header
+      currentManualRoute = null;
+      currentManualFormFile = null;
       updateRouteDisplay();
       
       // Update manual button and enter button color based on input
@@ -6214,6 +7384,7 @@ case '7':
     const stationCodeModeContainer = document.getElementById('station-code-mode-container');
     const mainPanel = document.querySelector('.main-panel');
 
+    if (document.getElementById('route-selection-panel') && !document.getElementById('route-selection-panel').classList.contains('hide')) return 'route-selection';
     if (document.getElementById('fn-panel') && !document.getElementById('fn-panel').classList.contains('hide')) return 'fn';
     if (document.getElementById('status-panel') && !document.getElementById('status-panel').classList.contains('hide')) return 'status';
     if (document.getElementById('system-info-panel') && !document.getElementById('system-info-panel').classList.contains('hide')) return 'system-info';
@@ -6240,7 +7411,7 @@ case '7':
   }
 
   function hasRouteInput() {
-    return !!(currentManualRoute || (runInput && runInput.value && runInput.value.trim().length > 0));
+    return !!(currentManualRoute || routeConfirmed);
   }
 
   function restorePreviousUiScreen(screenKey, fallbackScreen = 'startup') {
@@ -6268,6 +7439,7 @@ case '7':
     }
 
     if (targetScreen === 'station') {
+      renderStations(currentStations);
       switchToStationSelectMode();
       return;
     }
@@ -6327,7 +7499,9 @@ case '7':
   
   // Volume values
   let brightnessValue = 100;
-  let handsetValue = 50;
+  const savedAlertVolume = localStorage.getItem('gpsAlertVolume');
+  let alertVolume = savedAlertVolume === null ? 50 : Number(savedAlertVolume);
+  if (!Number.isFinite(alertVolume) || alertVolume < 0 || alertVolume > 100) alertVolume = 50;
   let cabinVolume = 50;
   let brightnessTimer = null;
   let brightnessRequestId = 0;
@@ -6393,6 +7567,14 @@ case '7':
     
     return value;
   }
+
+  function setAlertVolume(value) {
+    alertVolume = updateSlider('handset', value);
+    window.gpsAlertVolume = alertVolume / 100;
+    localStorage.setItem('gpsAlertVolume', String(alertVolume));
+    if (currentAudio && currentAnnouncementType === 'GPS') currentAudio.volume = window.gpsAlertVolume;
+    return alertVolume;
+  }
   
   // Drag functionality for sliders
   function setupSliderDrag(type, getValue, setValue) {
@@ -6453,8 +7635,8 @@ case '7':
   );
   
   setupSliderDrag('handset', 
-    () => handsetValue, 
-    (v) => { handsetValue = updateSlider('handset', v); }
+    () => alertVolume,
+    setAlertVolume
   );
   
   setupSliderDrag('cabin', 
@@ -6462,6 +7644,7 @@ case '7':
     (v) => { 
       cabinVolume = updateSlider('cabin', v); 
       window.vasVolume = cabinVolume / 100;
+      updateAppState({ cabinVolume });
       // Update currently playing audio volume in real-time
       if (currentAudio) {
         currentAudio.volume = window.vasVolume;
@@ -6521,6 +7704,7 @@ case '7':
 
     // Hide main panel, show Fn panel
     mainPanel.classList.add('hide');
+    document.getElementById('route-selection-panel')?.classList.add('hide');
     fnPanel.classList.remove('hide');
     
     // Track and hide current footer, show Fn footer
@@ -6578,6 +7762,8 @@ case '7':
       if (helperBar) helperBar.textContent = '"Enter" to verify. "Back" to edit.';
     } else if (targetScreen === 'station') {
       switchToStationSelectMode();
+    } else if (targetScreen === 'route-selection') {
+      showRouteSelectionPanel();
     } else if (targetScreen === 'normal' || targetScreen === 'main') {
       switchToNormalMode();
     } else if (targetScreen === 'station-code') {
@@ -6662,7 +7848,6 @@ case '7':
   const set3GTFSUpdateProgressBar = document.getElementById('set3-gtfs-update-progress-bar');
   const gtfsLastUpdated = document.getElementById('gtfs-last-updated');
   const gtfsDueDate = document.getElementById('gtfs-due-date');
-  const manualRoutesManagerButton = document.getElementById('manual-routes-manager-btn');
   const gtfsIPC = window.electron || {
     updateGTFS: () => require('electron').ipcRenderer.invoke('update-gtfs'),
     getGTFSStatus: () => require('electron').ipcRenderer.invoke('get-gtfs-status'),
@@ -6673,12 +7858,6 @@ case '7':
     gtfsIPC.getGTFSStatus().then((status) => {
       if (gtfsLastUpdated) gtfsLastUpdated.textContent = status.updatedAt;
       if (gtfsDueDate) gtfsDueDate.textContent = status.dueAt;
-    });
-  }
-
-  if (manualRoutesManagerButton) {
-    manualRoutesManagerButton.addEventListener('click', () => {
-      window.open(`${window.location.origin}/manual-routes.html`, 'ManualRoutesManager', 'width=1100,height=800');
     });
   }
 
@@ -6733,13 +7912,14 @@ case '7':
     });
   }
 
-  
   // Initialize global volume
   window.vasVolume = cabinVolume / 100;
+  window.gpsAlertVolume = alertVolume / 100;
+  updateAppState({ cabinVolume });
   
   // Initialize slider visuals on page load
   updateSlider('brightness', brightnessValue);
-  updateSlider('handset', handsetValue);
+  updateSlider('handset', alertVolume);
   updateSlider('cabin', cabinVolume);
   console.log('Brightness value on init:', brightnessValue);
   const getSystemBrightness = window.electron && window.electron.getSystemBrightness
@@ -6769,11 +7949,11 @@ case '7':
   });
 
   if (handsetUpBtn) handsetUpBtn.addEventListener('click', () => {
-    handsetValue = updateSlider('handset', handsetValue + 5);
+    setAlertVolume(alertVolume + 5);
   });
 
   if (handsetDownBtn) handsetDownBtn.addEventListener('click', () => {
-    handsetValue = updateSlider('handset', handsetValue - 5);
+    setAlertVolume(alertVolume - 5);
   });
   
   if (audioDeviceBtn) audioDeviceBtn.addEventListener('click', () => {
@@ -6806,12 +7986,14 @@ case '7':
   if (cabinUpBtn) cabinUpBtn.addEventListener('click', () => {
     cabinVolume = updateSlider('cabin', cabinVolume + 5);
     window.vasVolume = cabinVolume / 100;
+    updateAppState({ cabinVolume });
     console.log('Cabin volume set to:', window.vasVolume);
   });
   
   if (cabinDownBtn) cabinDownBtn.addEventListener('click', () => {
     cabinVolume = updateSlider('cabin', cabinVolume - 5);
     window.vasVolume = cabinVolume / 100;
+    updateAppState({ cabinVolume });
     console.log('Cabin volume set to:', window.vasVolume);
   });
 
@@ -6862,6 +8044,125 @@ case '7':
     });
   }
 
+  // Setup automatic update toggles
+  const automaticAssetsToggle = document.getElementById('automatic-assets-toggle');
+  const automaticGTFSToggle = document.getElementById('automatic-gtfs-toggle');
+  const automaticApplicationToggle = document.getElementById('automatic-application-toggle');
+  const updateSettingsIPC = typeof require === 'function'
+    ? {
+        get: () => require('electron').ipcRenderer.invoke('get-update-settings'),
+        set: (name, value) => require('electron').ipcRenderer.invoke('set-update-setting', name, value),
+        ensureAudioAssets: () => require('electron').ipcRenderer.invoke('ensure-audio-assets'),
+          checkAudioAssets: () => require('electron').ipcRenderer.invoke('check-audio-assets'),
+        reinstallAudioAssets: () => require('electron').ipcRenderer.invoke('reinstall-audio-assets'),
+        checkApplicationUpdates: () => require('electron').ipcRenderer.invoke('check-application-updates'),
+        onAudioAssetsProgress: (callback) => require('electron').ipcRenderer.on('audio-assets-progress', (event, data) => callback(data))
+      }
+    : null;
+
+  function renderUpdateToggle(button, enabled) {
+    if (!button) return;
+    button.textContent = enabled ? 'ON' : 'OFF';
+    button.classList.toggle('fn-toggle-btn-green', enabled);
+    button.classList.toggle('fn-toggle-btn-grey', !enabled);
+  }
+
+  if (updateSettingsIPC) {
+    updateSettingsIPC.get().then(settings => {
+      renderUpdateToggle(automaticAssetsToggle, settings.automaticAssets);
+      renderUpdateToggle(automaticGTFSToggle, settings.automaticGTFS);
+      renderUpdateToggle(automaticApplicationToggle, settings.automaticApplication);
+    });
+  }
+
+  if (automaticAssetsToggle && updateSettingsIPC) {
+    automaticAssetsToggle.addEventListener('click', async () => {
+      const settings = await updateSettingsIPC.get();
+      const updated = await updateSettingsIPC.set('automaticAssets', !settings.automaticAssets);
+      renderUpdateToggle(automaticAssetsToggle, updated.automaticAssets);
+    });
+  }
+
+  if (automaticGTFSToggle && updateSettingsIPC) {
+    automaticGTFSToggle.addEventListener('click', async () => {
+      const settings = await updateSettingsIPC.get();
+      const updated = await updateSettingsIPC.set('automaticGTFS', !settings.automaticGTFS);
+      renderUpdateToggle(automaticGTFSToggle, updated.automaticGTFS);
+    });
+  }
+
+  if (automaticApplicationToggle && updateSettingsIPC) {
+    automaticApplicationToggle.addEventListener('click', async () => {
+      const settings = await updateSettingsIPC.get();
+      const updated = await updateSettingsIPC.set('automaticApplication', !settings.automaticApplication);
+      renderUpdateToggle(automaticApplicationToggle, updated.automaticApplication);
+    });
+  }
+
+  const reinstallAudioAssetsBtn = document.getElementById('reinstall-audio-assets-btn');
+  const reinstallAudioAssetsStatus = document.getElementById('reinstall-audio-assets-status');
+  const checkAssetsUpdateBtn = document.getElementById('check-assets-update-btn');
+  const checkAssetsUpdateStatus = document.getElementById('check-assets-update-status');
+  const checkApplicationUpdateBtn = document.getElementById('check-application-update-btn');
+  const checkApplicationUpdateStatus = document.getElementById('check-application-update-status');
+
+  updateSettingsIPC?.onAudioAssetsProgress(({ percent, status }) => {
+    if (reinstallAudioAssetsStatus) reinstallAudioAssetsStatus.textContent = `${status} ${percent}%`;
+    if (checkAssetsUpdateStatus) checkAssetsUpdateStatus.textContent = `${status} ${percent}%`;
+  });
+
+  async function runAssetAction(button, statusElement, action) {
+    if (!button || !statusElement || !updateSettingsIPC) return;
+    button.disabled = true;
+    statusElement.textContent = 'Working...';
+    try {
+      const result = await action();
+      if (!result.success) throw new Error(result.message);
+      statusElement.textContent = result.installed ? 'Assets installed' : (result.message || 'Assets are current');
+    } catch (error) {
+      statusElement.textContent = `Failed: ${error.message}`;
+    } finally {
+      button.disabled = false;
+    }
+  }
+
+  reinstallAudioAssetsBtn?.addEventListener('click', () => runAssetAction(
+    reinstallAudioAssetsBtn,
+    reinstallAudioAssetsStatus,
+    updateSettingsIPC.reinstallAudioAssets
+  ));
+
+  checkAssetsUpdateBtn?.addEventListener('click', () => runAssetAction(
+    checkAssetsUpdateBtn,
+    checkAssetsUpdateStatus,
+    async () => {
+      const result = await updateSettingsIPC.checkAudioAssets();
+      if (!result.success) return result;
+      return {
+        ...result,
+        installed: false,
+        message: result.updateAvailable ? `Version ${result.version} is available` : 'Assets are current'
+      };
+    }
+  ));
+
+  checkApplicationUpdateBtn?.addEventListener('click', async () => {
+    if (!updateSettingsIPC) return;
+    checkApplicationUpdateBtn.disabled = true;
+    checkApplicationUpdateStatus.textContent = 'Checking...';
+    try {
+      const result = await updateSettingsIPC.checkApplicationUpdates();
+      if (!result.success) throw new Error(result.message);
+      checkApplicationUpdateStatus.textContent = result.updateAvailable
+        ? `Version ${result.version} available`
+        : 'Application is current';
+    } catch (error) {
+      checkApplicationUpdateStatus.textContent = `Failed: ${error.message}`;
+    } finally {
+      checkApplicationUpdateBtn.disabled = false;
+    }
+  });
+
 
   // ==================== Status and Versions Panel ====================
   const statusPanel = document.getElementById('status-panel');
@@ -6880,6 +8181,41 @@ case '7':
   const set2Btn = document.getElementById('set2-btn');
   const smuSetBtn = document.getElementById('smu-set-btn');
   const set3Btn = document.getElementById('set3-btn');
+  const standbyOverlay = document.getElementById('standby-overlay');
+  const standbyEnterBtn = document.getElementById('standby-enter-btn');
+  const standbyExitBtn = document.getElementById('standby-exit-btn');
+
+  function enterStandbyMode() {
+    if (!standbyOverlay || !standbyExitBtn || !standbyOverlay.hidden) return;
+
+    setPidDiIndicatorVisible(true);
+    setPidDiIndicatorTextVisible(false);
+    standbyOverlay.hidden = false;
+    standbyOverlay.setAttribute('aria-hidden', 'false');
+    standbyOverlay.classList.remove('ready');
+    standbyExitBtn.disabled = true;
+    standbyTimer = setTimeout(() => {
+      standbyOverlay.classList.add('ready');
+      standbyExitBtn.disabled = false;
+      standbyExitBtn.focus();
+    }, 3000);
+  }
+
+  function exitStandbyMode() {
+    if (!standbyOverlay || !standbyExitBtn || standbyExitBtn.disabled) return;
+
+    setPidDiIndicatorVisible(true);
+    setPidDiIndicatorTextVisible(true);
+    standbyOverlay.classList.remove('ready');
+    standbyExitBtn.disabled = true;
+    standbyTimer = setTimeout(() => {
+      standbyOverlay.hidden = true;
+      standbyOverlay.setAttribute('aria-hidden', 'true');
+    }, 3000);
+  }
+
+  standbyEnterBtn?.addEventListener('click', enterStandbyMode);
+  standbyExitBtn?.addEventListener('click', exitStandbyMode);
   
   // Status button in Fn panel
   const fnStatusBtn = document.getElementById('fn-status-btn');
@@ -6951,8 +8287,17 @@ case '7':
 
   async function updateSystemInfo() {
     let battery = 'Unavailable';
-    let deviceModel = 'Unavailable';
+    let ipAddress = 'Unavailable';
     let serialNumber = 'Unavailable';
+    let appVersion = '16.2.0';
+
+    try {
+      if (typeof process !== 'undefined') {
+        appVersion = process.env.QVAS_APP_VERSION || '16.2.0';
+      }
+    } catch (error) {
+      console.warn('Could not read app version:', error.message);
+    }
 
     try {
       if (navigator.getBattery) {
@@ -6965,13 +8310,39 @@ case '7':
 
     try {
       if (typeof require === 'function') {
+        const { ipcRenderer } = require('electron');
+        if (ipcRenderer?.invoke) {
+          const deviceInfo = await ipcRenderer.invoke('get-system-device-info');
+          ipAddress = deviceInfo?.ipAddress || deviceInfo?.deviceModel || ipAddress;
+          serialNumber = deviceInfo?.serialNumber || serialNumber;
+
+        }
+      }
+    } catch (error) {
+      console.warn('Could not read device information through Electron:', error.message);
+    }
+
+    if (ipAddress === 'Unavailable' && typeof require === 'function') {
+      try {
+        const isPrivateIPv4 = (address) => /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[0-1])\.)/.test(address);
+        ipAddress = Object.values(require('os').networkInterfaces())
+          .flatMap((interfaces) => interfaces || [])
+          .find((address) => (address.family === 'IPv4' || address.family === 4)
+            && !address.internal
+            && isPrivateIPv4(address.address))?.address || ipAddress;
+      } catch (error) {
+        console.warn('Could not read local IP address:', error.message);
+      }
+    }
+
+    try {
+      if (ipAddress === 'Unavailable' && serialNumber === 'Unavailable' && typeof require === 'function') {
         const { execFileSync } = require('child_process');
         const readSystemValue = (className, propertyName) => execFileSync(
           'powershell.exe',
           ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-Command', `(Get-CimInstance -ClassName ${className} | Select-Object -ExpandProperty ${propertyName})`],
           { encoding: 'utf8', windowsHide: true }
         ).trim();
-        deviceModel = readSystemValue('Win32_ComputerSystem', 'Model') || 'Unavailable';
         serialNumber = readSystemValue('Win32_BIOS', 'SerialNumber') || 'Unavailable';
       }
     } catch (error) {
@@ -6987,9 +8358,9 @@ case '7':
       browser: navigator.userAgent.match(/Chrome\/([\d.]+)/)?.[1] || 'Unavailable',
       electron: typeof process !== 'undefined' ? (process.versions.electron || 'Unavailable') : 'Unavailable',
       node: typeof process !== 'undefined' ? (process.versions.node || 'Unavailable') : 'Unavailable',
-      appVersion: typeof process !== 'undefined' ? (process.env.npm_package_version || '1.0.0') : 'Unavailable',
+      appVersion,
       battery,
-      deviceModel,
+      ipAddress,
       serialNumber
     };
     Object.entries(info).forEach(([key, value]) => {
@@ -7101,7 +8472,7 @@ case '7':
     
     if (helperBar) {
       helperBar.classList.remove('hide');
-      helperBar.textContent = 'Adjust settings using footer buttons.';
+      helperBar.textContent = '';
     }
   }
   
@@ -7121,6 +8492,31 @@ case '7':
   const systemSettingsBtn = document.getElementById('system-settings-btn');
   if (set3Btn) set3Btn.addEventListener('click', showSet3Panel);
   if (systemSettingsBtn) systemSettingsBtn.addEventListener('click', showSystemSettingsPanel);
+  const testAllAlertSoundsBtn = document.getElementById('test-all-alert-sounds-btn');
+  if (testAllAlertSoundsBtn) {
+    testAllAlertSoundsBtn.addEventListener('click', () => {
+      testAllAlertSoundsBtn.disabled = true;
+      queueAlertSoundTest();
+      window.setTimeout(() => {
+        testAllAlertSoundsBtn.disabled = false;
+      }, 7000);
+    });
+  }
+  const reloadUiBtn = document.getElementById('reload-ui-btn');
+  if (reloadUiBtn) {
+    reloadUiBtn.addEventListener('click', () => {
+      reloadUiBtn.disabled = true;
+      window.location.reload();
+    });
+  }
+  const restartAppBtn = document.getElementById('restart-app-btn');
+  if (restartAppBtn) {
+    restartAppBtn.addEventListener('click', () => {
+      const { ipcRenderer } = require('electron');
+      restartAppBtn.disabled = true;
+      ipcRenderer.invoke('restart-app');
+    });
+  }
   if (set3StatusBtn) set3StatusBtn.addEventListener('click', showSet3Panel);
   if (set3PeiBtn) set3PeiBtn.addEventListener('click', () => document.getElementById('pei-btn')?.click());
   if (set3IoBtn) set3IoBtn.addEventListener('click', () => showSet3Panel());
@@ -7135,15 +8531,49 @@ case '7':
   if (systemInfoFnBtn) systemInfoFnBtn.addEventListener('click', hideStatusPanel);
   const systemInfoExitBtn = document.getElementById('system-info-exit-btn');
   if (systemInfoExitBtn) systemInfoExitBtn.addEventListener('click', hideStatusPanel);
-  const statusGPSRefreshBtn = document.getElementById('status-gps-refresh-btn');
+  const statusGPSThresholdsBtn = document.getElementById('status-gps-thresholds-btn');
+  const gpsThresholdDialog = document.getElementById('gps-threshold-dialog');
+  const gpsThresholdForm = document.getElementById('gps-threshold-form');
+  const gpsThresholdInputs = {
+    naa: document.getElementById('gps-threshold-naa'),
+    tns: document.getElementById('gps-threshold-tns'),
+    mtg: document.getElementById('gps-threshold-mtg'),
+    movement: document.getElementById('gps-threshold-movement')
+  };
+  if (statusGPSThresholdsBtn && gpsThresholdDialog && gpsThresholdForm) {
+    statusGPSThresholdsBtn.addEventListener('click', () => {
+      gpsThresholdInputs.naa.value = TSW_NAA_TRIGGER_METERS;
+      gpsThresholdInputs.tns.value = TSW_TNS_TRIGGER_METERS;
+      gpsThresholdInputs.mtg.value = TSW_MTG_TRIGGER_METERS;
+      gpsThresholdInputs.movement.value = TSW_MTG_MAX_MOVEMENT_METERS;
+      gpsThresholdDialog.showModal();
+    });
+    document.getElementById('gps-threshold-cancel').addEventListener('click', () => gpsThresholdDialog.close());
+    gpsThresholdForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (!gpsThresholdForm.reportValidity()) return;
+      TSW_NAA_TRIGGER_METERS = Number(gpsThresholdInputs.naa.value);
+      TSW_TNS_TRIGGER_METERS = Number(gpsThresholdInputs.tns.value);
+      TSW_MTG_TRIGGER_METERS = Number(gpsThresholdInputs.mtg.value);
+      TSW_MTG_MAX_MOVEMENT_METERS = Number(gpsThresholdInputs.movement.value);
+      localStorage.setItem('gpsNaaTriggerMeters', String(TSW_NAA_TRIGGER_METERS));
+      localStorage.setItem('gpsTnsTriggerMeters', String(TSW_TNS_TRIGGER_METERS));
+      localStorage.setItem('gpsMtgTriggerMeters', String(TSW_MTG_TRIGGER_METERS));
+      localStorage.setItem('gpsMtgMovementMeters', String(TSW_MTG_MAX_MOVEMENT_METERS));
+      gpsThresholdDialog.close();
+    });
+  }
   const statusGPSSourceBtn = document.getElementById('status-gps-source-btn');
   if (statusGPSSourceBtn) {
     const updateGPSSourceButton = () => {
-      statusGPSSourceBtn.textContent = `GPS Source: ${gpsSourceMode === 'this-pc' ? 'This PC' : 'Phone'}`;
+      const sourceLabels = { phone: 'Phone', 'this-pc': 'This PC' };
+      statusGPSSourceBtn.textContent = `GPS Source: ${sourceLabels[gpsSourceMode] || 'Phone'}`;
     };
     updateGPSSourceButton();
     statusGPSSourceBtn.addEventListener('click', () => {
-      setGPSSourceMode(gpsSourceMode === 'phone' ? 'this-pc' : 'phone');
+      const sourceOrder = ['phone', 'this-pc'];
+      const currentSourceIndex = sourceOrder.indexOf(gpsSourceMode);
+      setGPSSourceMode(sourceOrder[(currentSourceIndex + 1) % sourceOrder.length]);
       updateGPSSourceButton();
     });
   }
@@ -7160,20 +8590,6 @@ case '7':
       updateGPSModeButton();
     });
   }
-  if (statusGPSRefreshBtn) statusGPSRefreshBtn.addEventListener('click', () => {
-    if (!gpsModeEnabled) return;
-    statusGPSRefreshBtn.disabled = true;
-    statusGPSRefreshBtn.textContent = 'Refreshing...';
-    if (gpsSourceMode === 'this-pc') {
-      pollGPSPosition();
-    } else {
-      pollTSWForDistanceTriggers().catch(() => {});
-    }
-    setTimeout(() => {
-      statusGPSRefreshBtn.disabled = false;
-      statusGPSRefreshBtn.textContent = 'Refresh GPS Data';
-    }, 1000);
-  });
   const statusMTGTestBtn = document.getElementById('status-mtg-test-btn');
   if (statusMTGTestBtn) statusMTGTestBtn.addEventListener('click', () => {
     const testStationIndex = stationSelectionConfirmed ? tswTargetStationIndex : closestStationIndex;
@@ -7338,7 +8754,7 @@ case '7':
       if (fnPanel) fnPanel.classList.remove('hide');
       if (fnFooter) fnFooter.classList.remove('hide');
       if (mainPanel) mainPanel.classList.remove('hide');
-      helperBar.textContent = 'Adjust settings using footer buttons.';
+      helperBar.textContent = '';
     }, 10000);
   }
   
@@ -7436,7 +8852,7 @@ case '7':
       fnFooter.classList.remove('hide');
       if (helperBar) {
         helperBar.classList.remove('hide');
-        helperBar.textContent = 'Adjust settings using footer buttons.';
+        helperBar.textContent = '';
       }
     } else if (peiPreviousPanel === 'status') {
       statusPanel.classList.remove('hide');
@@ -7451,6 +8867,8 @@ case '7':
       if (emergencyPanel) emergencyPanel.classList.remove('hide');
       if (emergencyFooterTopGap) emergencyFooterTopGap.classList.remove('hide');
       if (emergencyFooter) emergencyFooter.classList.remove('hide');
+    } else if (peiPreviousPanel === 'route-selection') {
+      showRouteSelectionPanel();
     } else {
       // Return to main panel
       mainPanel.classList.remove('hide');
@@ -7498,28 +8916,117 @@ case '7':
   // ==================== CCTV Panel ====================
   const cctvPanel = document.getElementById('cctv-panel');
   const cctvFooter = document.getElementById('cctv-footer');
+  const cctvSelectFooter = document.getElementById('cctv-select-footer');
   const cctvFooterTopGap = document.getElementById('cctv-footer-top-gap');
+  const cctvImageContainer = document.querySelector('.cctv-image-container');
+  const cctvQuadScreen = document.getElementById('cctv-quad-screen');
+  const cctvQuadGrid = document.getElementById('cctv-quad-grid');
   const cctvImage = document.getElementById('cctv-image');
   const cctvPlaceholder = document.getElementById('cctv-placeholder');
 
   const cctvBtn = document.getElementById('cctv-btn');
   const cctvPrevBtn = document.getElementById('cctv-prev-btn');
   const cctvNextBtn = document.getElementById('cctv-next-btn');
+  const cctvSelectBtn = document.getElementById('cctv-select-btn');
   const cctvExitBtn = document.getElementById('cctv-exit-btn');
   const cctvCctvBtn = document.getElementById('cctv-cctv-btn');
   const cctvPeiBtn = document.getElementById('cctv-pei-btn');
   const cctvFnBtn = document.getElementById('cctv-fn-btn');
   const cctvStopBtn = document.getElementById('cctv-stop-btn');
   const cctvSpecialBtn = document.getElementById('cctv-special-btn');
+  const cctvScanBtn = document.getElementById('cctv-scan-btn');
+  const cctvQuadBtn = document.getElementById('cctv-quad-btn');
+  const cctvEnterBtn = document.getElementById('cctv-enter-btn');
+  const cctvSelectStopBtn = document.getElementById('cctv-select-stop-btn');
+  const cctvSelectSpecialBtn = document.getElementById('cctv-select-special-btn');
+  const cctvCancelBtn = document.getElementById('cctv-cancel-btn');
 
-  let currentCamera = 1;
-  const totalCameras = 4;
+  const cctvCameras = [
+    { id: 'DMA-F', car: 'DMA', number: 'F', path: 'CCTV/DMA/F.jpg' },
+    ...['DMA', 'T', 'DMB'].flatMap(car => [1, 2, 3, 4].map(number => ({
+      id: `${car}-${number}`,
+      car,
+      number,
+      path: `CCTV/${car}/${number}.jpg`
+    })))
+  ];
+  const cctvSaloonCameras = cctvCameras.filter(camera => camera.number !== 'F');
+  let currentCamera = 'DMA-1';
+  let pendingCamera = null;
+  let quadSelectionMode = false;
+  let pendingCameras = [];
+  let cctvScanToken = 0;
+  const totalCameras = cctvCameras.length;
+  const quadCameraCount = 4;
   let previousScreenBeforeCctv = null;
+
+  function getCctvCamera(cameraId) {
+    return cctvCameras.find(camera => camera.id === cameraId) || cctvCameras[0];
+  }
 
   function updateCctvImage() {
     if (cctvImage) {
-      cctvImage.src = `CCTV/${currentCamera}.JPG`;
+      cctvImage.style.visibility = 'visible';
+      const camera = getCctvCamera(currentCamera);
+      cctvImage.src = camera.path;
+      cctvImage.alt = `${camera.car} CCTV Camera ${camera.number}`;
       if (cctvPlaceholder) cctvPlaceholder.style.display = 'none';
+    }
+  }
+
+  function hideCctvQuadView() {
+    if (cctvQuadScreen) cctvQuadScreen.classList.add('hide');
+    if (cctvImageContainer) cctvImageContainer.classList.remove('hide');
+  }
+
+  function showCctvQuadView(cameras) {
+    if (!cctvQuadGrid || !cctvQuadScreen) return;
+
+    cctvQuadGrid.innerHTML = cameras.map((camera) => `
+      <div class="quad-camera">
+        <img src="${getCctvCamera(camera).path}" alt="${getCctvCamera(camera).car} CCTV Camera ${getCctvCamera(camera).number}">
+      </div>
+    `).join('');
+    if (cctvImageContainer) cctvImageContainer.classList.add('hide');
+    cctvQuadScreen.classList.remove('hide');
+  }
+
+  function cancelCctvScan() {
+    cctvScanToken++;
+    if (cctvPlaceholder) cctvPlaceholder.style.display = 'none';
+  }
+
+  function showCctvRequestState() {
+    if (cctvImage) cctvImage.style.visibility = 'hidden';
+    if (cctvPlaceholder) {
+      cctvPlaceholder.textContent = 'Video Requested...';
+      cctvPlaceholder.style.display = 'block';
+    }
+  }
+
+  function showCctvImage() {
+    if (cctvImage) cctvImage.style.visibility = 'visible';
+    updateCctvImage();
+  }
+
+  async function runCctvScan() {
+    const scanToken = ++cctvScanToken;
+    let cameraIndex = cctvSaloonCameras.findIndex(camera => camera.id === currentCamera);
+    if (cameraIndex < 0) cameraIndex = 0;
+
+    while (scanToken === cctvScanToken && !cctvPanel.classList.contains('hide')) {
+      const camera = cctvSaloonCameras[cameraIndex];
+      if (scanToken !== cctvScanToken || cctvPanel.classList.contains('hide')) return;
+
+      currentCamera = camera.id;
+      showCctvRequestState();
+      const requestDelay = 250 + Math.floor(Math.random() * 751);
+      await new Promise(resolve => setTimeout(resolve, requestDelay));
+      if (scanToken !== cctvScanToken || cctvPanel.classList.contains('hide')) return;
+
+      showCctvImage();
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      cameraIndex = (cameraIndex + 1) % cctvSaloonCameras.length;
     }
   }
 
@@ -7535,6 +9042,7 @@ case '7':
 
   function showCctvPanel() {
     if (!cctvPanel.classList.contains('hide')) return;
+    cancelCctvScan();
     if (cctvAutoOpenTimer) {
       clearTimeout(cctvAutoOpenTimer);
       cctvAutoOpenTimer = null;
@@ -7563,22 +9071,31 @@ case '7':
     normalFooter.classList.add('hide');
     fnFooter.classList.add('hide');
     statusFooter.classList.add('hide');
-    if (helperBar) helperBar.classList.add('hide');
     peiFooter.classList.add('hide');
     if (cctvFooterTopGap) cctvFooterTopGap.classList.remove('hide');
     cctvFooter.classList.remove('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
+    if (cctvSelectMenu) cctvSelectMenu.classList.add('hide');
+    hideCctvQuadView();
+    quadSelectionMode = false;
+    pendingCameras = [];
 
-    currentCamera = 1;
+    currentCamera = 'DMA-1';
     updateCctvImage();
 
-    helperBar.textContent = '';
+    if (helperBar) {
+      helperBar.classList.remove('hide');
+      helperBar.textContent = 'Use Previous/Next Camera. Select Camera to choose.';
+    }
   }
 
   function hideCctvPanel() {
+    cancelCctvScan();
     cctvPanel.classList.add('hide');
     document.body.classList.remove('cctv-active');
     if (cctvFooterTopGap) cctvFooterTopGap.classList.add('hide');
     cctvFooter.classList.add('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
 
     const targetScreen = previousScreenBeforeCctv || previousUiScreen || previousFooter || (!hasRouteInput() ? 'startup' : 'normal');
     previousScreenBeforeCctv = null;
@@ -7596,6 +9113,11 @@ case '7':
 
     if (targetScreen === 'station') {
       switchToStationSelectMode();
+      return;
+    }
+
+    if (targetScreen === 'route-selection') {
+      showRouteSelectionPanel();
       return;
     }
 
@@ -7666,22 +9188,170 @@ case '7':
   });
 
   if (cctvStopBtn) cctvStopBtn.addEventListener('click', () => {
+    cancelCctvScan();
     manualStopAudio();
     if (displayWindow && !displayWindow.closed) {
       displayWindow.postMessage({ type: 'STOP' }, '*');
     }
   });
 
+  function stopCctvAudio() {
+    cancelCctvScan();
+    manualStopAudio();
+    if (displayWindow && !displayWindow.closed) {
+      displayWindow.postMessage({ type: 'STOP' }, '*');
+    }
+  }
+
+  if (cctvSelectStopBtn) cctvSelectStopBtn.addEventListener('click', stopCctvAudio);
+
   if (cctvPrevBtn) cctvPrevBtn.addEventListener('click', () => {
-    currentCamera--;
-    if (currentCamera < 1) currentCamera = totalCameras;
+    cancelCctvScan();
+    hideCctvQuadView();
+    const currentIndex = cctvCameras.findIndex(camera => camera.id === currentCamera);
+    currentCamera = cctvCameras[(currentIndex - 1 + totalCameras) % totalCameras].id;
     updateCctvImage();
   });
 
   if (cctvNextBtn) cctvNextBtn.addEventListener('click', () => {
-    currentCamera++;
-    if (currentCamera > totalCameras) currentCamera = 1;
+    cancelCctvScan();
+    hideCctvQuadView();
+    const currentIndex = cctvCameras.findIndex(camera => camera.id === currentCamera);
+    currentCamera = cctvCameras[(currentIndex + 1) % totalCameras].id;
     updateCctvImage();
+  });
+
+  const cctvSelectMenu = document.getElementById('cctv-select-menu');
+  const cctvCameraButtons = cctvSelectMenu
+    ? cctvSelectMenu.querySelectorAll('[data-cctv-camera]')
+    : [];
+
+  function updateCctvSelectionMenu() {
+    cctvCameraButtons.forEach((button) => {
+      const camera = button.dataset.cctvCamera;
+      const selected = quadSelectionMode
+        ? pendingCameras.includes(camera)
+        : camera === pendingCamera;
+      button.classList.toggle('selected', selected);
+    });
+    if (cctvEnterBtn) {
+      const canEnter = quadSelectionMode
+        ? pendingCameras.length === quadCameraCount
+        : pendingCamera !== null;
+      cctvEnterBtn.disabled = !canEnter;
+      cctvEnterBtn.classList.toggle('footer-btn-green', canEnter);
+      cctvEnterBtn.classList.toggle('footer-btn-grey', !canEnter);
+    }
+    if (helperBar && quadSelectionMode) {
+      const selectedNames = pendingCameras
+        .map(cameraId => {
+          const camera = getCctvCamera(cameraId);
+          return `${camera.car} Camera ${camera.number}`;
+        })
+        .join('. ');
+      helperBar.classList.remove('hide');
+      helperBar.textContent = `${pendingCameras.length}/4 cameras selected${selectedNames ? `. ${selectedNames}.` : '.'}`;
+    }
+  }
+
+  if (cctvSelectBtn) cctvSelectBtn.addEventListener('click', () => {
+    if (!cctvSelectMenu) return;
+    quadSelectionMode = false;
+    pendingCamera = null;
+    pendingCameras = [];
+    hideCctvQuadView();
+    cctvFooter.classList.add('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.remove('hide');
+    updateCctvSelectionMenu();
+    cctvSelectMenu.classList.remove('hide');
+  });
+
+  cctvCameraButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const camera = button.dataset.cctvCamera;
+      if (quadSelectionMode) {
+        if (pendingCameras.includes(camera)) {
+          pendingCameras = pendingCameras.filter(selectedCamera => selectedCamera !== camera);
+        } else if (pendingCameras.length < quadCameraCount) {
+          pendingCameras = [...pendingCameras, camera];
+        }
+      } else {
+        pendingCamera = camera;
+      }
+      updateCctvSelectionMenu();
+    });
+  });
+
+  if (cctvEnterBtn) cctvEnterBtn.addEventListener('click', () => {
+    if (quadSelectionMode) {
+      if (pendingCameras.length !== quadCameraCount) return;
+      const selectedNames = pendingCameras
+        .map(cameraId => {
+          const camera = getCctvCamera(cameraId);
+          return `${camera.car} Camera ${camera.number}`;
+        })
+        .join('. ');
+      currentCamera = pendingCameras[0];
+      showCctvQuadView(pendingCameras);
+      pendingCamera = null;
+      pendingCameras = [];
+      quadSelectionMode = false;
+      cctvSelectMenu.classList.add('hide');
+      if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
+      cctvFooter.classList.remove('hide');
+      if (helperBar) helperBar.textContent = `${selectedNames}.`;
+      return;
+    } else {
+      if (pendingCamera === null) return;
+      currentCamera = pendingCamera;
+      const requestToken = ++cctvScanToken;
+      showCctvRequestState();
+      const requestDelay = 250 + Math.floor(Math.random() * 751);
+      setTimeout(() => {
+        if (requestToken !== cctvScanToken || cctvPanel.classList.contains('hide')) return;
+        showCctvImage();
+      }, requestDelay);
+    }
+    pendingCamera = null;
+    pendingCameras = [];
+    quadSelectionMode = false;
+    cctvSelectMenu.classList.add('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
+    cctvFooter.classList.remove('hide');
+    if (helperBar) helperBar.textContent = '';
+  });
+
+  if (cctvCancelBtn) cctvCancelBtn.addEventListener('click', () => {
+    pendingCamera = null;
+    pendingCameras = [];
+    quadSelectionMode = false;
+    hideCctvQuadView();
+    cctvSelectMenu.classList.add('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
+    cctvFooter.classList.remove('hide');
+    if (helperBar) helperBar.textContent = '';
+  });
+
+  if (cctvScanBtn) cctvScanBtn.addEventListener('click', () => {
+    pendingCamera = null;
+    cctvSelectMenu.classList.add('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
+    cctvFooter.classList.remove('hide');
+    if (helperBar) helperBar.textContent = '';
+    runCctvScan();
+  });
+
+  if (cctvQuadBtn) cctvQuadBtn.addEventListener('click', () => {
+    quadSelectionMode = true;
+    pendingCamera = null;
+    pendingCameras = [];
+    updateCctvSelectionMenu();
+  });
+
+  if (cctvSelectSpecialBtn) cctvSelectSpecialBtn.addEventListener('click', () => {
+    cctvSelectMenu.classList.add('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
+    showSpecialPanel();
   });
 
   if (cctvPeiBtn) cctvPeiBtn.addEventListener('click', () => {
@@ -7689,6 +9359,8 @@ case '7':
     document.body.classList.remove('cctv-active');
     if (cctvFooterTopGap) cctvFooterTopGap.classList.add('hide');
     cctvFooter.classList.add('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
+    cctvSelectMenu.classList.add('hide');
     showPeiPanel('main');
   });
 
@@ -7698,6 +9370,8 @@ case '7':
     document.body.classList.remove('cctv-active');
     if (cctvFooterTopGap) cctvFooterTopGap.classList.add('hide');
     cctvFooter.classList.add('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
+    cctvSelectMenu.classList.add('hide');
     showFnPanel();
     previousScreenBeforeFn = returnScreen;
   });
@@ -7706,6 +9380,8 @@ case '7':
     cctvPanel.classList.add('hide');
     document.body.classList.remove('cctv-active');
     cctvFooter.classList.add('hide');
+    if (cctvSelectFooter) cctvSelectFooter.classList.add('hide');
+    cctvSelectMenu.classList.add('hide');
     showSpecialPanel();
   });
 
@@ -7714,6 +9390,8 @@ case '7':
   function updateClosestStationTag() {
     // Remove all existing closest station tags
     document.querySelectorAll('.closest-station-tag').forEach(tag => tag.remove());
+
+    if (!gpsAvailable || tswLastPosition?.speedKmh > 25) return;
     
     // Add tag to current closest station
     const stationItems = document.querySelectorAll('#station-list li');
@@ -7846,8 +9524,12 @@ case '7':
       stationCodeList.appendChild(item);
     });
     const totalPages = Math.ceil(stationCodeOptions.length / STATION_CODE_ITEMS_PER_PAGE);
-    if (stationCodeMorePrev) stationCodeMorePrev.style.display = stationCodePage > 0 ? 'block' : 'none';
-    if (stationCodeMoreNext) stationCodeMoreNext.style.display = stationCodePage < totalPages - 1 ? 'block' : 'none';
+    if (stationCodeMorePrev) stationCodeMorePrev.style.visibility = stationCodePage > 0 ? 'visible' : 'hidden';
+    if (stationCodeMoreNext) stationCodeMoreNext.style.visibility = stationCodePage < totalPages - 1 ? 'visible' : 'hidden';
+    const stationCodePageIndicator = document.getElementById('station-code-page-indicator');
+    const stationCodePageText = `Page: ${stationCodeOptions.length > 0 ? stationCodePage + 1 : 1}/${Math.max(1, totalPages)}`;
+    if (stationCodePageIndicator) stationCodePageIndicator.textContent = stationCodePageText;
+    document.getElementById('station-code-page-indicator-bottom')?.replaceChildren(stationCodePageText);
     if (stationCodeUpBtn) {
       stationCodeUpBtn.classList.toggle('footer-btn-grey', stationCodeIndex === 0);
       stationCodeUpBtn.classList.toggle('footer-btn-green', stationCodeIndex !== 0);
@@ -8015,7 +9697,7 @@ case '7':
     }
   });
   if (stationCodeSelectBtn) stationCodeSelectBtn.addEventListener('click', selectStationCodeOption);
-  if (stationCodeStopBtn) stationCodeStopBtn.addEventListener('click', manualStopAudio);
+  if (stationCodeStopBtn) stationCodeStopBtn.addEventListener('click', stopCurrentDvaAndPid);
   if (stationCodeSpecialBtn) stationCodeSpecialBtn.addEventListener('click', () => document.getElementById('special-btn')?.click());
   if (stationCodeCloseBtn) stationCodeCloseBtn.addEventListener('click', closeStationCodeKeyboard);
 
@@ -8424,6 +10106,11 @@ case '7':
     
     // Play audio
     if (audioPath) {
+      currentAnnouncementDisplayText = displayLabel || messageKey;
+      currentAnnouncementAudioPath = audioPath;
+      currentAnnouncementType = 'special';
+      currentAnnouncementStation = displayLabel || messageKey;
+      currentAnnouncementSpecialMessageId = messageKey;
       setTimeout(() => {
         try {
           playAudio(audioPath);
@@ -8465,7 +10152,9 @@ case '7':
     const endIndex = Math.min(startIndex + SPECIAL_ITEMS_PER_PAGE, specialMessages.length);
     const specialPageIndicator = document.getElementById('special-page-indicator');
     const specialTotalPages = Math.ceil(specialMessages.length / SPECIAL_ITEMS_PER_PAGE);
-    if (specialPageIndicator) specialPageIndicator.textContent = `Page ${specialMessages.length > 0 ? currentSpecialPage + 1 : 1}/${Math.max(1, specialTotalPages)}`;
+    const specialPageText = `Page: ${specialMessages.length > 0 ? currentSpecialPage + 1 : 1}/${Math.max(1, specialTotalPages)}`;
+    if (specialPageIndicator) specialPageIndicator.textContent = specialPageText;
+    document.getElementById('special-page-indicator-bottom')?.replaceChildren(specialPageText);
     
     // Show items for current page
     for (let i = startIndex; i < endIndex; i++) {
@@ -8474,8 +10163,8 @@ case '7':
     }
     
     // Update -more- button visibility
-    specialMorePrev.style.display = currentSpecialPage > 0 ? 'block' : 'none';
-    specialMoreNext.style.display = endIndex < specialMessages.length ? 'block' : 'none';
+    specialMorePrev.style.visibility = currentSpecialPage > 0 ? 'visible' : 'hidden';
+    specialMoreNext.style.visibility = endIndex < specialMessages.length ? 'visible' : 'hidden';
     
     // Update up/down button colors based on position (special messages mode)
     if (specialUpBtn) {
@@ -8635,18 +10324,13 @@ case '7':
     specialFooter.classList.remove('hide');
     if (helperBar) {
       helperBar.classList.remove('hide');
-      helperBar.textContent = 'Select special message to play.';
+      helperBar.textContent = '"Play" to select the message or "Emergency" for Emergency Messages.';
     }
     
     // Reset selection to first page
     currentSpecialIndex = 0;
     currentSpecialPage = 0;
     updateSpecialDisplayPage();
-    
-    if (helperBar) {
-      helperBar.textContent = '';
-      helperBar.classList.add('hide');
-    }
   }
   
   function closeSecondaryMenuAndRestorePreviousScreen() {
@@ -8841,7 +10525,9 @@ case '7':
     const endIndex = Math.min(startIndex + EMERGENCY_ITEMS_PER_PAGE, emergencyMessages.length);
     const emergencyPageIndicator = document.getElementById('emergency-page-indicator');
     const emergencyTotalPages = Math.ceil(emergencyMessages.length / EMERGENCY_ITEMS_PER_PAGE);
-    if (emergencyPageIndicator) emergencyPageIndicator.textContent = `Page ${emergencyMessages.length > 0 ? currentEmergencyPage + 1 : 1}/${Math.max(1, emergencyTotalPages)}`;
+    const emergencyPageText = `Page: ${emergencyMessages.length > 0 ? currentEmergencyPage + 1 : 1}/${Math.max(1, emergencyTotalPages)}`;
+    if (emergencyPageIndicator) emergencyPageIndicator.textContent = emergencyPageText;
+    document.getElementById('emergency-page-indicator-bottom')?.replaceChildren(emergencyPageText);
     
     for (let i = startIndex; i < endIndex; i++) {
       if (emergencyItems[i]) {
@@ -8854,8 +10540,8 @@ case '7':
     const emergencyUpBtn = document.getElementById('emergency-up-btn');
     const emergencyDownBtn = document.getElementById('emergency-down-btn');
     
-    if (emergencyMorePrev) emergencyMorePrev.style.display = currentEmergencyPage > 0 ? 'block' : 'none';
-    if (emergencyMoreNext) emergencyMoreNext.style.display = endIndex < emergencyMessages.length ? 'block' : 'none';
+    if (emergencyMorePrev) emergencyMorePrev.style.visibility = currentEmergencyPage > 0 ? 'visible' : 'hidden';
+    if (emergencyMoreNext) emergencyMoreNext.style.visibility = endIndex < emergencyMessages.length ? 'visible' : 'hidden';
     
     // Update up/down button colors
     if (emergencyUpBtn) {
@@ -8909,6 +10595,11 @@ case '7':
       
       // Update PID display
       updatePIDDisplay(displayLabel, 'special');
+      currentAnnouncementDisplayText = displayLabel;
+      currentAnnouncementAudioPath = audioPath;
+      currentAnnouncementType = 'special';
+      currentAnnouncementStation = displayLabel;
+      currentAnnouncementSpecialMessageId = messageKey;
       
       if (audioPath) {
         setTimeout(() => {
@@ -9009,11 +10700,6 @@ case '7':
     
     updateEmergencyDisplayPage();
     updateEmergencyPlayButtonText();
-    
-    if (helperBar) {
-      helperBar.textContent = '';
-      helperBar.classList.add('hide');
-    }
   }
   
   function hideEmergencyPanel() {
@@ -9039,9 +10725,7 @@ case '7':
     if (emergencyFooterTopGap) {
       emergencyFooterTopGap.classList.add('hide');
     }
-    if (helperBar) helperBar.classList.add('hide');
-
-    const targetScreen = 'special';
+    const targetScreen = previousScreenBeforeEmergency || previousUiScreen || previousFooter || 'special';
     previousScreenBeforeEmergency = null;
     previousScreenBeforeSpecial = null;
 
@@ -9231,7 +10915,7 @@ case '7':
   
   // Stop button stops audio and clears display
   if (specialStopBtn) specialStopBtn.addEventListener('click', () => {
-    manualStopAudio();
+    stopCurrentDvaAndPid();
     isPlayingSpecial = false;  // Allow panel to close after stopping
   });
   
@@ -9307,12 +10991,12 @@ case '7':
     // Reset core route and display state
     runNumberInput.value = '';
     if (runInput) runInput.value = '';
-    if (typeof updateRouteDisplay === 'function') {
-      updateRouteDisplay();
+    routeConfirmed = false;
+    if (routeHardwareTimer) {
+      clearTimeout(routeHardwareTimer);
+      routeHardwareTimer = null;
     }
-
-    if (routeDisplay) routeDisplay.textContent = '';
-    if (routePreview) routePreview.textContent = '';
+    if (routeHeader) routeHeader.classList.remove('route-hardware-delay');
 
     stopTSWAutomation();
     resetTSWAutomationState();
@@ -9320,6 +11004,7 @@ case '7':
     // Reset GTFS route state
     currentGTFSTrip = null;
     currentManualRoute = null;
+    currentManualFormFile = null;
     currentRouteFormCode = null;
     currentRouteLongName = null;
     currentDestinationStation = null;
@@ -9329,6 +11014,8 @@ case '7':
     currentHighlightIndex = 0;
     closestStationIndex = 0;
     clearPendingAnnouncement();
+    updateRouteInputUI();
+    updateRouteDisplay();
 
     // Reset panel state
     if (mainPanel) mainPanel.classList.remove('hide');

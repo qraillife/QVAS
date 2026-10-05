@@ -33,21 +33,25 @@
   // On https://user.github.io/repo/ the app lives under /repo/, but app.js uses root-absolute URLs
   // like /audio/... and /api/... . Rewrite same-origin root-absolute URLs to include the base.
   const BASE = window.location.pathname.replace(/[^/]*$/, ''); // e.g. "/repo/" or "/"
+  // The site keeps audio under audio/QR_PIDS_AudioFiles/; the desktop server also answered /QR_PIDS_AudioFiles/...
   function fixUrl(u) {
     try {
-      if (typeof u !== 'string' || BASE === '/') return u;
+      if (typeof u !== 'string' || /^(blob:|data:)/i.test(u)) return u;
       const url = new URL(u, window.location.href);
-      if (url.origin === window.location.origin && !url.pathname.startsWith(BASE)) {
-        url.pathname = BASE + url.pathname.replace(/^\//, '');
-        return url.toString();
-      }
+      if (url.origin !== window.location.origin) return u;
+      let rel = url.pathname.startsWith(BASE) ? url.pathname.slice(BASE.length) : url.pathname.replace(/^\//, '');
+      if (/^QR_PIDS_AudioFiles\//i.test(rel)) rel = 'audio/' + rel;
+      const fixed = BASE + rel;
+      if (fixed === url.pathname) return u;
+      url.pathname = fixed;
+      return url.toString();
     } catch (e) {}
     return u;
   }
   function relPath(pathname) { // strip the base so route matching sees "/api/..." again
     return BASE !== '/' && pathname.startsWith(BASE) ? '/' + pathname.slice(BASE.length) : pathname;
   }
-  if (BASE !== '/') {
+  {
     const NativeAudio = window.Audio;
     window.Audio = function (src) { const a = new NativeAudio(); if (src !== undefined) a.src = src; return a; };
     window.Audio.prototype = NativeAudio.prototype;
@@ -100,6 +104,12 @@
 
   // ---------- route handlers (ported from server.js) ----------
   async function handle(pathname, search, method, init, input) {
+    // v17 startup check: "are the audio + GTFS assets installed?" Everything is bundled in the site, so yes.
+    // (Returning ready:true also means the app never tries the desktop-only asset downloader.)
+    if (pathname === '/api/assets-status') {
+      return json({ ready: true, missing: [], missingGTFSFiles: [] });
+    }
+
     if (pathname === '/api/routes') {
       const gtfs = await loadPatterns();
       const routes = Object.keys(gtfs.routes || {}).map(id => ({
@@ -174,7 +184,7 @@
 
     // On the phone the "train position" is simply the phone's own GPS.
     if (pathname === '/api/tsw/player-position') {
-      if (!gpsEnabled) return json({ success: false, error: 'Phone GPS is off' });
+      if (!appGpsMode()) return json({ success: false, error: 'GPS Mode is off' });
       startGPS();
       if (phoneGPS && Date.now() - phoneGPS.receivedAt <= GPS_MAX_AGE_MS) {
         return json({ success: true, source: 'Phone GPS', ...phoneGPS });
@@ -194,16 +204,11 @@
   // ---------- GPS (replaces gps-transmitter.html + /api/phone-gps) ----------
   let gpsWatchId = null;
   let gpsError = '';
-  // Off by default (same as desktop, where the phone-GPS feed isn't running). When on, the app auto-highlights the
-  // station nearest to the phone, which jumps the list to the wrong place if you aren't actually on the route.
-  let gpsEnabled = false;
-  try { gpsEnabled = localStorage.getItem('qvas-phone-gps') === '1'; } catch (e) {}
-  function setGpsEnabled(on) {
-    gpsEnabled = !!on;
-    try { localStorage.setItem('qvas-phone-gps', gpsEnabled ? '1' : '0'); } catch (e) {}
-    if (gpsEnabled) startGPS();
-    if (!gpsEnabled) { if (gpsWatchId !== null && navigator.geolocation) navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; phoneGPS = null; }
-  }
+  // v17 ignores the 3/4/6/7 keys while its own "GPS Mode" is on (default on), and in that mode it auto-selects the
+  // station nearest to the phone, which jumps the list around when you aren't on the route. So the phone starts in
+  // manual mode (GPS Mode off). Turn it on from the GPS button in the key bar (or the app's Status screen) when riding.
+  try { if (localStorage.getItem('gpsModeEnabled') === null) localStorage.setItem('gpsModeEnabled', 'false'); } catch (e) {}
+  const appGpsMode = () => { try { return localStorage.getItem('gpsModeEnabled') === 'true'; } catch (e) { return false; } };
   function startGPS() {
     if (gpsWatchId !== null || !navigator.geolocation) return;
     gpsWatchId = navigator.geolocation.watchPosition(
@@ -239,6 +244,7 @@
       const g = path.match(/^\/SEQ_GTFS\/([a-z_]+\.txt)$/);
       if (g) { const res = await gtfsFile(g[1]); if (res) return res; }
       if (typeof input === 'string' && sameOrigin) return realFetch(fixUrl(input), init);
+      if (input && input.url && sameOrigin && typeof input !== 'string') return realFetch(fixUrl(input.url), init);
     } catch (e) {
       console.error('[qvas-shim]', e);
       return json({ error: String(e.message || e) }, 500);
@@ -258,8 +264,6 @@
     try {
       const AC = window.AudioContext || window.webkitAudioContext;
       if (AC) { const ctx = new AC(); ctx.resume && ctx.resume(); const b = ctx.createBuffer(1, 1, 22050); const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); }
-      const a = new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=');
-      a.play().catch(() => {});
     } catch (e) {}
     window.removeEventListener('touchend', unlock, true);
     window.removeEventListener('click', unlock, true);
@@ -309,6 +313,7 @@
       #qvas-keybar button b{display:block;font-size:17px}
       #qvas-keybar button:active,#qvas-keybar button.hit{background:#3d5a99}
       #qvas-keybar .qk-ctl{flex:0 0 34px;background:#333;font-size:16px;padding:0}
+      #qvas-keybar.gps-on .qk-key{opacity:.45}
       #qvas-keybar.collapsed{width:auto}
       #qvas-keybar.collapsed button.qk-key{display:none}`;
     document.head.appendChild(css);
@@ -339,12 +344,21 @@
       c.addEventListener('click', fn); return c;
     };
     bar.querySelectorAll('button').forEach(b => b.classList.add('qk-key'));
-    const gps = mk(gpsEnabled ? 'GPS On' : 'GPS Off', 'Turn phone GPS on or off', function () {
-      setGpsEnabled(!gpsEnabled); this.textContent = gpsEnabled ? 'GPS On' : 'GPS Off';
-      this.style.background = gpsEnabled ? '#1d6b3a' : '';
+    const gps = mk('GPS Off', 'Turn GPS Mode on or off', function () {
+      const appBtn = document.getElementById('status-gps-mode-btn');
+      if (appBtn) appBtn.click();                       // the app's own toggle (also stops/starts its GPS automation)
+      else { try { localStorage.setItem('gpsModeEnabled', String(!appGpsMode())); } catch (e) {} location.reload(); }
+      setTimeout(syncGps, 50);
     });
     gps.style.flexBasis = 'auto'; gps.style.padding = '0 8px'; gps.style.fontSize = '11px';
-    if (gpsEnabled) gps.style.background = '#1d6b3a';
+    function syncGps() {
+      const on = appGpsMode();
+      gps.textContent = on ? 'GPS On' : 'GPS Off';
+      gps.style.background = on ? '#1d6b3a' : '';
+      bar.classList.toggle('gps-on', on);
+      if (!on && gpsWatchId !== null && navigator.geolocation) { navigator.geolocation.clearWatch(gpsWatchId); gpsWatchId = null; phoneGPS = null; }
+    }
+    syncGps(); setInterval(syncGps, 800);
     bar.appendChild(gps);
     bar.appendChild(mk('\u21C5', 'Move keys to top or bottom', () => setPos(bar.classList.contains('top') ? 'bottom' : 'top')));
     bar.appendChild(mk('\u2013', 'Hide or show keys', function () {

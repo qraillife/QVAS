@@ -10,6 +10,7 @@
   <meta name="apple-mobile-web-app-title" content="VAS HMI-C">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https:; img-src 'self' data: https:; media-src 'self' https: blob:; font-src 'self' data: https:;">
   <title>VAS HMI-C</title>
   <link rel="stylesheet" href="style.css">
   <style>
@@ -111,7 +112,12 @@
 <body>
   <!-- Loading Screen - shown until app initializes -->
   <div id="loading-screen">
-    <div class="loading-text">System Initialising...</div>
+    <div class="loading-text" id="loading-text">System Initialising...</div>
+    <div id="asset-update-prompt" class="hide" style="margin-top: 18px; text-align: center;">
+      <div style="margin-bottom: 10px;">New audio assets are available.</div>
+      <button id="asset-update-download-btn" type="button">Download Update</button>
+      <button id="asset-update-continue-btn" type="button">Continue Without Downloading</button>
+    </div>
   </div>
   
   <!-- Error Screen - shown if errors occur -->
@@ -119,6 +125,18 @@
     <div class="error-title">⚠️ System Error</div>
     <div class="error-message"></div>
     <div style="margin-top: 20px; font-size: 12px;">Please check the console (F12) for details</div>
+  </div>
+
+  <div id="standby-overlay" class="standby-overlay" hidden aria-hidden="true">
+    <div class="standby-logo-area">
+      <img src="./assets/qvas-project-logo.png" alt="QVAS project">
+    </div>
+    <div class="standby-chrome standby-header-bar"></div>
+    <div class="standby-chrome standby-indicator-bar"></div>
+    <div class="standby-chrome standby-sidebar"></div>
+    <div class="standby-chrome standby-footer">
+      <button id="standby-exit-btn" type="button" disabled>Exit</button>
+    </div>
   </div>
 
   <script>
@@ -236,25 +254,31 @@
 
       <!-- Station list (hidden initially) -->
       <div id="station-list-container">
-        <div class="station-more-btn" id="station-more-prev" style="display: none;">-more-</div>
+        <div class="menu-page-indicator" id="station-page-indicator">Page: 1/1</div>
+        <div class="station-more-btn" id="station-more-prev" style="visibility: hidden;">-more-</div>
         <ul id="station-list"></ul>
-        <div class="station-more-btn" id="station-more-next" style="display: none;">-more-</div>
+        <div class="station-more-btn" id="station-more-next" style="visibility: hidden;">-more-</div>
+        <div class="menu-page-indicator menu-page-indicator-bottom" id="station-page-indicator-bottom">Page: 1/1</div>
       </div>
 
       <!-- Manual announcements list (hidden initially) -->
       <div id="manual-list-container" class="hide">
-        <div class="manual-more-btn" id="manual-more-prev" style="display: none;">-more-</div>
+        <div class="menu-page-indicator" id="manual-page-indicator">Page: 1/1</div>
+        <div class="manual-more-btn" id="manual-more-prev" style="visibility: hidden;">-more-</div>
         <ul id="manual-list"></ul>
-        <div class="manual-more-btn" id="manual-more-next" style="display: none;">-more-</div>
+        <div class="manual-more-btn" id="manual-more-next" style="visibility: hidden;">-more-</div>
+        <div class="menu-page-indicator menu-page-indicator-bottom" id="manual-page-indicator-bottom">Page: 1/1</div>
       </div>
 
       <!-- Station Code Entry (hidden initially) -->
       <div id="station-code-mode-container" class="hide">
         <div class="mode-title">Select Closest Station</div>
         <div id="station-code-list-container">
-          <div class="station-more-btn" id="station-code-more-prev" style="display: none;">-more-</div>
+          <div class="menu-page-indicator" id="station-code-page-indicator">Page: 1/1</div>
+          <div class="station-more-btn" id="station-code-more-prev" style="visibility: hidden;">-more-</div>
           <ul id="station-code-list"></ul>
-          <div class="station-more-btn" id="station-code-more-next" style="display: none;">-more-</div>
+          <div class="station-more-btn" id="station-code-more-next" style="visibility: hidden;">-more-</div>
+          <div class="menu-page-indicator menu-page-indicator-bottom" id="station-code-page-indicator-bottom">Page: 1/1</div>
         </div>
         <div id="station-code-keyboard" class="station-code-keyboard-panel">
           <div class="keyboard-row">
@@ -340,7 +364,7 @@
         <div class="fn-slider-track">
           <div class="fn-slider-handle" id="handset-handle"></div>
         </div>
-        <div class="fn-slider-label">Handset Volume</div>
+        <div class="fn-slider-label">Alert Volume</div>
       </div>
       <div class="fn-slider-group">
         <div class="fn-slider-value" id="cabin-value">50%</div>
@@ -376,16 +400,16 @@
               <tr><td>Trigger state</td><td id="status-trigger-state">Unavailable</td></tr>
               <tr><td>GPS status</td><td id="status-gps-state">Unavailable</td></tr>
               <tr><td>Position source</td><td id="status-gps-source">Unavailable</td></tr>
-              <tr><td>Phone latitude</td><td id="status-gps-latitude">Unavailable</td></tr>
-              <tr><td>Phone longitude</td><td id="status-gps-longitude">Unavailable</td></tr>
-              <tr><td>Phone speed</td><td id="status-gps-speed">Unavailable</td></tr>
+              <tr><td>GPS latitude</td><td id="status-gps-latitude">Unavailable</td></tr>
+              <tr><td>GPS longitude</td><td id="status-gps-longitude">Unavailable</td></tr>
+              <tr><td>GPS speed</td><td id="status-gps-speed">Unavailable</td></tr>
               <tr><td>GPS accuracy</td><td id="status-gps-accuracy">Unavailable</td></tr>
-              <tr><td>Closest station</td><td id="status-closest-station">Unavailable</td></tr>
+              <tr id="status-closest-station-row" hidden><td>Closest station</td><td id="status-closest-station">Unavailable</td></tr>
             </tbody>
           </table>
           <button class="status-gps-refresh" id="status-gps-source-btn" type="button">GPS Source: Phone</button>
           <button class="status-gps-refresh" id="status-gps-mode-btn" type="button">GPS Mode: ON</button>
-          <button class="status-gps-refresh" id="status-gps-refresh-btn" type="button">Refresh GPS Data</button>
+          <button class="status-gps-refresh" id="status-gps-thresholds-btn" type="button">Configure GPS Thresholds</button>
           <button class="status-gps-refresh" id="status-mtg-test-btn" type="button">Test MTG Countdown</button>
         </div>
       </div>
@@ -397,6 +421,20 @@
       <button class="side-btn" id="status-fn-btn">Fn</button>
     </div>
   </div>
+
+  <dialog class="gps-threshold-dialog" id="gps-threshold-dialog" aria-labelledby="gps-threshold-title">
+    <form id="gps-threshold-form">
+      <h2 id="gps-threshold-title">Configure GPS Thresholds</h2>
+      <label>NAA announcement distance (m)<input id="gps-threshold-naa" type="number" min="1" max="10000" step="1" required></label>
+      <label>TNS announcement distance (m)<input id="gps-threshold-tns" type="number" min="1" max="10000" step="1" required></label>
+      <label>MTG zone distance (m)<input id="gps-threshold-mtg" type="number" min="1" max="10000" step="1" required></label>
+      <label>MTG movement tolerance (m)<input id="gps-threshold-movement" type="number" min="1" max="10000" step="1" required></label>
+      <div class="gps-threshold-actions">
+        <button class="status-gps-refresh" id="gps-threshold-cancel" type="button">Cancel</button>
+        <button class="status-gps-refresh" type="submit">Save Thresholds</button>
+      </div>
+    </form>
+  </dialog>
 
   <!-- Status and Versions Panel (hidden initially) -->
   <div id="system-info-panel" class="status-panel-container hide">
@@ -412,10 +450,9 @@
             <tr><td>Browser engine</td><td id="system-info-browser">Unavailable</td></tr>
             <tr><td>Electron</td><td id="system-info-electron">Unavailable</td></tr>
             <tr><td>Node.js</td><td id="system-info-node">Unavailable</td></tr>
-            <tr><td>App version</td><td id="system-info-app-version">LARPTRANSIT QVAS 16.2</td></tr>
+            <tr><td>App version</td><td id="system-info-app-version">17.2.5</td></tr>
             <tr><td>Battery</td><td id="system-info-battery">Unavailable</td></tr>
-            <tr><td>Device model</td><td id="system-info-device-model">Unavailable</td></tr>
-            <tr><td>Serial number</td><td id="system-info-serial-number">Unavailable</td></tr>
+            <tr><td>IP address</td><td id="system-info-ip-address">Unavailable</td></tr>
           </tbody>
         </table>
       </div>
@@ -457,15 +494,38 @@
           <span class="system-settings-status" id="gtfs-last-updated" role="status">Checking...</span>
         </div>
         <div class="system-settings-section update-section">
-          <label class="system-settings-label">GTFS data due for update:</label>
-          <span class="system-settings-status" id="gtfs-due-date" role="status">Checking...</span>
-        </div>
-        <div class="system-settings-section update-section">
           <button class="status-gps-refresh" id="set3-gtfs-update-btn" type="button">Update GTFS</button>
           <div class="gtfs-update-progress" aria-label="GTFS update progress">
             <div class="gtfs-update-progress-bar" id="set3-gtfs-update-progress-bar"></div>
           </div>
           <span class="system-settings-status" id="set3-gtfs-update-status" role="status">Ready to update</span>
+        </div>
+        <div class="system-settings-section update-section">
+          <label class="system-settings-label">Automatic asset updates:</label>
+          <button class="fn-toggle-btn" id="automatic-assets-toggle" type="button">ON</button>
+          <span class="system-settings-status">Checks for new audio assets during startup.</span>
+        </div>
+        <div class="system-settings-section update-section">
+          <label class="system-settings-label">Automatic GTFS updates:</label>
+          <button class="fn-toggle-btn" id="automatic-gtfs-toggle" type="button">ON</button>
+          <span class="system-settings-status">Refreshes GTFS data during startup when online.</span>
+        </div>
+        <div class="system-settings-section update-section">
+          <label class="system-settings-label">Automatic application updates:</label>
+          <button class="fn-toggle-btn" id="automatic-application-toggle" type="button">ON</button>
+          <span class="system-settings-status">Checks for new QVAS releases during startup.</span>
+        </div>
+        <div class="system-settings-section update-section">
+          <button class="status-gps-refresh update-action-btn" id="reinstall-audio-assets-btn" type="button">Re-install Audio Assets</button>
+          <span class="system-settings-status" id="reinstall-audio-assets-status" role="status">Ready</span>
+        </div>
+        <div class="system-settings-section update-section">
+          <button class="status-gps-refresh update-action-btn" id="check-assets-update-btn" type="button">Check for Asset Updates</button>
+          <span class="system-settings-status" id="check-assets-update-status" role="status">Ready</span>
+        </div>
+        <div class="system-settings-section update-section">
+          <button class="status-gps-refresh update-action-btn" id="check-application-update-btn" type="button">Check for Application Updates</button>
+          <span class="system-settings-status" id="check-application-update-status" role="status">Ready</span>
         </div>
       </div>
       <div class="fn-audio-device-panel hide" id="fn-audio-device-panel">
@@ -478,7 +538,11 @@
         </div>
         <div class="system-settings-section">
           <label class="system-settings-label">Auto CCTV on Door Unlock:</label>
-          <button id="cctv-auto-toggle" class="fn-toggle-btn">ON</button>
+          <button id="cctv-auto-toggle" class="fn-toggle-btn">OFF</button>
+        </div>
+        <div class="system-settings-section">
+          <label class="system-settings-label">Standby mode:</label>
+          <button class="status-gps-refresh update-action-btn" id="standby-enter-btn" type="button">Enter Standby Mode</button>
         </div>
         <div class="fn-closest-station-panel">
           <div class="fn-toggle-group">
@@ -489,6 +553,15 @@
             <label class="fn-toggle-label">NGR Button Message Toggle</label>
             <button id="ngr-button-message-toggle" class="fn-toggle-btn">OFF</button>
           </div>
+        </div>
+        <div class="system-settings-section">
+          <button class="status-gps-refresh update-action-btn" id="test-all-alert-sounds-btn" type="button">Test All Alert Sounds</button>
+        </div>
+        <div class="system-settings-section">
+          <button class="status-gps-refresh update-action-btn" id="reload-ui-btn" type="button">Reload UI</button>
+        </div>
+        <div class="system-settings-section">
+          <button class="status-gps-refresh update-action-btn" id="restart-app-btn" type="button">Restart in Frameless Full Screen</button>
         </div>
       </div>
     </div>
@@ -504,9 +577,11 @@
   <div id="route-selection-panel" class="special-panel-container hide">
     <div class="special-panel-left">
       <div class="special-title" id="route-selection-title">List Of Routes</div>
-      <div class="special-more-btn" id="route-selection-more-prev" style="display: none;">-more-</div>
+      <div class="menu-page-indicator" id="route-selection-page-indicator">Page: 1/1</div>
+      <div class="special-more-btn" id="route-selection-more-prev" style="visibility: hidden;">-more-</div>
       <div class="special-list" id="route-selection-list"></div>
-      <div class="special-more-btn" id="route-selection-more-next" style="display: none;">-more-</div>
+      <div class="special-more-btn" id="route-selection-more-next" style="visibility: hidden;">-more-</div>
+      <div class="menu-page-indicator menu-page-indicator-bottom" id="route-selection-page-indicator-bottom">Page: 1/1</div>
     </div>
     <div class="right-panel">
       <button class="side-btn side-btn-grey" id="route-selection-top-blank-btn" aria-label="Blank spacer"></button>
@@ -541,11 +616,6 @@
 
   <!-- Status and Versions Footer (hidden initially) -->
   <div class="footer hide" id="system-info-footer">
-    <button class="footer-btn footer-btn-red" id="system-info-smu-btn">SMU 260</button>
-    <button class="footer-btn footer-btn-grey" id="system-info-set2-btn">Set2</button>
-    <button class="footer-btn footer-btn-grey" id="system-info-set3-btn">Set3</button>
-    <button class="footer-btn footer-btn-grey" id="system-info-set4-btn" aria-label="Set4 unavailable"></button>
-    <button class="footer-btn footer-btn-grey" id="system-info-spacer-btn" aria-label="Blank spacer"></button>
     <button class="footer-btn footer-btn-green" id="system-info-exit-btn">Exit</button>
   </div>
 
@@ -557,15 +627,25 @@
         <span class="pei-col-location">Location.</span>
         <span class="pei-col-status">Status</span>
       </div>
-      <div class="pei-content">
-        <!-- Event rows would go here -->
+      <div class="pei-content" id="pei-content" aria-live="polite"></div>
+      <div class="pei-call-detail" id="pei-call-detail">
+        <div class="pei-call-meta">
+          <strong id="pei-call-location">No active passenger call</strong>
+          <span id="pei-call-status">Waiting for alarm</span>
+        </div>
+        <div class="pei-camera-wrap">
+          <img id="pei-call-camera" alt="Passenger call CCTV" class="hide">
+          <span id="pei-camera-placeholder">Call CCTV will appear here</span>
+          <span id="pei-camera-caption" class="pei-camera-caption hide"></span>
+        </div>
       </div>
     </div>
     <div class="right-panel">
+      <div class="menu-page-indicator" id="pei-page-indicator">Page: 1/1</div>
       <button class="side-btn side-btn-grey" id="pei-top-blank-btn" aria-label="Blank spacer"></button>
       <button class="side-btn side-btn-red" id="pei-pei-btn">PEI</button>
       <button class="side-btn" id="pei-cctv-btn">CCTV</button>
-      <button class="side-btn side-btn-red" id="pei-fn-btn">Fn</button>
+      <button class="side-btn" id="pei-fn-btn">Fn</button>
     </div>
   </div>
 
@@ -576,16 +656,57 @@
     <button class="footer-btn" id="pei-down-btn">Down</button>
     <button class="footer-btn" id="pei-select-btn">Select</button>
     <button class="footer-btn" id="pei-hold-btn">Hold</button>
-    <button class="footer-btn" id="pei-reset-event-btn">Reset<br>Event</button>
-    <button class="footer-btn footer-btn-grey" id="pei-reset-all-btn" aria-label="Reset all unavailable" disabled>Reset<br>All</button>
+    <button class="footer-btn" id="pei-reset-event-btn">Cancel<br>Call</button>
+    <button class="footer-btn" id="pei-reset-all-btn">Cancel<br>All</button>
   </div>
 
   <!-- CCTV Panel (hidden initially) -->
   <div id="cctv-panel" class="cctv-panel-container hide">
     <div class="cctv-panel-left">
       <div class="cctv-image-container">
-        <img id="cctv-image" src="CCTV/1.JPG" alt="CCTV Camera Feed">
+        <img id="cctv-image" src="CCTV/DMA/1.jpg" alt="DMA CCTV Camera 1">
         <div class="cctv-placeholder" id="cctv-placeholder">Insert Image Here</div>
+      </div>
+      <div class="cctv-select-menu hide" id="cctv-select-menu">
+        <div class="cctv-select-menu-row cctv-select-menu-row-status">
+          <div class="cctv-car-label">DMA</div>
+          <div class="cctv-segment-group">
+            <button class="cctv-segment" data-cctv-camera="DMA-F">F</button>
+            <button class="cctv-segment" data-cctv-camera="DMA-1">1</button>
+            <button class="cctv-segment" data-cctv-camera="DMA-2">2</button>
+            <button class="cctv-segment" data-cctv-camera="DMA-3">3</button>
+            <button class="cctv-segment" data-cctv-camera="DMA-4">4</button>
+          </div>
+          <div class="cctv-dma-status">DMA<br>Active</div>
+        </div>
+        <div class="cctv-select-menu-row">
+          <div class="cctv-car-label">T</div>
+          <div class="cctv-segment-group">
+            <button class="cctv-segment" data-cctv-camera="T-1">1</button>
+            <button class="cctv-segment" data-cctv-camera="T-2">2</button>
+            <button class="cctv-segment" data-cctv-camera="T-3">3</button>
+            <button class="cctv-segment" data-cctv-camera="T-4">4</button>
+          </div>
+        </div>
+        <div class="cctv-select-menu-row">
+          <div class="cctv-car-label">DMB</div>
+          <div class="cctv-segment-group">
+            <button class="cctv-segment" data-cctv-camera="DMB-1">1</button>
+            <button class="cctv-segment" data-cctv-camera="DMB-2">2</button>
+            <button class="cctv-segment" data-cctv-camera="DMB-3">3</button>
+            <button class="cctv-segment" data-cctv-camera="DMB-4">4</button>
+            <button class="cctv-segment cctv-segment-grey">F</button>
+          </div>
+        </div>
+        <div class="cctv-select-menu-row cctv-select-menu-bottom">
+          <div class="cctv-smu-group">
+            <button class="cctv-smu-button cctv-smu-button-red">SMU_264</button>
+            <div class="cctv-smu-spacer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="cctv-quad-screen hide" id="cctv-quad-screen">
+        <div class="quad-view-grid" id="cctv-quad-grid"></div>
       </div>
     </div>
     <div class="right-panel">
@@ -602,17 +723,28 @@
   <div class="footer hide" id="cctv-footer">
     <button class="footer-btn footer-btn-green" id="cctv-prev-btn">Previous<br>Camera</button>
     <button class="footer-btn footer-btn-green" id="cctv-next-btn">Next<br>Camera</button>
-    <button class="footer-btn footer-blank"></button>
+    <button class="footer-btn footer-btn-green" id="cctv-select-btn">Select<br>Camera</button>
     <button class="footer-btn" id="cctv-stop-btn">Stop</button>
     <button class="footer-btn footer-btn-green" id="cctv-special-btn">Special/<br>Emergency</button>
     <button class="footer-btn footer-btn-green" id="cctv-exit-btn">Exit</button>
+  </div>
+  <div class="footer hide" id="cctv-select-footer">
+    <button class="footer-btn footer-btn-green" id="cctv-scan-btn">Scan</button>
+    <button class="footer-btn footer-btn-green" id="cctv-quad-btn">Quad<br>View</button>
+    <button class="footer-btn footer-btn-grey" id="cctv-enter-btn" disabled>Enter</button>
+    <button class="footer-btn" id="cctv-select-stop-btn">Stop</button>
+    <button class="footer-btn footer-btn-green" id="cctv-select-special-btn">Special/<br>Emergency</button>
+    <button class="footer-btn footer-btn-green" id="cctv-cancel-btn">Cancel</button>
   </div>
 
   <!-- Special Messages Panel (hidden initially) -->
   <div id="special-panel" class="special-panel-container hide">
     <div class="special-panel-left">
       <div class="special-title">Special Messages</div>
-      <div class="special-more-btn" id="special-more-prev" style="display: none;">-more-</div>
+      <div class="menu-more-bar">
+        <div class="special-more-btn" id="special-more-prev" style="visibility: hidden;">-more-</div>
+        <div class="menu-page-indicator" id="special-page-indicator">Page: 1/1</div>
+      </div>
       <div class="special-list">
         <div class="special-item selected" data-message="edi-ipswich">EDI ~ Ipswich</div>
         <div class="special-item" data-message="edi-bindha">EDI ~ Bindha</div>
@@ -703,7 +835,10 @@
         <div class="special-item" data-message="moving-queensland">MISC-Moving Ahead, Moving Queensland</div>
         <div class="special-item" data-message="take-it-easy">MISC-Take it easy, Take a train</div>
       </div>
-      <div class="special-more-btn" id="special-more-next" style="display: none;">-more-</div>
+      <div class="menu-more-bar">
+        <div class="special-more-btn" id="special-more-next" style="visibility: hidden;">-more-</div>
+        <div class="menu-page-indicator" id="special-page-indicator-bottom">Page: 1/1</div>
+      </div>
     </div>
     <div class="right-panel">
       <button class="side-btn side-btn-grey" id="special-top-blank-btn" aria-label="Blank spacer"></button>
@@ -717,11 +852,17 @@
   <div id="emergency-panel" class="special-panel-container hide">
     <div class="special-panel-left">
       <div class="special-title" style="color: #ffff00;">Emergency Messages</div>
-      <div class="special-more-btn" id="emergency-more-prev" style="display: none;">-more-</div>
+      <div class="menu-more-bar">
+        <div class="special-more-btn" id="emergency-more-prev" style="visibility: hidden;">-more-</div>
+        <div class="menu-page-indicator" id="emergency-page-indicator">Page: 1/1</div>
+      </div>
       <div class="emergency-list">
         <!-- Populated by JavaScript -->
       </div>
-      <div class="special-more-btn" id="emergency-more-next" style="display: none;">-more-</div>
+      <div class="menu-more-bar">
+        <div class="special-more-btn" id="emergency-more-next" style="visibility: hidden;">-more-</div>
+        <div class="menu-page-indicator" id="emergency-page-indicator-bottom">Page: 1/1</div>
+      </div>
     </div>
     <div class="right-panel">
       <button class="side-btn side-btn-grey" id="emergency-top-blank-btn" aria-label="Blank spacer"></button>
@@ -817,8 +958,8 @@
   <div class="footer hide" id="fn-footer">
     <button class="footer-btn footer-btn-green" id="brightness-down-btn">Brightness<br>Down</button>
     <button class="footer-btn footer-btn-green" id="brightness-up-btn">Brightness<br>Up</button>
-    <button class="footer-btn footer-btn-green" id="handset-up-btn">Handset<br>Volume Up</button>
-    <button class="footer-btn footer-btn-green" id="handset-down-btn">Handset<br>Volume Down</button>
+    <button class="footer-btn footer-btn-green" id="handset-up-btn">Alert<br>Volume Up</button>
+    <button class="footer-btn footer-btn-green" id="handset-down-btn">Alert<br>Volume Down</button>
     <button class="footer-btn footer-btn-green" id="cabin-up-btn">Cabin<br>Volume Up</button>
     <button class="footer-btn footer-btn-green" id="cabin-down-btn">Cabin<br>Volume Down</button>
     <button class="footer-btn footer-btn-green" id="fn-exit-btn">Exit</button>
@@ -862,10 +1003,10 @@
                 doorCycleDisplay.textContent = state.doorCycle || 'N';
               }
               
-              // Update route display with spacing
+              // Update route display
               const routeDisplay = document.getElementById('run-number-display');
               if (routeDisplay && state.route) {
-                routeDisplay.textContent = state.route.split('').join(' ');
+                routeDisplay.textContent = state.route;
               }
               
               // Update PID display, falling back to the current station for older state data
