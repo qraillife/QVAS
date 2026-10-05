@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#101820">
+  <link rel="manifest" href="/gps-transmitter-manifest.json">
+  <title>GPS Transmitter</title>
+  <style>
+    :root { color-scheme: dark; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    body { margin: 0; min-height: 100vh; display: grid; place-items: center; background: #101820; color: #f2f5f7; }
+    main { width: min(92vw, 420px); padding: 28px; box-sizing: border-box; background: #1d2a33; border: 1px solid #3c515d; border-radius: 12px; }
+    h1 { margin: 0 0 8px; font-size: 28px; }
+    p { color: #b9c7ce; line-height: 1.45; }
+    button { width: 100%; min-height: 52px; border: 0; border-radius: 8px; background: #16a085; color: white; font-size: 18px; font-weight: 700; }
+    button.stop { background: #c0392b; }
+    dl { display: grid; grid-template-columns: 1fr auto; gap: 10px; margin: 24px 0 0; }
+    dt { color: #b9c7ce; } dd { margin: 0; font-variant-numeric: tabular-nums; }
+    #status { margin-top: 18px; font-weight: 700; }
+    .warning { color: #ffd166; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>GPS Transmitter</h1>
+    <p>Keep this page open while the phone and computer are connected to the same Wi-Fi network.</p>
+    <p class="warning">Location access requires HTTPS. Android Chrome and iPhone Safari may pause GPS when the screen is locked.</p>
+    <button id="toggle" type="button">Start GPS</button>
+    <div id="status">Stopped</div>
+    <dl>
+      <dt>Latitude</dt><dd id="latitude">-</dd>
+      <dt>Longitude</dt><dd id="longitude">-</dd>
+      <dt>Speed</dt><dd id="speed">-</dd>
+      <dt>Accuracy</dt><dd id="accuracy">-</dd>
+      <dt>Last sent</dt><dd id="sent">-</dd>
+    </dl>
+  </main>
+  <script>
+    const pollIntervalMs = 100;
+    let timer = null;
+    let running = false;
+    let previousPosition = null;
+    let wakeLock = null;
+    const toggle = document.getElementById('toggle');
+    const status = document.getElementById('status');
+
+    function setValue(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    function distanceMeters(lat1, lon1, lat2, lon2) {
+      const toRadians = degrees => degrees * Math.PI / 180;
+      const dLat = toRadians(lat2 - lat1);
+      const dLon = toRadians(lon2 - lon1);
+      const a = Math.sin(dLat / 2) ** 2
+        + Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLon / 2) ** 2;
+      return 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    async function sendPosition(position) {
+      const coords = position.coords;
+      const timestamp = Number(position.timestamp) || Date.now();
+      let speed = Number.isFinite(coords.speed) && coords.speed >= 0 ? coords.speed : null;
+      if (speed === null && previousPosition) {
+        const elapsedSeconds = (timestamp - previousPosition.timestamp) / 1000;
+        if (elapsedSeconds > 0) {
+          speed = distanceMeters(coords.latitude, coords.longitude, previousPosition.latitude, previousPosition.longitude) / elapsedSeconds;
+        }
+      }
+      previousPosition = { latitude: coords.latitude, longitude: coords.longitude, timestamp };
+      setValue('latitude', coords.latitude.toFixed(6));
+      setValue('longitude', coords.longitude.toFixed(6));
+      setValue('speed', speed === null ? 'Unavailable' : `${(speed * 3.6).toFixed(1)} km/h`);
+      setValue('accuracy', `${Math.round(coords.accuracy)} m`);
+      try {
+        const apiBase = new URLSearchParams(window.location.search).get('api')
+          || window.localStorage.getItem('qvasApiBase')
+          || '';
+        const apiUrl = `${apiBase.replace(/\/$/, '')}/api/phone-gps`;
+        const response = await fetch(apiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            lat: coords.latitude,
+            lon: coords.longitude,
+            speed,
+            accuracy: coords.accuracy,
+            timestamp
+          })
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        setValue('sent', new Date().toLocaleTimeString());
+        status.textContent = 'Transmitting';
+      } catch (error) {
+        status.textContent = `Computer connection failed: ${error.message}`;
+      }
+    }
+
+    function positionError(error) {
+      if (!window.isSecureContext) {
+        status.textContent = 'GPS blocked: open this page over HTTPS.';
+        return;
+      }
+      status.textContent = `GPS error: ${error.message}`;
+    }
+
+    function pollGPS() {
+      navigator.geolocation.getCurrentPosition(sendPosition, positionError, {
+        enableHighAccuracy: true,
+        maximumAge: 0,
+        timeout: 10000
+      });
+    }
+
+    function stopGPS() {
+      if (timer !== null) clearInterval(timer);
+      timer = null;
+      running = false;
+      if (wakeLock) {
+        wakeLock.release().catch(() => {});
+        wakeLock = null;
+      }
+      toggle.textContent = 'Start GPS';
+      toggle.classList.remove('stop');
+      status.textContent = 'Stopped';
+    }
+
+    function startGPS() {
+      if (!navigator.geolocation) {
+        status.textContent = 'This browser does not support GPS';
+        return;
+      }
+      if (!window.isSecureContext) {
+        status.textContent = 'GPS blocked: this page needs HTTPS on iPhone.';
+        return;
+      }
+      running = true;
+      previousPosition = null;
+      toggle.textContent = 'Stop GPS';
+      toggle.classList.add('stop');
+      status.textContent = 'Requesting location...';
+      requestWakeLock();
+      pollGPS();
+      timer = setInterval(pollGPS, pollIntervalMs);
+    }
+
+    async function requestWakeLock() {
+      if (!('wakeLock' in navigator)) return;
+      try {
+        wakeLock = await navigator.wakeLock.request('screen');
+        wakeLock.addEventListener('release', () => {
+          wakeLock = null;
+        });
+      } catch (error) {
+        console.log(`Screen wake lock unavailable: ${error.message}`);
+      }
+    }
+
+    document.addEventListener('visibilitychange', () => {
+      if (running && document.visibilityState === 'visible') requestWakeLock();
+    });
+
+    toggle.addEventListener('click', () => running ? stopGPS() : startGPS());
+  </script>
+</body>
+</html>
