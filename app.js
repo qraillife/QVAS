@@ -7507,8 +7507,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let brightnessRequestId = 0;
   let brightnessOperation = Promise.resolve();
   
-  const trackHeight = 280; // matches CSS
-  const handleHeight = 40; // matches CSS
+  const trackHeight = (window.__QV_SLIDER && window.__QV_SLIDER.track) || 280; // matches CSS
+  const handleHeight = (window.__QV_SLIDER && window.__QV_SLIDER.handle) || 40; // matches CSS
   
   // ==================== Audio Output Device Selection ====================
   // Function to enumerate and update audio devices

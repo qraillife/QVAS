@@ -13,6 +13,40 @@
   // audio from a server endpoint that doesn't exist here. This app IS the host, so declare it as such.
   window.electronApp = true;
 
+  // ---------- sliders sized for a phone screen ----------
+  // The Fn screen's brightness/volume sliders are built for a tall desktop window (280px bars + big padding), so on a
+  // landscape phone (~393px high) the handles end up off-screen under the footer buttons. Compact the layout and size
+  // the bars from the screen height; app.js reads the sizes from window.__QV_SLIDER (patched in by the build).
+  (function () {
+    // Sizes are computed once, lazily, because window.innerHeight is only right after the page's viewport tag has
+    // been applied (this script runs before it). app.js reads window.__QV_SLIDER when it starts; the CSS is applied at
+    // DOMContentLoaded. Whichever comes first fixes the numbers so the CSS and app.js always agree.
+    let sizes = null;
+    const compute = () => {
+      if (sizes) return sizes;
+      const H = window.innerHeight;
+      if (!H || H >= 700) return (sizes = { track: 280, handle: 40, phone: false });
+      const track = Math.max(50, Math.min(280, H - 320));
+      return (sizes = { track, handle: track < 120 ? 26 : 40, phone: true });
+    };
+    Object.defineProperty(window, '__QV_SLIDER', { configurable: true, get: compute });
+    const applyCss = () => {
+      const z = compute();
+      if (!z.phone) return;
+      const st = document.createElement('style');
+      st.textContent = `
+        .fn-panel-left{padding:6px 10px !important}
+        .fn-sliders{padding:2px 20px !important;align-items:center !important}
+        .fn-slider-group{width:150px !important}
+        .fn-slider-value{font-size:18px !important;margin-bottom:4px !important}
+        .fn-slider-label{font-size:13px !important;margin-top:4px !important}
+        .fn-slider-track{height:${z.track}px !important}
+        .fn-slider-handle{height:${z.handle}px !important;touch-action:none}`;
+      document.head.appendChild(st);
+    };
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyCss); else applyCss();
+  })();
+
   // ---------- black border / iPhone safe areas ----------
   // The app draws edge to edge (viewport-fit=cover), so on an iPhone the Dynamic Island, rounded corners and home
   // indicator would overlap it. Pad the page with the safe-area insets (min 10px/6px) on a black background.
@@ -41,6 +75,12 @@
       if (url.origin !== window.location.origin) return u;
       let rel = url.pathname.startsWith(BASE) ? url.pathname.slice(BASE.length) : url.pathname.replace(/^\//, '');
       if (/^QR_PIDS_AudioFiles\//i.test(rel)) rel = 'audio/' + rel;
+      // GitHub Pages is case-sensitive, Windows isn't (the desktop server also matched audio names ignoring case).
+      if (/^audio\//i.test(rel) && window.__QVAS_AUDIO_INDEX) {
+        let dec = rel; try { dec = decodeURIComponent(rel); } catch (e) {}
+        const real = window.__QVAS_AUDIO_INDEX[dec.toLowerCase()];
+        if (real && real !== dec) rel = real.split('/').map(encodeURIComponent).join('/');
+      }
       const fixed = BASE + rel;
       if (fixed === url.pathname) return u;
       url.pathname = fixed;
@@ -252,24 +292,60 @@
     return realFetch(input, init);
   };
 
-  // ---------- iOS audio quirks ----------
+  // ---------- iOS audio: unlock, silent switch, and a working volume control ----------
+  // iPhone Safari ignores HTMLMediaElement.volume (it always reads 1), so the app's volume sliders do nothing there.
+  // Route elements through a Web Audio GainNode instead. Web Audio normally obeys the ring/silent switch, so ask iOS
+  // (16.4+) to treat the page as "playback" audio.
+  const AC = window.AudioContext || window.webkitAudioContext;
+  let actx = null;
+  const getCtx = () => (AC ? (actx || (actx = (window.__qvasAudioCtx = new AC()))) : null);
+  try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+
+  const unlock = () => {
+    try {
+      const ctx = getCtx();
+      if (ctx) { ctx.resume && ctx.resume(); const b = ctx.createBuffer(1, 1, 22050); const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); }
+    } catch (e) {}
+  };
+  // keep trying on every touch: iOS can suspend the context again (phone call, app switch)
+  ['touchend', 'click'].forEach(ev => window.addEventListener(ev, () => { try { if (actx && actx.state !== 'running') actx.resume(); else if (!actx) unlock(); } catch (e) {} }, true));
+
+  function nativeVolumeWorks() {
+    try { if (localStorage.getItem('qvasForceGain') === '1') return false; } catch (e) {}
+    try { const p = new Audio(); p.volume = 0.25; return Math.abs(p.volume - 0.25) < 0.001; } catch (e) { return true; }
+  }
+  if (AC && typeof HTMLMediaElement !== 'undefined' && !nativeVolumeWorks()) {
+    const wired = new WeakMap();
+    const wire = (el) => {
+      let w = wired.get(el);
+      if (w) return w;
+      w = { v: 1, gain: null };
+      try {
+        const ctx = getCtx();
+        const node = ctx.createMediaElementSource(el);
+        w.gain = ctx.createGain();
+        node.connect(w.gain); w.gain.connect(ctx.destination);
+        el.addEventListener('play', () => { try { if (ctx.state !== 'running') ctx.resume(); } catch (e) {} });
+      } catch (e) { w.gain = null; }
+      wired.set(el, w);
+      return w;
+    };
+    Object.defineProperty(HTMLMediaElement.prototype, 'volume', {
+      configurable: true,
+      get() { const w = wired.get(this); return w ? w.v : 1; },
+      set(val) {
+        let v = Number(val); if (!isFinite(v)) return;
+        v = Math.max(0, Math.min(1, v));
+        const w = wire(this); w.v = v;
+        if (w.gain) w.gain.gain.value = v;
+      }
+    });
+  }
+
   // Output-device selection (setSinkId) doesn't exist on iOS; make it a harmless no-op.
   if (typeof HTMLMediaElement !== 'undefined' && !HTMLMediaElement.prototype.setSinkId) {
     HTMLMediaElement.prototype.setSinkId = function () { return Promise.resolve(); };
   }
-
-  // iOS blocks audio until the user has touched the screen once. Unlock on first touch so
-  // GPS-triggered announcements can play afterwards.
-  const unlock = () => {
-    try {
-      const AC = window.AudioContext || window.webkitAudioContext;
-      if (AC) { const ctx = new AC(); ctx.resume && ctx.resume(); const b = ctx.createBuffer(1, 1, 22050); const s = ctx.createBufferSource(); s.buffer = b; s.connect(ctx.destination); s.start(0); }
-    } catch (e) {}
-    window.removeEventListener('touchend', unlock, true);
-    window.removeEventListener('click', unlock, true);
-  };
-  window.addEventListener('touchend', unlock, true);
-  window.addEventListener('click', unlock, true);
 
   // Keep the screen awake while driving the display.
   if (navigator.wakeLock && navigator.wakeLock.request) {
@@ -374,12 +450,50 @@
   }
 
   // Desktop-only IPC (GTFS download via PowerShell, Windows brightness) is unavailable here.
+  function savedBrightness() { try { const v = Number(localStorage.getItem('qvas-brightness')); return Number.isFinite(v) && localStorage.getItem('qvas-brightness') !== null ? v : 100; } catch (e) { return 100; } }
+  function applyBrightness(v) {
+    v = Math.max(0, Math.min(100, Number(v)));
+    if (!Number.isFinite(v)) return;
+    try { localStorage.setItem('qvas-brightness', String(v)); } catch (e) {}
+    let dim = document.getElementById('qvas-dim');
+    if (!dim && document.body) {
+      dim = document.createElement('div'); dim.id = 'qvas-dim';
+      dim.style.cssText = 'position:fixed;inset:0;background:#000;pointer-events:none;z-index:2147483646;transition:opacity .1s';
+      document.body.appendChild(dim);
+    }
+    if (dim) dim.style.opacity = String(((100 - v) / 100) * 0.8); // never fully black
+  }
+  const initBrightness = () => applyBrightness(savedBrightness());
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initBrightness); else initBrightness();
+
+  // "Restart in Frameless Full Screen" is an Electron feature. On iPhone the equivalent of frameless full screen is
+  // running from the Home Screen icon, so: from the icon it restarts (reloads) the app; in a Safari tab it explains how.
+  function toast(msg) {
+    let t = document.getElementById('qvas-toast');
+    if (!t) { t = document.createElement('div'); t.id = 'qvas-toast';
+      t.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 70px);transform:translateX(-50%);max-width:80vw;z-index:2147483647;background:rgba(0,0,0,.85);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:10px;padding:10px 14px;font:14px -apple-system,Helvetica,Arial,sans-serif;text-align:center';
+      document.body.appendChild(t); }
+    t.textContent = msg; t.style.display = 'block';
+    clearTimeout(toast._t); toast._t = setTimeout(() => { t.style.display = 'none'; }, 6000);
+  }
+  document.addEventListener('click', (e) => {
+    const btn = e.target && e.target.closest && e.target.closest('#restart-app-btn');
+    if (!btn) return;
+    e.stopImmediatePropagation(); e.preventDefault();
+    const standalone = window.navigator.standalone === true || (window.matchMedia && (matchMedia('(display-mode: standalone)').matches || matchMedia('(display-mode: fullscreen)').matches));
+    if (standalone) { toast('Restarting\u2026'); setTimeout(() => location.reload(), 400); return; }
+    const el = document.documentElement;
+    if (el.requestFullscreen) { el.requestFullscreen().then(() => toast('Full screen on')).catch(() => toast('Full screen was blocked by the browser.')); return; }
+    toast('For full screen: tap Share, then Add to Home Screen, and open VAS HMI-C from the Home Screen icon.');
+  }, true);
+
   window.electron = {
     platform: 'web',
     updateGTFS: async () => ({ success: false, message: 'Update GTFS on the desktop app, then re-run the site build.' }),
     getGTFSStatus: async () => ({ success: false, updatedAt: 'Bundled with app', dueAt: 'Unavailable' }),
-    getSystemBrightness: async () => ({ success: false, message: 'Not available on iOS.' }),
-    setSystemBrightness: async () => ({ success: false, message: 'Not available on iOS.' }),
+    // A web page can't change iPhone brightness, so the slider dims the app with a black overlay instead.
+    getSystemBrightness: async () => ({ success: true, value: savedBrightness() }),
+    setSystemBrightness: async (v) => { applyBrightness(v); return { success: true, value: savedBrightness() }; },
     onGTFSUpdateProgress: () => {},
     onDoorStateChanged: () => {},
     onGlobalKey: () => {},
