@@ -1,0 +1,67 @@
+name: Sync with SaltyPlayzYT/QVAS-Project
+
+on:
+  schedule:
+    - cron: '*/30 * * * *'
+  workflow_dispatch:
+    inputs:
+      force:
+        description: 'Rebuild even if nothing changed upstream'
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-upstream
+  cancel-in-progress: false
+
+env:
+  UPSTREAM: SaltyPlayzYT/QVAS-Project
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+
+      - name: Check upstream release and audio package
+        id: up
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=$(curl -fsS -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/$UPSTREAM/releases/latest" | jq -r .tag_name)
+          asset=$(curl -fsSL "https://github.com/$UPSTREAM/releases/download/asset/asset-version.json?t=$(date +%s)" \
+            | jq -r '.version // ""' || echo "")
+          state="$tag|$asset"
+          last=$(cat .upstream-state 2>/dev/null || echo "")
+          echo "upstream=$state  last-built=$last"
+          echo "state=$state" >> "$GITHUB_OUTPUT"
+          if [ "$state" != "$last" ] || [ "${{ inputs.force }}" = "true" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build phone site from the release
+        if: steps.up.outputs.changed == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          npm install --no-save 7zip-bin @electron/asar
+          node build-from-release.js _site --force
+
+      - name: Copy into repo (keeping your own files) and commit
+        if: steps.up.outputs.changed == 'true'
+        run: |
+          grep -v '^\s*#' .qvas-keep | sed '/^\s*$/d' > /tmp/keep.txt
+          rsync -a --exclude-from=/tmp/keep.txt _site/ ./
+          rm -rf _site node_modules package-lock.json
+          echo "${{ steps.up.outputs.state }}" > .upstream-state
+          git config user.name qvas-bot; git config user.email qvas-bot@users.noreply.github.com
+          git add -A
+          git commit -m "Sync with upstream ${{ steps.up.outputs.state }} [skip ci]" && git push
