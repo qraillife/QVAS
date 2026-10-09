@@ -24,3 +24,4 @@ finalize-site.js
 server.js
 qvas-web-shim.js
 .upstream-state
+gtfs-patterns.json
