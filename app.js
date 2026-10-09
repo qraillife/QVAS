@@ -2567,6 +2567,10 @@ document.addEventListener("DOMContentLoaded", function () {
   if (headerRow2) {
     headerRow2.addEventListener('click', function(e) {
       // Only toggle if clicking on the header-row-2 itself, not on specific content
+      if (gpsModeEnabled) {
+        headerRow2.classList.add('hide-door-cycle');
+        return;
+      }
       headerRow2.classList.toggle('hide-door-cycle');
       console.log('🔄 DoorCycle visibility toggled:', headerRow2.classList.contains('hide-door-cycle') ? 'hidden' : 'shown');
     });
@@ -2670,6 +2674,10 @@ document.addEventListener("DOMContentLoaded", function () {
   let gpsLastUpdateAt = 0;
   let gpsFailureStartedAt = 0;
   let gpsModeEnabled = localStorage.getItem('gpsModeEnabled') !== 'false';
+  function updateDoorCycleIndicatorVisibility() {
+    if (headerRow2) headerRow2.classList.toggle('hide-door-cycle', gpsModeEnabled);
+  }
+  updateDoorCycleIndicatorVisibility();
   const savedGPSSourceMode = localStorage.getItem('gpsSourceMode');
   let gpsSourceMode = ['phone', 'this-pc'].includes(savedGPSSourceMode) ? savedGPSSourceMode : 'phone';
   let tswLiveModeActive = false;
@@ -3098,6 +3106,7 @@ document.addEventListener("DOMContentLoaded", function () {
       speedKmh,
       accuracy: Number.isFinite(accuracy) ? accuracy : null
     };
+    updateCctvAvailability();
 
     const isMtgAnnouncement = currentAnnouncementType === 'MTG' || currentAnnouncementType === 'mindTheGap';
     if (speedKmh > 10 && isMtgAnnouncement && pidDisplay && pidDisplay.textContent !== '-') {
@@ -3332,7 +3341,9 @@ document.addEventListener("DOMContentLoaded", function () {
       resetTSWAutomationState();
     }
     if (enabled && gpsSourceMode === 'this-pc') startGPSTracking();
+    updateDoorCycleIndicatorVisibility();
     updateStatusGPSDisplay();
+    updateCctvAvailability();
   }
 
   function syncGlobalShortcutsWithGPSMode() {
@@ -8940,6 +8951,13 @@ document.addEventListener("DOMContentLoaded", function () {
   const cctvSelectStopBtn = document.getElementById('cctv-select-stop-btn');
   const cctvSelectSpecialBtn = document.getElementById('cctv-select-special-btn');
   const cctvCancelBtn = document.getElementById('cctv-cancel-btn');
+  const cctvEntryButtons = [
+    cctvBtn,
+    document.getElementById('route-selection-cctv-btn'),
+    document.getElementById('pei-cctv-btn'),
+    document.getElementById('special-cctv-btn'),
+    document.getElementById('emergency-cctv-btn')
+  ].filter(Boolean);
 
   const cctvCameras = [
     { id: 'DMA-F', car: 'DMA', number: 'F', path: 'CCTV/DMA/F.jpg' },
@@ -8959,6 +8977,37 @@ document.addEventListener("DOMContentLoaded", function () {
   const totalCameras = cctvCameras.length;
   const quadCameraCount = 4;
   let previousScreenBeforeCctv = null;
+  let previousCctvRestrictedState = null;
+
+  function isCctvRestricted() {
+    const speedKmh = tswLastPosition?.speedKmh;
+    if (gpsModeEnabled) return !Number.isFinite(speedKmh) || speedKmh > 10;
+    return doorCycleDisplay?.textContent.trim().toUpperCase() !== 'Y';
+  }
+
+  function updateCctvAvailability() {
+    const restricted = isCctvRestricted();
+    cctvEntryButtons.forEach((button) => {
+      button.disabled = restricted;
+      button.classList.toggle('side-btn-grey', restricted);
+      button.setAttribute('aria-disabled', String(restricted));
+    });
+
+    const hasStartedDriving = previousCctvRestrictedState === false && restricted;
+    previousCctvRestrictedState = restricted;
+    if (hasStartedDriving && cctvPanel && !cctvPanel.classList.contains('hide')) {
+      hideCctvPanel();
+    }
+  }
+
+  if (doorCycleDisplay) {
+    new MutationObserver(updateCctvAvailability).observe(doorCycleDisplay, {
+      childList: true,
+      characterData: true,
+      subtree: true
+    });
+  }
+  updateCctvAvailability();
 
   function getCctvCamera(cameraId) {
     return cctvCameras.find(camera => camera.id === cameraId) || cctvCameras[0];
@@ -9041,6 +9090,7 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function showCctvPanel() {
+    if (isCctvRestricted()) return;
     if (!cctvPanel.classList.contains('hide')) return;
     cancelCctvScan();
     if (cctvAutoOpenTimer) {
@@ -11039,10 +11089,6 @@ document.addEventListener("DOMContentLoaded", function () {
     // Reset PID and DI displays
     if (pidDisplay) pidDisplay.textContent = '-';
     if (diDisplay) diDisplay.textContent = '-';
-
-    // Reset door cycle state
-    doorsCycled = false;
-    if (doorCycleDisplay) doorCycleDisplay.textContent = 'N';
 
     if (doorCycleSequenceTimer1) {
       clearTimeout(doorCycleSequenceTimer1);

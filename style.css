@@ -2253,6 +2253,11 @@ button.active-press {
   color: #fff !important;
   border-color: #fff !important;
 }
+button.side-btn:disabled {
+  background: #808080 !important;
+  color: #d0d0d0 !important;
+  cursor: not-allowed;
+}
 
 button,
 button:hover,
@@ -2726,4 +2731,3 @@ button:focus-visible,
   background: #555;
   border-color: #777;
 }
-

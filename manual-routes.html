@@ -39,7 +39,7 @@
   </section>
   <div id="message" role="status"></div>
   <script>
-    let data = { routes: [] };
+    let data = { version: 1, routes: [] };
     const routesElement = document.getElementById('routes');
     const messageElement = document.getElementById('message');
 
@@ -50,11 +50,17 @@
     }
 
     function render() {
+      const openFolders = new Set(
+        [...routesElement.querySelectorAll('.route-folder[open]')]
+          .map(folder => folder.querySelector('summary')?.textContent || '')
+      );
       routesElement.innerHTML = '';
       data.routes.forEach((line, lineIndex) => {
         const card = document.createElement('div');
         card.className = 'route-card';
         card.innerHTML = `<details class="route-folder"><summary>${escapeHtml(line.name)}</summary><div class="route-folder-content"><button class="delete-line">Delete line</button><div class="runs"></div><button class="add-route">Add route option</button></div></details>`;
+        const folder = card.querySelector('.route-folder');
+        folder.open = openFolders.has(line.name);
         card.querySelector('.delete-line').onclick = () => { data.routes.splice(lineIndex, 1); render(); save(); };
         const runs = card.querySelector('.runs');
         line.runs.forEach((run, runIndex) => {
@@ -63,16 +69,22 @@
           runCard.innerHTML = `
             <label>Route option name</label><input data-field="name" value="${escapeHtml(run.name)}">
             <label>Stations, one per line</label><textarea data-field="stations">${escapeHtml(run.stations.join('\n'))}</textarea>
-            <label>Form audio file</label><input data-field="formFile" value="${escapeHtml(run.formFile || '')}" placeholder="QR_PIDS_AudioFiles/Form/example.mp3"><label>TNS_Special audio folder</label><input data-field="tnsFolder" value="${escapeHtml(run.tnsFolder || '')}" placeholder="QR_PIDS_AudioFiles/TNS_Special/..."><br><button class="delete">Delete route option</button>`;
+            <label>Form audio file</label><input data-field="formFile" value="${escapeHtml(run.formFile || '')}" placeholder="QR_PIDS_AudioFiles/Form/example.mp3"><label>TNS_Special audio folder</label><input data-field="tnsFolder" value="${escapeHtml(run.tnsFolder || '')}" placeholder="QR_PIDS_AudioFiles/TNS_Special/..."><label><input type="checkbox" data-field="excludeAutomaticMatch" ${run.excludeAutomaticMatch ? 'checked' : ''}> Exclude from automatic matching</label><br><button class="delete">Delete route option</button>`;
+          runCard.querySelector('[data-field="tnsMtgOnly"]')?.remove();
+          const option = document.createElement('label');
+          option.innerHTML = `<input type="checkbox" data-field="tnsMtgOnly" ${run.tnsMtgOnly ? 'checked' : ''}> TNS and MTG only route`;
+          runCard.insertBefore(option, runCard.querySelector('.delete'));
           runCard.querySelectorAll('[data-field]').forEach(input => input.oninput = () => {
             const field = input.dataset.field;
-            run[field] = field === 'stations' ? input.value.split(/\r?\n/).map(value => value.trim()).filter(Boolean) : input.value;
+            run[field] = field === 'stations'
+              ? input.value.split(/\r?\n/).map(value => value.trim()).filter(Boolean)
+              : (field === 'tnsMtgOnly' || field === 'excludeAutomaticMatch') ? input.checked : input.value;
             save(false);
           });
           runCard.querySelector('.delete').onclick = () => { line.runs.splice(runIndex, 1); render(); save(); };
           runs.appendChild(runCard);
         });
-        card.querySelector('.add-route').onclick = () => { line.runs.push({ name: 'New route', stations: [], formFile: '', tnsFolder: '' }); render(); save(); };
+        card.querySelector('.add-route').onclick = () => { line.runs.push({ name: 'New route', stations: [], formFile: '', tnsFolder: '', tnsMtgOnly: false, excludeAutomaticMatch: false }); render(); save(); };
         routesElement.appendChild(card);
       });
     }

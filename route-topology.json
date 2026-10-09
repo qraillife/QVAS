@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "description": "Translink rail infrastructure paths used to compare GTFS stopping patterns.",
+  "paths": [
+    {
+      "id": "ipswich-caboolture",
+      "name": "Ipswich to Caboolture",
+      "stations": ["Ipswich", "East Ipswich", "Booval", "Bundamba", "Ebbw Vale", "Dinmore", "Riverview", "Redbank", "Goodna", "Gailes", "Wacol", "Darra", "Oxley", "Corinda", "Sherwood", "Graceville", "Chelmer", "Indooroopilly", "Taringa", "Toowong", "Auchenflower", "Milton", "Roma Street", "Central", "Fortitude Valley", "Bowen Hills", "Albion", "Wooloowin", "Eagle Junction", "Northgate", "Bald Hills", "Strathpine", "Bray Park", "Lawnton", "Petrie", "Dakabin", "Narangba", "Burpengary", "Morayfield", "Caboolture"]
+    },
+    {
+      "id": "rosewood-caboolture",
+      "name": "Rosewood to Caboolture",
+      "stations": ["Rosewood", "Walloon", "Thagoona", "Karrabin", "Wulkuraka", "Thomas Street", "Ipswich", "East Ipswich", "Booval", "Bundamba", "Ebbw Vale", "Dinmore", "Riverview", "Redbank", "Goodna", "Gailes", "Wacol", "Darra", "Oxley", "Corinda", "Sherwood", "Graceville", "Chelmer", "Indooroopilly", "Taringa", "Toowong", "Auchenflower", "Milton", "Roma Street", "Central", "Fortitude Valley", "Bowen Hills", "Albion", "Wooloowin", "Eagle Junction", "Northgate", "Bald Hills", "Strathpine", "Bray Park", "Lawnton", "Petrie", "Dakabin", "Narangba", "Burpengary", "Morayfield", "Caboolture"]
+    },
+    {
+      "id": "ipswich-nambour",
+      "name": "Ipswich to Nambour",
+      "stations": ["Ipswich", "East Ipswich", "Booval", "Bundamba", "Ebbw Vale", "Dinmore", "Riverview", "Redbank", "Goodna", "Gailes", "Wacol", "Darra", "Oxley", "Corinda", "Sherwood", "Graceville", "Chelmer", "Indooroopilly", "Taringa", "Toowong", "Auchenflower", "Milton", "Roma Street", "Central", "Fortitude Valley", "Bowen Hills", "Albion", "Wooloowin", "Eagle Junction", "Northgate", "Bald Hills", "Strathpine", "Bray Park", "Lawnton", "Petrie", "Dakabin", "Narangba", "Burpengary", "Morayfield", "Caboolture", "Elimbah", "Beerburrum", "Glass House Mountains", "Beerwah", "Landsborough", "Mooloolah", "Eudlo", "Palmwoods", "Woombye", "Nambour"]
+    },
+    {
+      "id": "springfield-kippa-ring",
+      "name": "Springfield Central to Kippa-Ring",
+      "stations": ["Springfield Central", "Springfield", "Richlands", "Darra", "Oxley", "Corinda", "Sherwood", "Graceville", "Chelmer", "Indooroopilly", "Taringa", "Toowong", "Auchenflower", "Milton", "Roma Street", "Central", "Fortitude Valley", "Bowen Hills", "Albion", "Wooloowin", "Eagle Junction", "Northgate", "Bald Hills", "Strathpine", "Bray Park", "Lawnton", "Petrie", "Kallangur", "Murrumba Downs", "Mango Hill", "Mango Hill East", "Rothwell", "Kippa-Ring"]
+    },
+    {
+      "id": "doomben-roma-street",
+      "name": "Doomben to Roma Street",
+      "stations": ["Doomben", "Ascot", "Hendra", "Clayfield", "Eagle Junction", "Wooloowin", "Albion", "Bowen Hills", "Fortitude Valley", "Central", "Roma Street"]
+    },
+    {
+      "id": "cleveland-shorncliffe",
+      "name": "Cleveland to Shorncliffe",
+      "stations": ["Cleveland", "Ormiston", "Wellington Point", "Birkdale", "Thorneside", "Lota", "Manly", "Wynnum", "Wynnum North", "Lindum", "Hemmant", "Murarrie", "Cannon Hill", "Morningside", "Norman Park", "Coorparoo", "Buranda", "Dutton Park", "Boggo Road", "Park Road", "South Bank", "South Brisbane", "Roma Street", "Central", "Fortitude Valley", "Bowen Hills", "Albion", "Wooloowin", "Eagle Junction", "Northgate", "Bindha", "Banyo", "Nudgee", "Boondall", "North Boondall", "Deagon", "Sandgate", "Shorncliffe"]
+    },
+    {
+      "id": "varsity-airport",
+      "name": "Varsity Lakes to Brisbane Airport",
+      "stations": ["Varsity Lakes", "Robina", "Nerang", "Helensvale", "Coomera", "Ormeau", "Beenleigh", "Holmview", "Edens Landing", "Bethania", "Loganlea", "Kingston", "Woodridge", "Trinder Park", "Kuraby", "Fruitgrove", "Runcorn","Altandi", "Sunnybank", "Banoon", "Coopers Plains", "Salisbury", "Rocklea", "Moorooka", "Yeerongpilly", "Yeronga", "Fairfield", "Dutton Park", "Boggo Road", "Park Road", "South Bank", "South Brisbane", "Roma Street", "Central", "Fortitude Valley", "Bowen Hills", "Albion", "Wooloowin", "Eagle Junction", "International Airport", "Domestic Airport"]
+    },
+    {
+      "id": "beenleigh-ferny-grove",
+      "name": "Beenleigh to Ferny Grove",
+      "stations": ["Beenleigh", "Holmview", "Edens Landing", "Bethania", "Loganlea", "Kingston", "Woodridge", "Trinder Park", "Kuraby", "Fruitgrove", "Runcorn","Altandi", "Sunnybank", "Banoon", "Coopers Plains", "Salisbury", "Rocklea", "Moorooka", "Yeerongpilly", "Yeronga", "Fairfield", "Dutton Park", "Boggo Road", "Park Road", "South Bank", "South Brisbane", "Roma Street", "Central", "Fortitude Valley", "Bowen Hills", "Windsor", "Wilston", "Newmarket", "Alderley", "Enoggera", "Gaythorne", "Mitchelton", "Oxford Park", "Grovely", "Keperra", "Ferny Grove"]
+    }
+  ]
+}

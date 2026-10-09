@@ -487,6 +487,62 @@
     toast('For full screen: tap Share, then Add to Home Screen, and open VAS HMI-C from the Home Screen icon.');
   }, true);
 
+  // ---------- updater ----------
+  // The desktop app updates through an installer; a web app updates by being re-published. Each time a new build is
+  // pushed to GitHub Pages, version.json changes. Check on start, every 10 minutes and whenever the app comes back to
+  // the screen, and offer "Update now" (refreshes the cached files, then reloads).
+  (function () {
+    const mine = window.__QVAS_BUILD;
+    if (!mine) return;
+    let banner = null, snoozedUntil = 0;
+    async function latest() {
+      try {
+        const r = await realFetch('version.json?_=' + Date.now(), { cache: 'no-store' });
+        return r.ok ? await r.json() : null;
+      } catch (e) { return null; }
+    }
+    async function applyUpdate(btn) {
+      if (btn) { btn.disabled = true; btn.textContent = 'Updating\u2026'; }
+      const files = ['./', 'index.html', 'app.js', 'style.css', 'qvas-web-shim.js', 'file-index.js', 'version.json'];
+      try { await Promise.all(files.map(f => realFetch(f, { cache: 'reload' }))); } catch (e) {}
+      try { if (window.caches) (await caches.keys()).forEach(k => caches.delete(k)); } catch (e) {}
+      location.reload();
+    }
+    function showBanner(v) {
+      if (banner || Date.now() < snoozedUntil) return;
+      banner = document.createElement('div');
+      banner.id = 'qvas-update';
+      banner.style.cssText = 'position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);transform:translateX(-50%);z-index:2147483647;background:rgba(0,0,0,.9);color:#fff;border:1px solid rgba(255,255,255,.45);border-radius:12px;padding:8px 12px;font:14px -apple-system,Helvetica,Arial,sans-serif;display:flex;gap:10px;align-items:center';
+      const t = document.createElement('span'); t.textContent = 'Update available' + (v && v.appVersion ? ' (v' + v.appVersion + ')' : '');
+      const go = document.createElement('button'); go.textContent = 'Update now';
+      const later = document.createElement('button'); later.textContent = 'Later';
+      [go, later].forEach(b => { b.style.cssText = 'min-height:38px;padding:0 14px;border-radius:9px;border:1px solid rgba(255,255,255,.4);background:#1d6b3a;color:#fff;font-size:14px'; });
+      later.style.background = '#333';
+      go.addEventListener('click', () => applyUpdate(go));
+      later.addEventListener('click', () => { snoozedUntil = Date.now() + 30 * 60 * 1000; banner.remove(); banner = null; });
+      banner.append(t, go, later);
+      document.body.appendChild(banner);
+    }
+    async function check(manual) {
+      const v = await latest();
+      if (!v) { if (manual) toast('Could not check for updates. Are you online?'); return; }
+      if (v.buildId !== mine) { snoozedUntil = 0; showBanner(v); }
+      else if (manual) toast("You're up to date" + (window.__QVAS_VERSION ? ' (v' + window.__QVAS_VERSION + ')' : '') + '.');
+    }
+    window.__qvasCheckUpdate = check;
+    setTimeout(check, 5000);
+    setInterval(check, 10 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') check(); });
+    // the Status screen's buttons call the desktop updater; point them at this one
+    document.addEventListener('click', (e) => {
+      const el = e.target && e.target.closest && e.target.closest('#check-application-update-btn, #check-assets-update-btn, #reinstall-audio-assets-btn');
+      if (!el) return;
+      e.stopImmediatePropagation(); e.preventDefault();
+      if (el.id === 'check-application-update-btn') { toast('Checking for updates\u2026'); check(true); }
+      else toast('Audio is built into this app. It updates together with the app (use Check for Application Updates).');
+    }, true);
+  })();
+
   window.electron = {
     platform: 'web',
     updateGTFS: async () => ({ success: false, message: 'Update GTFS on the desktop app, then re-run the site build.' }),

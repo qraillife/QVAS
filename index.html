@@ -105,8 +105,28 @@
         loadingScreen.classList.add('hidden');
       }
       const elapsed = (performance.now() - startupTime).toFixed(0);
-      console.log(`✅ App initialized in ${elapsed}ms`);
+      console.log(`✅ Startup screen hidden after ${elapsed}ms`);
     }
+
+    let startupBypassTapCount = 0;
+    let startupBypassLastTap = 0;
+    document.addEventListener('pointerdown', () => {
+      const loadingScreen = document.getElementById('loading-screen');
+      if (!loadingScreen || loadingScreen.classList.contains('hidden')) return;
+
+      const now = performance.now();
+      startupBypassTapCount = now - startupBypassLastTap > 1200
+        ? 1
+        : startupBypassTapCount + 1;
+      startupBypassLastTap = now;
+
+      if (startupBypassTapCount >= 3) {
+        startupBypassTapCount = 0;
+        window.qvasStartupBypassed = true;
+        hideLoadingScreen();
+        window.dispatchEvent(new Event('qvas-startup-bypass'));
+      }
+    }, true);
     
   </script>
 </head>
@@ -170,7 +190,7 @@
       <span id="pid-display"></span>
       <span class="header-spacer"></span>
       <span>DoorCycle:</span>
-      <span id="door-cycle-display">N</span>
+      <span id="door-cycle-display">Y</span>
     </div>
     <div class="header-row-2-right">
       <span>DI:</span>
@@ -451,7 +471,7 @@
             <tr><td>Browser engine</td><td id="system-info-browser">Unavailable</td></tr>
             <tr><td>Electron</td><td id="system-info-electron">Unavailable</td></tr>
             <tr><td>Node.js</td><td id="system-info-node">Unavailable</td></tr>
-            <tr><td>App version</td><td id="system-info-app-version">17.2.5</td></tr>
+            <tr><td>App version</td><td id="system-info-app-version">17.2.7</td></tr>
             <tr><td>Battery</td><td id="system-info-battery">Unavailable</td></tr>
             <tr><td>IP address</td><td id="system-info-ip-address">Unavailable</td></tr>
           </tbody>
@@ -1001,7 +1021,7 @@
               // Update door cycle indicator
               const doorCycleDisplay = document.getElementById('door-cycle-display');
               if (doorCycleDisplay) {
-                doorCycleDisplay.textContent = state.doorCycle || 'N';
+                doorCycleDisplay.textContent = state.doorCycle || 'Y';
               }
               
               // Update route display

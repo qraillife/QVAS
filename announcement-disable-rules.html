@@ -1,0 +1,561 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Announcement Rules Configurator</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #111;
+      --panel: #1b1b1b;
+      --panel-alt: #171717;
+      --line: #303030;
+      --accent: #008040;
+      --accent-2: #22a85a;
+      --text: #f2f2f2;
+      --muted: #bbbbbb;
+      --warning: #ffdf6a;
+      --danger: #ff6b6b;
+      --shadow: rgba(0, 0, 0, 0.25);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 1.8rem;
+      color: #ffff00;
+    }
+
+    .hint {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-weight: 400;
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    select, button, input[type="text"] {
+      min-height: 40px;
+      border: 1px solid #666;
+      border-radius: 4px;
+      background: #2d2d2d;
+      color: var(--text);
+      padding: 8px 12px;
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      background: var(--accent);
+      border-color: var(--accent);
+      font-weight: 700;
+      transition: 0.15s ease;
+    }
+
+    button.secondary {
+      background: #555;
+      border-color: #555;
+    }
+
+    button:hover {
+      filter: brightness(1.08);
+    }
+
+    .status {
+      min-height: 24px;
+      margin: 12px 0 18px;
+      color: var(--warning);
+      font-weight: 700;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: 0 6px 18px var(--shadow);
+      overflow: hidden;
+    }
+
+    .route-picker {
+      display: flex;
+      gap: 16px;
+      padding: 16px;
+      background: var(--panel-alt);
+      border-bottom: 1px solid var(--line);
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .route-picker label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .station-grid {
+      display: grid;
+      grid-template-columns: minmax(180px, 1.6fr) repeat(4, minmax(80px, 0.7fr));
+      gap: 0;
+      border-top: 1px solid var(--line);
+    }
+
+    .station-row {
+      display: contents;
+    }
+
+    .station-header,
+    .station-name,
+    .station-toggle {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      border-right: 1px solid var(--line);
+      background: rgba(255,255,255,0.01);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 52px;
+    }
+
+    .station-name {
+      justify-content: flex-start;
+      font-weight: 700;
+      background: rgba(255,255,255,0.02);
+    }
+
+    .station-header {
+      background: #2a2a2a;
+      font-weight: 700;
+      color: #ffff00;
+      justify-content: center;
+    }
+
+    .station-toggle {
+      padding: 8px 10px;
+    }
+
+    .station-toggle label {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      user-select: none;
+      width: 100%;
+    }
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--accent-2);
+      cursor: pointer;
+      margin: 0;
+    }
+
+    .json-box {
+      margin-top: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 220px;
+      resize: vertical;
+      border-radius: 8px;
+      border: 1px solid #666;
+      background: #101010;
+      color: #fff;
+      padding: 14px;
+      font: 0.9rem/1.5 Consolas, monospace;
+    }
+
+    .inspector {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 8px;
+    }
+
+    .empty {
+      padding: 20px;
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    @media (max-width: 720px) {
+      .station-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .station-header, .station-name, .station-toggle {
+        border-right: none;
+      }
+
+      .station-row {
+        display: flex;
+        flex-direction: column;
+        border-bottom: 1px solid var(--line);
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Announcement Rules Configurator</h1>
+    <p class="hint">
+      Disable specific announcements per route and station. If a station is marked as disabled for a type,
+      the app will skip that phrase and fall back to the next valid announcement instead.
+    </p>
+
+    <div class="toolbar">
+      <button id="refresh-btn" class="secondary" type="button">Refresh</button>
+      <button id="save-btn" type="button">Save config</button>
+      <button id="copy-btn" class="secondary" type="button">Copy JSON</button>
+    </div>
+
+    <div id="status" class="status">Loading rules…</div>
+
+    <section class="panel">
+      <div class="route-picker">
+        <label for="route-select">Route</label>
+        <select id="route-select" style="min-width: 320px;"></select>
+      </div>
+
+      <div id="station-grid" class="station-grid" aria-live="polite"></div>
+    </section>
+
+    <div class="json-box">
+      <label for="json-output" style="font-weight:700; color:#ffff00;">JSON preview</label>
+      <textarea id="json-output" spellcheck="false"></textarea>
+      <div class="inspector">
+        <button id="apply-json-btn" type="button">Apply JSON</button>
+        <button id="reset-btn" class="secondary" type="button">Reset to defaults</button>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const routeSelect = document.getElementById('route-select');
+    const stationGrid = document.getElementById('station-grid');
+    const statusEl = document.getElementById('status');
+    const jsonOutput = document.getElementById('json-output');
+
+    let routeDatabase = [];
+    let rules = { routes: {} };
+
+    function updateStatus(message, isError = false) {
+      statusEl.textContent = message;
+      statusEl.style.color = isError ? '#ff9090' : '#ffdf6a';
+    }
+
+    function normalizeRuleKey(value) {
+      return String(value ?? '')
+        .trim()
+        .toLowerCase()
+        .replace(/[\s_-]+/g, ' ')
+        .replace(/\s+/g, ' ');
+    }
+
+    function getStationListForRoute(routeName) {
+      const matches = routeDatabase.flatMap((line) => Array.isArray(line?.runs) ? line.runs : [])
+        .filter(route => route && route.name === routeName);
+
+      if (!matches.length) return [];
+
+      const route = matches[0];
+      return Array.isArray(route.stations) ? route.stations : [];
+    }
+
+    function ensureRouteMap() {
+      const map = {};
+      routeDatabase.forEach((line) => {
+        if (!Array.isArray(line?.runs)) return;
+        line.runs.forEach((route) => {
+          if (!route || !route.name) return;
+          map[route.name] = route;
+        });
+      });
+      return map;
+    }
+
+    function loadRulesFromFile() {
+      fetch('/announcement-disable-rules.json')
+        .then(async (response) => {
+          if (!response.ok) throw new Error('Could not load config JSON');
+          const data = await response.json();
+          rules = data && typeof data === 'object' ? data : { routes: {} };
+          if (!rules.routes) rules.routes = {};
+          renderJson();
+          updateStatus('Rules loaded.');
+          populateRouteSelector();
+        })
+        .catch((error) => {
+          console.error(error);
+          rules = { routes: {} };
+          renderJson();
+          updateStatus('Could not load rules file. You can start from a blank config.', true);
+          populateRouteSelector();
+        });
+    }
+
+    function populateRouteSelector() {
+      routeSelect.innerHTML = '';
+      routeDatabase = [];
+
+      fetch('/manual-routes.json')
+        .then(async (response) => {
+          if (!response.ok) throw new Error('Manual routes unavailable');
+          const data = await response.json();
+          routeDatabase = Array.isArray(data?.routes) ? data.routes : [];
+          const routeMap = ensureRouteMap();
+          const routes = Object.keys(routeMap);
+
+          if (!routes.length) {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No routes available';
+            routeSelect.appendChild(option);
+            stationGrid.innerHTML = '<div class="empty">No manual route data is available.</div>';
+            return;
+          }
+
+          routes.forEach((routeName) => {
+            const option = document.createElement('option');
+            option.value = routeName;
+            option.textContent = routeName;
+            routeSelect.appendChild(option);
+          });
+
+          const currentValue = routeSelect.value || routes[0];
+          routeSelect.value = currentValue;
+          renderStationsForSelectedRoute();
+        })
+        .catch((error) => {
+          console.error(error);
+          routeSelect.innerHTML = '<option value="">Unable to load routes</option>';
+          stationGrid.innerHTML = '<div class="empty">Route list could not be loaded.</div>';
+          updateStatus('Could not load route list.', true);
+        });
+    }
+
+    function normalizeStationRule(stationRule) {
+      if (stationRule === true) return { tns: true, naa: true, mtg: true, form: true };
+      if (!stationRule || typeof stationRule !== 'object') return { tns: false, naa: false, mtg: false, form: false };
+      return {
+        tns: !!stationRule.tns,
+        naa: !!stationRule.naa,
+        mtg: !!stationRule.mtg,
+        form: !!stationRule.form
+      };
+    }
+
+    function getStationRule(routeName, stationName) {
+      const routeRules = rules.routes?.[routeName];
+      if (!routeRules) return { tns: false, naa: false, mtg: false, form: false };
+      const exact = routeRules[stationName];
+      if (exact) return normalizeStationRule(exact);
+      const match = Object.keys(routeRules).find(key => normalizeRuleKey(key) === normalizeRuleKey(stationName));
+      if (!match) return { tns: false, naa: false, mtg: false, form: false };
+      return normalizeStationRule(routeRules[match]);
+    }
+
+    function renderStationsForSelectedRoute() {
+      const routeName = routeSelect.value;
+      if (!routeName) {
+        stationGrid.innerHTML = '<div class="empty">Select a route.</div>';
+        return;
+      }
+
+      const stations = getStationListForRoute(routeName);
+      if (!stations.length) {
+        stationGrid.innerHTML = '<div class="empty">This route has no stations configured.</div>';
+        return;
+      }
+
+      const headers = ['Station', 'TNS', 'NAA', 'MTG', 'FORM'];
+      stationGrid.innerHTML = '';
+
+      const headerRow = document.createElement('div');
+      headerRow.className = 'station-row';
+      headers.forEach((label) => {
+        const node = document.createElement('div');
+        node.className = 'station-header';
+        node.textContent = label;
+        headerRow.appendChild(node);
+      });
+      stationGrid.appendChild(headerRow);
+
+      stations.forEach((stationName) => {
+        const row = document.createElement('div');
+        row.className = 'station-row';
+
+        const stationCell = document.createElement('div');
+        stationCell.className = 'station-name';
+        stationCell.textContent = stationName;
+        row.appendChild(stationCell);
+
+        ['tns', 'naa', 'mtg', 'form'].forEach((type) => {
+          const cell = document.createElement('div');
+          cell.className = 'station-toggle';
+
+          const label = document.createElement('label');
+          label.setAttribute('for', `${routeName}-${stationName}-${type}`);
+
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.id = `${routeName}-${stationName}-${type}`;
+          checkbox.checked = getStationRule(routeName, stationName)[type];
+          checkbox.addEventListener('change', () => {
+            const routeRules = rules.routes[routeName] || {};
+            const stationRule = routeRules[stationName] || routeRules[Object.keys(routeRules).find(key => normalizeRuleKey(key) === normalizeRuleKey(stationName))] || {};
+            const normalized = typeof stationRule === 'object' && !Array.isArray(stationRule) ? stationRule : {};
+            normalized[type] = checkbox.checked;
+            if (Object.values(normalized).every(Boolean) && Object.keys(normalized).length >= 4) {
+              routeRules[stationName] = true;
+            } else {
+              routeRules[stationName] = normalized;
+            }
+            if (!Object.keys(routeRules).length) delete rules.routes[routeName];
+            rules.routes[routeName] = routeRules;
+            renderJson();
+            updateStatus(`Updated ${routeName} → ${stationName}`);
+          });
+
+          label.appendChild(checkbox);
+          label.appendChild(document.createTextNode(type.toUpperCase()));
+          cell.appendChild(label);
+          row.appendChild(cell);
+        });
+
+        stationGrid.appendChild(row);
+      });
+    }
+
+    function renderJson() {
+      jsonOutput.value = JSON.stringify(rules, null, 2);
+    }
+
+    function buildRulesFromGrid() {
+      const nextRules = {
+        ...(rules && typeof rules === 'object' ? rules : { routes: {} }),
+        routes: { ...(rules?.routes || {}) }
+      };
+      const routeName = routeSelect.value;
+      if (!routeName) return nextRules;
+
+      const routeRules = {};
+      const stations = getStationListForRoute(routeName);
+      stations.forEach((stationName) => {
+        const toggles = {};
+        ['tns', 'naa', 'mtg', 'form'].forEach((type) => {
+          const element = document.getElementById(`${routeName}-${stationName}-${type}`);
+          toggles[type] = !!(element && element.checked);
+        });
+
+        const hasAny = Object.values(toggles).some(Boolean);
+        if (hasAny) {
+          routeRules[stationName] = toggles;
+        }
+      });
+
+      if (Object.keys(routeRules).length) {
+        nextRules.routes[routeName] = routeRules;
+      } else {
+        delete nextRules.routes[routeName];
+      }
+
+      return nextRules;
+    }
+
+    routeSelect.addEventListener('change', renderStationsForSelectedRoute);
+
+    document.getElementById('refresh-btn').addEventListener('click', () => {
+      loadRulesFromFile();
+      populateRouteSelector();
+    });
+
+    document.getElementById('save-btn').addEventListener('click', async () => {
+      const payload = buildRulesFromGrid();
+      try {
+        const response = await fetch('/api/announcement-disable-rules', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || 'Save failed');
+        rules = payload;
+        renderJson();
+        updateStatus(`Saved ${routeSelect.value || 'current route'} rules.`);
+      } catch (error) {
+        console.error(error);
+        updateStatus(error.message || 'Save failed.', true);
+      }
+    });
+
+    document.getElementById('copy-btn').addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(jsonOutput.value);
+        updateStatus('JSON copied to clipboard.');
+      } catch (error) {
+        console.error(error);
+        updateStatus('Clipboard access failed; select the JSON manually.', true);
+      }
+    });
+
+    document.getElementById('apply-json-btn').addEventListener('click', () => {
+      try {
+        const parsed = JSON.parse(jsonOutput.value);
+        if (!parsed || typeof parsed !== 'object') throw new Error('JSON must be an object.');
+        rules = parsed;
+        if (!rules.routes) rules.routes = {};
+        renderJson();
+        populateRouteSelector();
+        updateStatus('JSON applied.');
+      } catch (error) {
+        console.error(error);
+        updateStatus('Invalid JSON: ' + error.message, true);
+      }
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+      rules = {
+        version: 1,
+        routes: {}
+      };
+      renderJson();
+      updateStatus('Reset to default empty rules.');
+      populateRouteSelector();
+    });
+
+    loadRulesFromFile();
+  </script>
+</body>
+</html>
