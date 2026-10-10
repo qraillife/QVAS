@@ -1,0 +1,1384 @@
+{
+  "version": 1,
+  "defaults": {
+    "TNS": "The next station is {station}...",
+    "NAA": "Now arriving at {station}... If this is your station, prepare to disembark...",
+    "MTG": "{station}... mind the gap..."
+  },
+  "routes": [
+    {
+      "manualRouteName": "RS1-CAB (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Caboolture",
+      "stations": [
+        {
+          "station": "Roma Street",
+          "mtg": "Roma Street... This is a Caboolture train, stopping all stations...",
+          "naa": "Roma Street... This is a Caboolture train, stopping all stations...",
+          "tns": "Roma Street... This is a Caboolture train, stopping all stations..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Caboolture train, stopping all stations... The next station is Central..."
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Caboolture train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills... If this is your station, prepare to disembark... Customers for the Ferny Grove line, please change trains here...",
+          "tns": "This is a Caboolture train, stopping all stations... The next station is Bowen Hills... Customers for the Ferny Grove line, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Eagle Junction",
+          "mtg": "",
+          "naa": "Now arriving at Eagle Junction... If this is your station, prepare to disembark... Customers for the Doomben or Airport lines, please change trains here...",
+          "tns": "The next station is Eagle Junction... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Northgate",
+          "mtg": "",
+          "naa": "Now arriving at Northgate... If this is your station, prepare to disembark... Customers for the Shorncliffe line, please change trains here...",
+          "tns": "The next station is Northgate... Customers for the Shorncliffe line, please change trains at Northgate..."
+        },
+        {
+          "station": "Virginia",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Caboolture train, stopping all stations... The next station is Virginia..."
+        },
+        {
+          "station": "Bray Park",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Caboolture train, stopping all stations... The next station is Bray Park..."
+        },
+        {
+          "station": "Petrie",
+          "mtg": "",
+          "naa": "Now arriving at Petrie... If this is your station, prepare to disembark... Customers for the Redcliffe Peninsula line, please change trains",
+          "tns": "The next station is Petrie... Customers for the Redcliffe Peninsula line, please change trains at Petrie..."
+        },
+        {
+          "station": "Dakabin",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Dakabin... Queensland Rail would like to remind all customers, that for safety and security reasons video surveillance cameras are in use..."
+        },
+        {
+          "station": "Caboolture",
+          "mtg": "Caboolture... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Caboolture... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Caboolture... This train terminates at Caboolture... All customers please exit the train on arrival at Caboolture... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ],
+      "form": "Roma Street... This is a Caboolture train, stopping all stations..."
+    },
+    {
+      "manualRouteName": "RS1-FYG (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Ferny Grove",
+      "form": "Roma Street... This is a Ferny Grove train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "Now arriving at Central... This is a Ferny Grove train, stopping all stations...",
+          "tns": ""
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Ferny Grove train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills... If this is your station, prepare to disembark... Customers for the Sunshine Coast, Caboolture, Shorncliffe, Redcliffe Peninsula, Doomben, or Airport lines, please change trains here...",
+          "tns": "The next station is Bowen Hills... Customers for the Sunshine Coast, Caboolture, Shorncliffe, Redcliffe Peninsula, Doomben, or Airport lines, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Windsor",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Windsor... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Mitchelton",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Mitchelton... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Oxford Park",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Oxford Park... Queensland Rail would like to remind all customers, that for safety and security reasons video surveillance cameras are in use..."
+        },
+        {
+          "station": "Ferny Grove",
+          "mtg": "Ferny Grove... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Ferny Grove... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Ferny Grove... This train terminates at Ferny Grove... All customers please exit the train on arrival at Ferny Grove... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "RS1-SHC (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Shorncliffe",
+      "form": "Roma Street... This is a Shorncliffe train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "Now arriving at Central... This is a Shorncliffe train, stopping all stations...",
+          "tns": ""
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Shorncliffe train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills... If this is your station, prepare to disembark... Customers for the Ferny Grove line, please change trains here...",
+          "tns": "This is a Shorncliffe train, stopping all stations... The next station is Bowen Hills... Customers for the Ferny Grove line, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Albion",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Albion... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Eagle Junction",
+          "mtg": "",
+          "naa": "Now arriving at Eagle Junction... If this is your station, prepare to disembark... Customers for the Doomben or Airport lines, please change trains here...",
+          "tns": "The next station is Eagle Junction... Customers for the Doomben or Airport lines, please change trains at Eagle Junction..."
+        },
+        {
+          "station": "Northgate",
+          "mtg": "",
+          "naa": "Now arriving at Northgate... If this is your station, prepare to disembark... Customers for the Sunshine Coast, Caboolture and Redcliffe Peninsula lines, please change trains here...",
+          "tns": "The next station is Northgate... Customers for the Sunshine Coast, Caboolture and Redcliffe Peninsula lines, please change trains at Northgate..."
+        },
+        {
+          "station": "Bindha",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Shorncliffe train, stopping all stations... The next station is Bindha... Queensland Rail would like to remind all customers that, for safety and security reasons, video surveillance cameras are in use..."
+        },
+        {
+          "station": "Shorncliffe",
+          "mtg": "Shorncliffe... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Shorncliffe... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Shorncliffe... This train terminates at Shorncliffe... All customers please exit the train on arrival at Shorncliffe... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "RS1-DBN (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Doomben",
+      "form": "Roma Street... This is a Doomben train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "Now arriving at Central... This is a Doomben train, stopping all stations... Customers for the Sunshine Coast, Caboolture, Shorncliffe, Redcliffe Peninsula, Ferny Grove or Airport lines, please change trains here...",
+          "tns": "This is a Doomben train, stopping all stations... The next station is Central..."
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Doomben train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills... If this is your station, prepare to disembark... Customers for the Ferny Grove line, please change trains here...",
+          "tns": "The next station is Bowen Hills... Customers for the Ferny Grove line, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Albion",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Albion... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Eagle Junction",
+          "mtg": "",
+          "naa": "Now arriving at Eagle Junction... If this is your staiton, prepare to disembark... Customers for the Sunshine Coast, Caboolture, Redcliffe Peninsula, Shorncliffe or Airport lines, please change trains here...",
+          "tns": "This is a Doomben train, stopping all stations... The next station is Eagle Junction... Customers for the Sunshine Coast, Caboolture, Redcliffe Peninsula, Shorncliffe or Airport lines, please change trains at Eagle Junction..."
+        },
+        {
+          "station": "Doomben",
+          "mtg": "Doomben... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Doomben... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Doomben... This train terminates at Doomben... All customers please exit the train on arrival at Doomben... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "RS1-BDT (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Domestic Airport",
+      "form": "Roma Street... This is a Brisbane Airport train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "Now arriving at Central Station... This is a Brisbane Airport train, stopping all stations...",
+          "tns": "This is a Brisbane Airport train, stopping all stations... The next station is Central..."
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "Now arriving at Fortitude Valley Station... If this is your station, prepare to disembark...",
+          "tns": "This is a Brisbane Airport train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills Station... If this is your station, prepare to disembark... Customers for the Ferny Grove line, please change trains here...",
+          "tns": "This is a Brisbane Airport train, stopping all stations... The next station is Bowen Hills... Customers for the Ferny Grove line, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Albion",
+          "mtg": "",
+          "naa": "Now arriving at Albion Station... If this is your station, prepare to disembark...",
+          "tns": "The next station is Albion... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Wooloowin",
+          "mtg": "",
+          "naa": "Now arriving at Wooloowin Station... If this is your station, prepare to disembark...",
+          "tns": ""
+        },
+        {
+          "station": "Eagle Junction",
+          "mtg": "",
+          "naa": "Now arriving at Eagle Junction Station... If this is your station, prepare to disembark... Customers for the Sunshine Coast, Caboolture, Redcliffe Peninsula, Shorncliffe or Doomben lines, please change trains here...",
+          "tns": "This is a Brisbane Airport train... The next station is Eagle Junction..."
+        },
+        {
+          "station": "International Airport",
+          "mtg": "Brisbane International Airport... mind the gap... Thank you for catching Airtrain",
+          "naa": "Now arriving at Brisbane International Airport... If this is your station, prepare to disembark... For your safety, please ensure your luggage is placed outside the yellow safety line before the train departs...",
+          "tns": "This is a Brisbane Airport train... The next station is the Brisbane International Airport... Customers travelling on or meeting international flights, this is your station... Customers travelling on Domestic flights, please stay on the train... Airtrain would like to remind customers to take all possessions and rubish when you exit the train... For security reasons, please do not leave possessions unattended..."
+        },
+        {
+          "station": "Domestic Airport",
+          "mtg": "Brisbane Domestic Airport... mind the gap... This train terminates here... All customers please take your rubbish when exiting the train... And Thank you for catching Airtrain",
+          "naa": "Now arriving at the Brisbane Domestic Airport... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is the Brisbane Domestic Airport... This train terminates at the Brisbane Domestic Airport... All customers please exit the train on arrival at the Brisbane Domestic Airport... Airtrain would like to remind customers to take all possessions and rubish when you exit the train... For security reasons, please do not leave possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "RS1-NTG (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Northgate",
+      "form": "Roma Street... This is a Northgate train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "Now arriving at Central... This is a Northgate train, stopping all stations... Customers for the Sunshine Coast, Caboolture, Shorncliffe, Redcliffe Peninsula, Ferny Grove, Doomben or Airport lines, please change trains here...",
+          "tns": ""
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Northgate train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills... If this is your station, prepare to disembark... Customers for the Ferny Grove line, please change trains here...",
+          "tns": "This is a Northgate train, stopping all stations... The next station is Bowen Hills... Customers for the Ferny Grove line, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Eagle Junction",
+          "mtg": "",
+          "naa": "Now arriving at Eagle Junction... If this is your station, prepare to disembark... Customers for the Doomben or Airport lines, please change trains here...",
+          "tns": "The next station is Eagle Junction... Customers for the Doomben or Airport lines, please change trains at Eagle Junction..."
+        },
+        {
+          "station": "Toombul",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Northgate train, stopping all stations... The next station is Toombul..."
+        },
+        {
+          "station": "Northgate",
+          "mtg": "Northgate... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Northgate... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Northgate... This train terminates at Northgate... All customers please exit the train on arrival at Northgate... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "RS1-CAB (EXP BHI-EGJ-NTG-PET)",
+      "formCode": "",
+      "destination": "Caboolture",
+      "form": "Roma Street... This is a Caboolture train, running express from Bowen Hills to Petrie, stopping only at Eagle Junction and Northgate... ",
+      "stations": [
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Caboolture train, running express from Bowen Hills to Petrie, stopping only at Eagle Junction and Northgate... The next station is Central..."
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Caboolture train, running express from Bowen Hills to Petrie, stopping only at Eagle Junction and Northgate... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills... If this is your station, prepare to disembark.. Customers for the Ferny Grove line, please change trains here... This train now runs express to Petrie, stopping only at Eagle Junction and Northgate...",
+          "tns": "This is a Caboolture train, running express from Bowen Hills to Petrie, stopping only at Eagle Junction and Northgate... The next station is Bowen Hills... Customers for the Ferny Grove line, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Eagle Junction",
+          "mtg": "The next station is Eagle Junction... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website.",
+          "naa": "Now arriving at Eagle Junction... If this is your station, prepare to disembark... Customers for the Doomben or Airport lines, please change trains here... This train now runs express to Petrie, stopping only at Northgate...",
+          "tns": ""
+        },
+        {
+          "station": "Northgate",
+          "mtg": "",
+          "naa": "Now arriving at Northgate... If this is your station, prepare to disembark... Customers for the Shorncliffe line, please change trains here... This train now runs express to Petrie...",
+          "tns": "This is a Caboolture train, running express to Petire, stopping only at Northgate... The next station is Northgate... Customers for the Shorncliffe line, please change trains at Northgate..."
+        },
+        {
+          "station": "Petrie",
+          "mtg": "",
+          "naa": "Now arriving at Petrie... Customers for the Redcliffe Peninsula line, please change trains here...",
+          "tns": "The next station is Petrie... Customers for the Redcliffe Peninsula line, please change trains at Petrie..."
+        },
+        {
+          "station": "Dakabin",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Dakabin... Queensland Rail would like to remind all customers that, for safety and security reasons, video surveillance cameras are in use..."
+        },
+        {
+          "station": "Caboolture",
+          "mtg": "Caboolture... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Caboolture... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Caboolture... This train terminates at Caboolture... All customers please exit the train on arrival at Caboolture... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "RS1-GYN (BHI-NTG-PET-CAB)",
+      "formCode": "",
+      "destination": "Gympie North",
+      "form": "Roma Street... This is a Gympie North train, running express from Bowen Hills to Caboolture, stopping only at Northgate and Petrie...",
+      "stations": [
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gympie North train, running express from Bowen Hills to Caboolture, stopping only at Northgate and Petrie... The next station is Central..."
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gympie North train, running express from Bowen Hills to Caboolture, stopping only at Northgate and Petrie... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "Bowen Hills... This train now runs express to Caboolture, stopping only at Northgate and Petrie... Customers for the Ferny Grove line, please change trains here...",
+          "naa": "",
+          "tns": "This is a Gympie North train, running express from Bowen Hills to Caboolture, stopping only at Northgate and Petrie... The next station is Bowen Hills... Customers for the Ferny Grove line, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Northgate",
+          "mtg": "Northgate... This train now runs express to Caboolture, stopping only at Petrie... Customers for the Shorncliffe line, please change trains here...",
+          "naa": ".",
+          "tns": "The next station is Northgate... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Petrie",
+          "mtg": "Petrie... This train now runs express to Caboolture... Customers for the Redcliffe Peninsula line, please change trains here...",
+          "naa": "",
+          "tns": "The next station is Petrie... Customers for the Redcliffe Peninsula line, please change trains at Petrie..."
+        },
+        {
+          "station": "Caboolture",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gympie North train... The next station is Caboolture... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Elimbah",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gympie North train, stopping all stations... The next station is Elimbah..."
+        },
+        {
+          "station": "Yandina",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gympie North train... The next station is Yandina..."
+        },
+        {
+          "station": "Gympie North",
+          "mtg": "Gympie North... This train terminates here... All customers please exit the train...",
+          "naa": "",
+          "tns": "The next station is Gympie North... This train terminates at Gympie North... All customers please exit the train on arrival at Gympie North... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "RS1-KPR (EXP BHI-EGJ-NTG)",
+      "formCode": "",
+      "destination": "Kippa-Ring",
+      "form": "Roma Street... This is a Redcliffe Peninsula train, running express from Bowen Hills to Northgate, stopping only at Eagle Junction...",
+      "stations": [
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "Now arriving at Central... This is a Redcliffe Peninsula train, running express from Bowen Hills to Northgate, stopping only at Eagle Junction...",
+          "tns": ""
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Redcliffe Peninsula train, running express from Bowen Hills to Northgate, stopping only at Eagle Junction... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills... If this is your station, prepare to disembark... Customers for the Ferny Grove line, please change trains here... This train now runs express to Northgate, stopping only at Eagle Junction...",
+          "tns": "This is a Redcliffe Peninsula train, running express from Bowen Hills to Northgate, stopping only at Eagle Junction... The next station is Bowen Hills... Customers for the Ferny Grove line, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Eagle Junction",
+          "mtg": "",
+          "naa": "Now arriving at Eagle Junction... If this is your station, prepare to disembark... Customers for the Doomben or Airport lines, please change trains here... This train now runs express to Northgate...",
+          "tns": "The next station is Eagle Junction... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Northgate",
+          "mtg": "",
+          "naa": "Now arriving at Northgate... If this is your station, prepare to disembark... Customers for the Shorncliffe line, please change trains here...",
+          "tns": "The next station is Northgate... Customers for the Shorncliffe line, please change trains at Northgate..."
+        },
+        {
+          "station": "Virginia",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Redcliffe Peninsula train, stopping all stations to Kippa-Ring... The next station is Virginia..."
+        },
+        {
+          "station": "Bray Park",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Redcliffe Peninsula train, stopping all stations to Kippa-Ring... The next station is Bray Park..."
+        },
+        {
+          "station": "Petrie",
+          "mtg": "",
+          "naa": "Now arriving at Petrie... If this is your station, prepare to disembark... Customers for the Caboolture and Sunshine Coast lines, please change trains here...",
+          "tns": "This is a Redcliffe Peninsula train, stopping all stations to Kippa-Ring... The next station is Petrie... Customers for the Caboolture and Sunshine Coast lines, please change trains at Petrie..."
+        },
+        {
+          "station": "Kippa-Ring",
+          "mtg": "Kippa-Ring... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Kippa-Ring... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Kippa-Ring... This train terminates at Kippa-Ring... All customers please exit the train on arrival at Kippa-Ring... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "RS1-NBR (EXP BHI-EGJ-NTG-PET)",
+      "formCode": "",
+      "destination": "Nambour",
+      "form": "Roma Street... This is a Nambour train, running express from Bowen Hills to Petrie, stopping only at Eagle Junction and Northgate...",
+      "stations": [
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Nambour train, running express from Bowen Hills to Petrie, stopping only at Eagle Junction and Northgate... The next station is Central... Queensland Rail would like to remind customers to take care while disembarking..."
+        },
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Nambour train, running express from Bowen Hills to Petrie, stopping only at Eagle Junction and Northgate... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills... If this is your station, prepare to disembark... Customers for the Ferny Grove line, please change trains here... This train now runs express to Petrie, stopping only at Eagle Junction and Northgate...",
+          "tns": "This is a Nambour train, running express from Bowen Hills to Petrie, stopping only at Eagle Junction and Northgate... The next station is Bowen Hills... Customers for the Ferny Grove line, please change trains at Bowen Hills..."
+        },
+        {
+          "station": "Eagle Junction",
+          "mtg": "",
+          "naa": "Now arriving at Eagle Junction... If this is your station, prepare to disembark... Customers for the Doomben or Airport lines, please change trains here... This train now runs express to Petrie, stopping only at Northgate...",
+          "tns": "The next station is Eagle Junction... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Northgate",
+          "mtg": "",
+          "naa": "Now arriving at Northgate... If this is your station, prepare to disembark... Customers for the Shorncliffe line, please change trains here... This train now runs express to Petrie...",
+          "tns": "This is a Nambour train, running express to Petrie, stopping only at Northgate... The next station is Northgate... Customers for the Shorncliffe line, please change trains at Northgate..."
+        },
+        {
+          "station": "Petrie",
+          "mtg": "",
+          "naa": "Now arriving at Petrie... If this is your station, prepare to disembark... Customers for the Redcliffe Peninsula line, please change trains here...",
+          "tns": "The next station is Petrie... Customers for the Redcliffe Peninsula line, please change trains at Petrie..."
+        },
+        {
+          "station": "",
+          "mtg": "",
+          "naa": "",
+          "tns": ""
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-CVN (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Cleveland",
+      "form": "Bowen Hills... This is a Cleveland train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, stopping all stations... The next station is Central... Customers for the Ipswich, Springfield, Beenleigh or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, stopping all stations... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "South Brisbane",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is South Brisbane... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Norman Park",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, stopping all stations... The next station is Norman Park..."
+        },
+        {
+          "station": "Lindum",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Lindum... Queensland Rail would like to remind all customers that, for safety and security reasons, video surveillance cameras are in use..."
+        },
+        {
+          "station": "Wynnum North",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, stopping all stations... The next station is Wynnum North... Queensland Rail would like to remind all customers that, for safety and security reasons, video surveillance cameras are in use..."
+        },
+        {
+          "station": "Manly",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, stopping all stations... The next station is Manly... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Birkdale",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, stopping all stations... The next station is Birkdale..."
+        },
+        {
+          "station": "Cleveland",
+          "mtg": "Cleveland... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Cleveland... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Cleveland... This train terminates at Cleveland... All customers please exit the train on arrival at Cleveland... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-BNH (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Beenleigh",
+      "form": "Bowen Hills... This is a Beenleigh train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Beenleigh train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Beenleigh train, stopping all stations... The next station is Central... Customers for the Ipswich, Springfield, Cleveland or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Beenleigh train, stopping all stations... The next station is Roma Street... Customers for the long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "South Brisbane",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is South Brisbane... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Boggo Road",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Boggo Road... Customers for the Cleveland line, please change trains at Boggo Road..."
+        },
+        {
+          "station": "Moorooka",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Beenleigh train, stopping all stations... The next station is Moorooka..."
+        },
+        {
+          "station": "Kingston",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Beenleigh train, stopping all stations... The next station is Kingston..."
+        },
+        {
+          "station": "Fruitgrove",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Beenleigh train, stopping all stations... The next station is Fruitgrove..."
+        },
+        {
+          "station": "Beenleigh",
+          "mtg": "Beenleigh... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Beenleigh... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Beenleigh... This train terminates at Beenleigh... All customers please exit the train on arrival at Beenleigh... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-KRY (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Kuraby",
+      "form": "Bowen Hills... This is a Kuraby train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Kuraby train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Kuraby train, stopping all stations... The next station is Central... Customers for the Ipswich, Springfield, Cleveland or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Kuraby train, stopping all stations... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "South Brisbane",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is South Brisbane... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Boggo Road",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Boggo Road... Customers for the Cleveland line, please change trains at Boggo Road..."
+        },
+        {
+          "station": "Kuraby",
+          "mtg": "Kuraby...mind the gap...This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Kuraby... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Kuraby... This train terminates at Kuraby... All customers please exit the train on arrival at Kuraby... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-LOT (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Lota",
+      "form": "Bowen Hills... mind the gap...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Fortitude Valley... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Lota train, stopping all stations... The next station is Central... Customers for the Ipswich, Springfield, Beenleigh or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Lota train, stopping all stations... The next station is Roma Street... Customers for long-distance servces, please change trains at Roma Street..."
+        },
+        {
+          "station": "Wynnum",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Wynnum... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Lota",
+          "mtg": "Lota... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Lota... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Lota... This train terminates at Lota... All customers please exit the train on arrival at Lota... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-IPS (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Ipswich",
+      "form": "Bowen Hills... This is a Brisbane City and Ipswich train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is an Ipswich train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is an Ipswich train, stopping all stations... The next station is Central... Customers for the Cleveland, Beenleigh or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is an Ipswich train, stopping all stations... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "Milton",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Milton... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Chelmer",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is an Ipswich train, stopping all stations... The next station is Chelmer..."
+        },
+        {
+          "station": "Oxley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is an Ipswich train, stopping all stations... The next station is Oxley..."
+        },
+        {
+          "station": "Darra",
+          "mtg": "",
+          "naa": "Now arriving at Darra... If this is your station, prepare to disembark... Customers for the Springfield line, please change trains here...",
+          "tns": "The next station is Darra... Customers for the Springfield line, please change trains at Darra..."
+        },
+        {
+          "station": "Gailes",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Gailes... Queensland Rail would like to remind all customers that, for safety and security reasons, video surveillance cameras are in use."
+        },
+        {
+          "station": "Redbank",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Redbank... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Ipswich",
+          "mtg": "Ipswich... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Ipswich... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Ipswich... This train terminates at Ipswich... All customers please exit the train on arrival at Ipswich... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-RSW (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Rosewood",
+      "form": "Bowen Hills... This is a Brisbane City and Rosewood train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Rosewood train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Rosewood train, stopping all stations... The next station is Central... Customers for the Cleveland, Beenleigh or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Rosewood train, stopping all stations... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "Milton",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Milton... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Chelmer",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Rosewood train, stopping all stations... The next station is Chelmer..."
+        },
+        {
+          "station": "Oxley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Rosewood train, stopping all stations... The next station is Oxley..."
+        },
+        {
+          "station": "Darra",
+          "mtg": "",
+          "naa": "Now arriving at Darra... If this is your station, prepare to disembark... Customers for the Springfield line, please change trains here...",
+          "tns": "The next station is Darra... Customers for the Springfield line, please change trains at Darra..."
+        },
+        {
+          "station": "Gailes",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Gailes... Queensland Rail would like to remind all customers that, for safety and security reasons, video surveillance cameras are in use."
+        },
+        {
+          "station": "Redbank",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Redbank... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Rosewood",
+          "mtg": "Rosewood... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Rosewood... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Rosewood... This train terminates at Rosewood... All customers please exit the train on arrival at Rosewood... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-IPS (EXP MTZ-IDP-DAR)",
+      "formCode": "",
+      "destination": "Ipswich",
+      "form": "Bowen Hills... This is a Brisbane City and Ipswich train, running express from Milton to Darra, stopping only at Indooroopilly...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is an Ipswich train, running express from Milton to Darra, stopping only at Indooroopilly... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is an Ipswich train, running express from Milton to Darra, stopping only at Indooroopilly... The next station is Central... Customers for the Cleveland, Beenleigh, or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is an Ipswich train, running express from Milton to Darra, stopping only at Indooroopilly... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "Milton",
+          "mtg": "",
+          "naa": "Now arriving at Milton... If this is your station, prepare to disembark... This train now runs express to Darra, stopping only at Indooroopilly...",
+          "tns": "The next station is Milton... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Indooroopilly",
+          "mtg": "",
+          "naa": "Now arriving at Indooroopilly... This train now runs express to Darra...",
+          "tns": "This is an Ipswich train, running express to Darra, stopping only at Indooroopilly... The next station is Indooroopilly..."
+        },
+        {
+          "station": "Darra",
+          "mtg": "",
+          "naa": "Now arriving at Darra... If this is your station, prepare to disembark... Customers for the Springfield line, please change trains here...",
+          "tns": "The next station is Darra... Customers for the Springfield line, please change trains at Darra..."
+        },
+        {
+          "station": "Redbank",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Redbank... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Ipswich",
+          "mtg": "Ipswich... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Ipswich... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Ipswich... This train terminates at Ipswich... All customers please exit the train on arrival at Ipswich... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-SFC (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Springfield Central",
+      "form": "Bowen Hills... This is a Springfield Central train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Springfield Central train, stopping all stations... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Springfield Central train, stopping all stations... The next station is Central... Customers for the Cleveland, Beenleigh or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Springfield Central train, stopping all stations... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "Milton",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Milton... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Chelmer",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Springfield Central train, stopping all stations... The next station is Chelmer..."
+        },
+        {
+          "station": "Oxley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Springfield Central train, stopping all stations... The next station is Oxley..."
+        },
+        {
+          "station": "Darra",
+          "mtg": "",
+          "naa": "Now arriving at Darra... If this is your station, prepare to disembark... Customers for the Springfield line, please change trains here...",
+          "tns": "The next station is Darra... Customers for the Ipswich line, please change trains at Darra..."
+        },
+        {
+          "station": "Springfield Central",
+          "mtg": "Springfield Central... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Springfield Central... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Springfield Central... This train terminates at Springfield Central... All customers please exit the train on arrival at Springfield Central... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-RSW (EXP MTZ-IDP-DAR)",
+      "formCode": "",
+      "destination": "Rosewood",
+      "form": "Bowen Hills... This is a Brisbane City and Ipswich train, running express from Milton to Darra, stopping only at Indooroopilly...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Rosewood train, running express from Milton to Darra, stopping only at Indooroopilly... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Rosewood train, running express from Milton to Darra, stopping only at Indooroopilly... The next station is Central... Customers for the Cleveland, Beenleigh, or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Rosewood train, running express from Milton to Darra, stopping only at Indooroopilly... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "Milton",
+          "mtg": "",
+          "naa": "Now arriving at Milton... If this is your station, prepare to disembark... This train now runs express to Darra, stopping only at Indooroopilly...",
+          "tns": "The next station is Milton... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Indooroopilly",
+          "mtg": "",
+          "naa": "Now arriving at Indooroopilly... This train now runs express to Darra...",
+          "tns": "This is a Rosewood train, running express to Darra, stopping only at Indooroopilly... The next station is Indooroopilly..."
+        },
+        {
+          "station": "Darra",
+          "mtg": "",
+          "naa": "Now arriving at Darra... If this is your station, prepare to disembark... Customers for the Springfield line, please change trains here...",
+          "tns": "The next station is Darra... Customers for the Springfield line, please change trains at Darra..."
+        },
+        {
+          "station": "Redbank",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Redbank... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Rosewood",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Rosewood... This train terminates at Rosewood... All customers please exit the train on arrival at Ipswich... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-CVN (EXP MGS-MNY)",
+      "formCode": "",
+      "destination": "Cleveland",
+      "form": "Bowen Hills... This is a Cleveland train, running express from Morningside to Manly...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, running express from Morningside to Manly... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, running express from Morningside to Manly... The next station is Central... Customers for the Ipswich, Springfield, Beenleigh, or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, running express from Morningside to Manly... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "South Brisbane",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is South Brisbane... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Morningside",
+          "mtg": "",
+          "naa": "Now arriving at Morningside... If this is your station, prepare to disembark... This train now runs express to Manly...",
+          "tns": "This is a Cleveland train, running express from Morningside to Manly... The next station is Morningside..."
+        },
+        {
+          "station": "Birkdale",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Cleveland train, stopping all stations... The next station is Birkdale..."
+        },
+        {
+          "station": "Cleveland",
+          "mtg": "Cleveland... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Cleveland... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Cleveland... This train terminates at Cleveland... All customers please exit the train on arrival at Cleveland... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-BGR (ALL STATIONS)",
+      "formCode": "",
+      "destination": "Boggo Road",
+      "form": "Bowen Hills... This is a Boggo Road train, stopping all stations...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Boggo Road train, stopping all stations... The next station is Fortitude Valley... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Boggo Road train, stopping all stations... The next station is Central... Customers for the Ipswich, Springfield, Cleveland Beenleigh or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Boggo Road train, stopping all stations... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "South Brisbane",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is South Brisbane... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "South Bank",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Boggo Road train, stopping all stations... The South Bank..."
+        },
+        {
+          "station": "Boggo Road",
+          "mtg": "Boggo Road... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Boggo Road... This train terminates here... All customers please exit the train... Change here for connecting bus services at the Boggo Road Busway Station, with frequent services on the Southeast & Eastern Busways to Brisbane City, UQ Lakes and Southern Suburbs.",
+          "tns": "The next station is Boggo Road... This train terminates at Boggo Road... All customers please exit the train on arrival at Boggo Road... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "BHI-VYS (EXP BGR-ATI-LGL-BNH)",
+      "formCode": "",
+      "destination": "Varsity Lakes",
+      "form": "Bowen Hills... This is a Gold Coast train, running express from Boggo Road to Beenleigh, stopping only at Altandi and Loganlea...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gold Coast train, running express from Boggo Road to Beenleigh, stopping only at Altandi and Loganlea... The next station is Fortitude Valley..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gold Coast train, running express from Boggo Road to Beenleigh, stopping only at Altandi and Loganlea... The next station is Central... Customers for the Ipswich, Springfield, Beenleigh or Cleveland lines, please change trains at Central..."
+        },
+        {
+          "station": "South Brisbane",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is South Brisbane... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "South Bank",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gold Coast train, running express from Boggo Road to Beenleigh, stopping only at Altandi and Loganlea... The next station is South Bank..."
+        },
+        {
+          "station": "Boggo Road",
+          "mtg": "",
+          "naa": "Now arriving at Boggo Road... Change here for connecting bus services at the Boggo Road Busway Station, with frequent services on the Southeast & Eastern Busways to Brisbane City, UQ Lakes and Southern Suburbs. This train now runs express to Beenleigh, stopping only at Altandi and Loganlea...",
+          "tns": "This is a Gold Coast train, running express from Boggo Road to Beenleigh, stopping only at Altandi and Loganlea... The next station is Boggo Road... Customers for the Cleveland line, please change trains at Boggo Road..."
+        },
+        {
+          "station": "Altandi",
+          "mtg": "",
+          "naa": "Now arriving at Altandi... If this is your station, prepare to disembark... This train now runs express to Beenleigh, stopping only at Loganlea...",
+          "tns": "This is a Gold Coast train, running express to Beenleigh, stopping only at Altandi and Loganlea, and then stopping all stations to Varsity Lakes... The next station is Altandi..."
+        },
+        {
+          "station": "Loganlea",
+          "mtg": "",
+          "naa": "Now arriving at Loganlea... If this is your station, prepare to disembark... This train now runs express to Beenleigh...",
+          "tns": "This is a Gold Coast train, running express to Beenleigh, stopping only at Loganlea... The next station is Loganlea... Queensland Rail would like to remind all customers that, for safety and security reasons, video surveillance cameras are in use."
+        },
+        {
+          "station": "Beenleigh",
+          "mtg": "",
+          "naa": "Now arriving at Beenleigh... If this is your station, prepare to disembark... This train now runs all stations to Varsity Lakes...",
+          "tns": "This is a Gold Coast train, running express to Beenleigh, and then stopping all stations to Varsity Lakes... The next station is Beenleigh... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Ormeau",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gold Coast train, stopping all stations to Varsity Lakes... The next station is Ormeau..."
+        },
+        {
+          "station": "Coomera",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gold Coast train, stopping all stations to Varsity Lakes... The next station is Coomera..."
+        },
+        {
+          "station": "Helensvale",
+          "mtg": "",
+          "naa": "Now arriving at Helensvale... Change here for connecting bus services at Helensvale Busway Station, with frequent services connecting to the G:link light rail and key Gold Coast suburbs, including Robina and Gold Coast University Hospital.",
+          "tns": "This is a Gold Coast train, stopping all stations to Varsity Lakes... The next station is Helensvale... Customers travelling to Surface Paradise and Broadbeach, please change to the G:link tram at Helensvale station..."
+        },
+        {
+          "station": "Nerang",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gold Coast train, stopping all stations to Varsity Lakes ... The next station is Nerang... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Robina",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Gold Coast train, stopping all stations to Varsity Lakes... The next station is Robina..."
+        },
+        {
+          "station": "Varsity Lakes",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Varsity Lakes... This train terminates at Varsity Lakes... All customers please exit the train on arrival at Varsity Lakes... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        }
+      ]
+    },
+    {
+      "manualRouteName": "KPR-SFC (EXP NTG-EGJ-BHI)",
+      "formCode": "",
+      "destination": "Springfield Central",
+      "form": "Kippa-Ring... This is a Brisbane City and Springfield Central train, running express from Northgate to Bowen Hills, stopping only at Eagle Junction...",
+      "stations": [
+        {
+          "station": "Fortitude Valley",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Fortitude Valley... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Central",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Springfield Central train, stopping all stations... The next station is Central... Customers for the Cleveland, Beenleigh or Gold Coast lines, please change trains at Central..."
+        },
+        {
+          "station": "Roma Street",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Springfield Central train, stopping all stations... The next station is Roma Street... Customers for long-distance services, please change trains at Roma Street..."
+        },
+        {
+          "station": "Milton",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Milton... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Chelmer",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Springfield Central train, stopping all stations... The next station is Chelmer..."
+        },
+        {
+          "station": "Oxley",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Springfield Central train, stopping all stations... The next station is Oxley..."
+        },
+        {
+          "station": "Darra",
+          "mtg": "",
+          "naa": "Now arriving at Darra... If this is your station, prepare to disembark... Customers for the Springfield line, please change trains here...",
+          "tns": "The next station is Darra... Customers for the Ipswich line, please change trains at Darra..."
+        },
+        {
+          "station": "Springfield Central",
+          "mtg": "Springfield Central... mind the gap... This train terminates here... All customers please exit the train...",
+          "naa": "Now arriving at Springfield Central... This train terminates here... All customers please exit the train...",
+          "tns": "The next station is Springfield Central... This train terminates at Springfield Central... All customers please exit the train on arrival at Springfield Central... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+        },
+        {
+          "station": "Rothwell",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Brisbane City and Springfield Central train, running express from Northgate to Bowen Hills, stopping only at Eagle Junction... The next station is Rothwell..."
+        },
+        {
+          "station": "Petrie",
+          "mtg": "",
+          "naa": "Now arriving at Petrie... If this is your station, prepare to disembark... Customers for the Caboolture and Sunshine Coast lines, please change trains here...",
+          "tns": "This is a Brisbane City and Springfield Central train, running express from Northgate to Bowen Hills, stopping only at Eagle Junction... The next station is Petrie... Customers for the Caboolture and Sunshine Coast lines, please change trains at Petrie..."
+        },
+        {
+          "station": "Lawnton",
+          "mtg": "",
+          "naa": "",
+          "tns": "The next station is Lawnton... Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website."
+        },
+        {
+          "station": "Bald Hills",
+          "mtg": "",
+          "naa": "",
+          "tns": "This is a Brisbane City and Springfield Central train, running express from Northgate to Bowen Hills, stopping only at Eagle Junction... The next station is Geebung..."
+        },
+        {
+          "station": "Northgate",
+          "mtg": "",
+          "naa": "Now arriving at Northgate... If this is your station, prepare to disembark... Customers for the Shorncliffe line, please chagne trains here... This train now runs express to Bowen Hills, stopping only at Eagle Junction...",
+          "tns": "This is a Brisbane City and Springfield Central train, running express from Northgate to Bowen Hills, stopping only at Eagle Junction... The next station is Northgate... Customers for the Shorncliffe line, please change trains at Northgate..."
+        },
+        {
+          "station": "Eagle Junction",
+          "mtg": "",
+          "naa": "Now arriving at Eagle Junction... If this is your station, prepare to disembark... Customers for the Doomben or Airport lines, please change trains here... This train now runs express to Bowen Hills...",
+          "tns": "This is a Brisbane City and Springfield Central train, running express to Bowen Hills, stopping only at Eagle Junction... The next station is Eagle Junction... Customers for the Doomben or Airport lines, please change trains at Eagle Junction..."
+        },
+        {
+          "station": "Bowen Hills",
+          "mtg": "",
+          "naa": "Now arriving at Bowen Hills... If this is your station, prepare to disembark... Customers for the Ferny Grove line, please change trains here...",
+          "tns": "The next station is Bowen Hills... Please travel with care. If you’re travelling with luggage, a bicycle, or other large items, please use the lifts. Avoid rushing at stations, and always use the handrails on stairs and escalators."
+        }
+      ]
+    }
+  ],
+  "specialMessages": [
+    {
+      "id": "storm-season",
+      "text": "Attention Customers... Get ready for storm season this year... QLD Rail encourages you to prepare for unplanned service disruptions and consider alternate travel arrangements... "
+    }
+  ],
+  "stationOverrides": [
+    {
+      "station": "Ferny Grove",
+      "mtg": "Ferny Grove... mind the gap... This train terminates here... All customers please exit the train...",
+      "naa": "Now arriving at Ferny Grove... This train terminates here... All customers please exit the train...",
+      "tns": "The next station is Ferny Grove... This train terminates at Ferny Grove... All customers please exit the train on arrival at Ferny Grove... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+    },
+    {
+      "station": "Doomben",
+      "mtg": "Doomben... mind the gap... This train terminates here... All customers please exit the train...",
+      "naa": "Now arriving at Doomben... This train terminates here... All customers please exit the train...",
+      "tns": "The next station is Doomben... This train terminates at Doomben... All customers please exit the train on arrival at Ferny Grove... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended..."
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Destination Board</title>
+  <style>
+    body {
+      background: #111;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    #destination {
+      font-size: 6em;
+      font-weight: bold;
+      color: #ffcc00;
+      margin-bottom: 0.3em;
+      text-shadow: 3px 3px 12px #000;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+    #stopping {
+      font-size: 2em;
+      color: #fff;
+      margin-bottom: 0.5em;
+    }
+    #stations {
+      font-size: 1.5em;
+      color: #ccc;
+      max-width: 90vw;
+      text-align: center;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <div id="destination">DESTINATION</div>
+  <script>
+    function updateBoard(data) {
+      const dest = document.getElementById('destination');
+      const stations = document.getElementById('stations');
+      const stopping = document.getElementById('stopping');
+      if (data && data.destination && data.stations) {
+        dest.textContent = data.destination;
+        stations.textContent = data.stations.join('  •  ');
+        stopping.style.visibility = 'visible';
+        stations.style.visibility = 'visible';
+      } else {
+        dest.textContent = '';
+        stations.textContent = '';
+        stopping.style.visibility = 'hidden';
+        stations.style.visibility = 'hidden';
+      }
+    }
+    window.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'DEST_BOARD') {
+        updateBoard(event.data.payload);
+      } else if (event.data && event.data.type === 'RESET') {
+        updateBoard(null);
+      }
+    });
+  </script>
+</body>
+</html>
