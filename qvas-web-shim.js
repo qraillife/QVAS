@@ -651,27 +651,31 @@
       let usedSW = false;
       try {
         const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
-        if (reg) {
-          
-await reg.update();
-const sw = reg.installing || reg.waiting || reg.active;
+    
+if (reg) {
+  await reg.update();
 
-if (reg.waiting) {
-  reg.waiting.postMessage({ type: 'SKIP_WAITING' });
-}
+  const sw = reg.installing || reg.waiting;
 
-if (sw && sw.state !== 'activated' && sw.state !== 'redundant') {
-  await new Promise((res) => {
-    sw.addEventListener('statechange', () => {
-      if (sw.state === 'activated' || sw.state === 'redundant') res();
-    });
-    setTimeout(res, 10000);
-  });
-}
+  if (sw) {
+    await new Promise((resolve) => {
+      if (sw.state === 'activated' || sw.state === 'redundant') {
+        resolve();
+        return;
+      }
 
-usedSW = true;
-
+      sw.addEventListener('statechange', () => {
+        if (sw.state === 'activated' || sw.state === 'redundant') {
+          resolve();
         }
+      });
+
+      setTimeout(resolve, 10000);
+    });
+  }
+
+    usedSW = true;
+}
       } catch (e) {}
       if (!usedSW) {
         const files = ['./', 'index.html', 'app.js', 'style.css', 'qvas-web-shim.js', 'file-index.js', 'version.json'];
