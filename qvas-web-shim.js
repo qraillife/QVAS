@@ -81,31 +81,46 @@
   document.addEventListener('DOMContentLoaded', applyFrame);
   window.addEventListener('load', applyFrame);
 
-  // Size the keyboard rows so every row, including the day buttons (M-F / SAT / SUN / Public Holiday), fits inside the
-  // frame's window with nothing cut off. Re-runs when the screen is turned or resized.
-  const fitKeyboard = () => {
-    if ((window.innerHeight || 0) >= 700) return;            // only on a phone-sized screen
-    const avail = windowHeight() - 113;                       // window minus header, status line and footer buttons
-    let kh = 34, day = 40;
-    for (; kh > 16; kh--) {
-      day = Math.max(22, Math.min(40, Math.round(kh * 1.2)));
-      if (4 + 4 * (kh + 3) + 3 + day <= avail - 2) break;
-    }
-    const kf = Math.max(11, Math.min(16, kh - 16)), df = Math.max(10, Math.min(14, day - 22));
+  // Fit by measuring: shrink the keyboard rows, the day buttons and the side buttons until nothing is cut off inside
+  // the frame's window. It checks again whenever the screen changes, so every screen fits.
+  let fitKh = 34, fitDay = 40, fitSide = null;
+  const applyFit = () => {
     let st = document.getElementById('qvas-kbfit');
     if (!st) { st = document.createElement('style'); st.id = 'qvas-kbfit'; (document.head || document.documentElement).appendChild(st); }
+    const kf = Math.max(10, Math.min(16, fitKh - 16)), df = Math.max(9, Math.min(14, fitDay - 22));
     st.textContent = `
-      .touch-keyboard{padding-top:4px !important;padding-bottom:0 !important;justify-content:flex-start !important}
-      .touch-keyboard .keyboard-row{margin:0 0 3px 0 !important}
-      .touch-keyboard .key-btn{height:${kh}px !important;min-height:0 !important;padding-top:0 !important;padding-bottom:0 !important;font-size:${kf}px !important;line-height:1 !important}
-      .touch-keyboard .day-selector{margin:3px 0 0 0 !important}
-      .touch-keyboard .day-btn{height:${day}px !important;min-height:0 !important;padding:0 4px !important;font-size:${df}px !important;line-height:1.05 !important}`;
+      .left-panel{padding-top:4px !important}
+      .touch-keyboard{margin-top:2px !important;padding-top:2px !important;padding-bottom:0 !important;justify-content:flex-start !important}
+      .touch-keyboard .keyboard-row{margin:0 0 2px 0 !important}
+      .touch-keyboard .key-btn{height:${fitKh}px !important;min-height:0 !important;padding-top:0 !important;padding-bottom:0 !important;font-size:${kf}px !important;line-height:1 !important}
+      .touch-keyboard .day-selector{margin:2px 0 0 0 !important}
+      .touch-keyboard .day-btn{height:${fitDay}px !important;min-height:0 !important;padding:0 4px !important;font-size:${df}px !important;line-height:1.05 !important}` +
+      (fitSide ? `
+      .right-panel .side-btn{min-height:${fitSide}px !important;flex:1 1 ${fitSide}px !important}` : '');
+  };
+  const fitKeyboard = () => {
+    if ((window.innerHeight || 0) >= 700) return;            // only on a phone-sized screen
+    applyFit();
+    const kb = document.getElementById('touch-keyboard');
+    if (kb && kb.offsetParent && kb.clientHeight > 40) {
+      for (let i = 0; i < 40 && kb.scrollHeight > kb.clientHeight + 1 && fitKh > 14; i++) {
+        fitKh--; fitDay = Math.max(22, Math.round(fitKh * 1.15)); applyFit();
+      }
+    }
+    document.querySelectorAll('.right-panel').forEach((rp) => {
+      if (!rp.offsetParent || rp.clientHeight < 40 || rp.scrollHeight <= rp.clientHeight + 1) return;
+      const n = Array.from(rp.children).filter((c) => c.classList.contains('side-btn') && getComputedStyle(c).display !== 'none').length || 1;
+      fitSide = Math.max(24, Math.floor(rp.clientHeight / n) - 1);
+      applyFit();
+    });
   };
   fitKeyboard();
   document.addEventListener('DOMContentLoaded', fitKeyboard);
   window.addEventListener('load', fitKeyboard);
-  window.addEventListener('resize', fitKeyboard);
-  window.addEventListener('orientationchange', () => setTimeout(fitKeyboard, 300));
+  window.addEventListener('resize', () => { fitKh = 34; fitDay = 40; fitSide = null; fitKeyboard(); });
+  window.addEventListener('orientationchange', () => setTimeout(() => { fitKh = 34; fitDay = 40; fitSide = null; fitKeyboard(); }, 300));
+  document.addEventListener('click', () => setTimeout(fitKeyboard, 120), true);
+  setInterval(fitKeyboard, 700);
   (function () {
     const st = document.createElement('style');
     st.textContent = `
