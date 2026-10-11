@@ -652,15 +652,25 @@
       try {
         const reg = navigator.serviceWorker && await navigator.serviceWorker.getRegistration();
         if (reg) {
-          await reg.update();                       // downloads only the files that changed, then the new worker takes over
-          const sw = reg.installing || reg.waiting;
-          if (sw && !['activated', 'redundant'].includes(sw.state)) {
-            await new Promise((res) => {
-              sw.addEventListener('statechange', () => { if (['activated', 'redundant'].includes(sw.state)) res(); });
-              setTimeout(res, 180000);
-            });
-          }
-          usedSW = true;
+          
+await reg.update();
+const sw = reg.installing || reg.waiting || reg.active;
+
+if (reg.waiting) {
+  reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+}
+
+if (sw && sw.state !== 'activated' && sw.state !== 'redundant') {
+  await new Promise((res) => {
+    sw.addEventListener('statechange', () => {
+      if (sw.state === 'activated' || sw.state === 'redundant') res();
+    });
+    setTimeout(res, 10000);
+  });
+}
+
+usedSW = true;
+
         }
       } catch (e) {}
       if (!usedSW) {
