@@ -62,17 +62,6 @@
     let displayTimeout = null;
     let autoClearEnabled = true;  // Flag to control auto-clear
 
-    const announcementTextTokens = {
-      pp: 'Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended...',
-      cctv: 'Queensland Rail would like to remind all customers that, for safety and security reasons, video surveillance cameras are in use...',
-      etiquette: 'Customers, please be reminded that all personal belongings need to be placed either on your lap or underneath your seat. Please consider fellow customers and do not place items in the aisle or on the seat next to you as this reduces seating availability for others. For more train etiquette tips, visit the Queensland Rail website.',
-      twc: 'Please travel with care. If you’re travelling with luggage, a bicycle, or other large items, please use the lifts. Avoid rushing at stations, and always use the handrails on stairs and escalators.'
-    };
-
-    function expandAnnouncementText(text) {
-      return String(text || '').replace(/\{(pp|cctv|etiquette|twc)\}/gi, (token, name) => announcementTextTokens[name.toLowerCase()]);
-    }
-
     function displayDI(data) {
       const destEl = document.getElementById('destination');
       const customEl = document.getElementById('custom-text');
@@ -92,7 +81,6 @@
           displayText = data.customText;
           console.log('✓ Using custom text as destination:', data.customText);
         }
-        displayText = expandAnnouncementText(displayText);
         
         // Apply scroller animation if enabled
         if (data.scroller) {
@@ -149,8 +137,6 @@
         console.log('RESET message received');
         clearDisplay();
         if (displayTimeout) clearTimeout(displayTimeout);
-      } else if (typeof event.data === 'string') {
-        displayDI({ destination: event.data, scroller: true });
       } else {
         console.log('Unknown message type:', event.data);
       }

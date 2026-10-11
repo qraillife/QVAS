@@ -118,73 +118,16 @@ const runCodeGuide = {
   }
 };
 
-async function loadStaticRouteDatabase() {
-  if (!staticRouteDatabasePromise) {
-    staticRouteDatabasePromise = (async () => {
-      const response = await fetch('/Route_Database.csv');
-      if (!response.ok) throw new Error(`Static route database unavailable (${response.status})`);
-      const rows = parseCSV(await response.text());
-      if (rows.length === 0 || !['NUMBER', 'ROUTE', 'DAYS'].every(field => field in rows[0])) {
-        throw new Error('Static route database is empty or missing NUMBER, ROUTE, or DAYS columns');
-      }
-      staticRouteDatabase = rows;
-    })();
-  }
-  return staticRouteDatabasePromise;
-}
-
-async function loadStationCoordinates() {
-  if (!stationCoordinatesPromise) {
-    stationCoordinatesPromise = (async () => {
-      const response = await fetch(`${window.location.origin}/SEQ_GTFS/stops.txt`);
-      if (!response.ok) throw new Error(`GTFS station coordinates unavailable (${response.status})`);
-
-      const rows = parseCSV(await response.text());
-      const coordinateTotals = new Map();
-      for (const stop of rows) {
-        const name = normalizeStationName(stop.stop_name).toLowerCase();
-        const lat = Number(stop.stop_lat);
-        const lon = Number(stop.stop_lon);
-        if (!name || !Number.isFinite(lat) || !Number.isFinite(lon)) continue;
-
-        const total = coordinateTotals.get(name) || { lat: 0, lon: 0, count: 0 };
-        total.lat += lat;
-        total.lon += lon;
-        total.count += 1;
-        coordinateTotals.set(name, total);
-      }
-
-      stationCoordinatesByName = new Map(
-        [...coordinateTotals].map(([name, total]) => [
-          name,
-          { lat: total.lat / total.count, lon: total.lon / total.count }
-        ])
-      );
-      if (stationCoordinatesByName.size === 0) {
-        throw new Error('GTFS stops.txt did not contain any valid station coordinates');
-      }
-      console.log(`📍 Loaded coordinates for ${stationCoordinatesByName.size} stations from stops.txt only.`);
-    })();
-  }
-  return stationCoordinatesPromise;
-}
-
 // Global variable to store current trip info from GTFS
 let currentGTFSTrip = null;
 
 // Global variables for GTFS data access
 let globalGTFSData = null;
 let tripIdMap = {}; // Map trip_id to route_id for fast lookup
-let useExperimentalStaticDatabase = false;
-let staticRouteDatabase = [];
-let staticRouteDatabasePromise = null;
-let stationCoordinatesByName = new Map();
-let stationCoordinatesPromise = null;
 let currentManualRoute = null;
 let currentManualFormFile = null;
 let routeTopologyPaths = [];
 let mtgOnlyRouteCodes = new Set();
-let announcementTextDatabase = { defaults: {}, stationOverrides: [], routes: [] };
 
 async function loadMtgOnlyRouteConfig() {
   try {
@@ -217,27 +160,6 @@ async function loadAnnouncementDisableRules() {
     announcementDisableRules = { routes: {} };
   }
 }
-
-async function loadAnnouncementTextDatabase() {
-  try {
-    const response = await fetch('/announcement-texts.json');
-    if (!response.ok) throw new Error(`Announcement text database unavailable (${response.status})`);
-    const data = await response.json();
-    if (!data || typeof data !== 'object' || Array.isArray(data)) {
-      throw new Error('Announcement text database must be a JSON object');
-    }
-    announcementTextDatabase = {
-      ...data,
-      stationOverrides: Array.isArray(data.stationOverrides) ? data.stationOverrides : [],
-      routes: Array.isArray(data.routes) ? data.routes : []
-    };
-    console.log(`[ANNOUNCEMENTS] Loaded ${announcementTextDatabase.routes.length} route text overrides`);
-  } catch (error) {
-    console.warn('[ANNOUNCEMENTS] Could not load announcement text database:', error.message);
-  }
-}
-
-loadAnnouncementTextDatabase();
 
 function normalizeRuleKey(value) {
   return String(value ?? '')
@@ -362,7 +284,6 @@ loadAnnouncementDisableRules();
 window.addEventListener('focus', () => {
   loadMtgOnlyRouteConfig();
   loadAnnouncementDisableRules();
-  loadAnnouncementTextDatabase();
 });
 
 // ==================== STATION NAME NORMALIZATION ====================
@@ -385,7 +306,7 @@ function parseCSV(csvText) {
   const lines = csvText.trim().split('\n');
   if (lines.length < 2) return [];
   
-  const headers = lines[0].replace(/^\uFEFF/, '').split(',').map(h => h.trim());
+  const headers = lines[0].split(',').map(h => h.trim());
   const rows = [];
   
   for (let i = 1; i < lines.length; i++) {
@@ -1536,8 +1457,6 @@ function playAudioInternal(audioPath, fallbackPath) {
           ? currentStation
           : currentAnnouncementStation || currentStation || '',
         destination: currentDestinationStation || '',
-        terminusMessage: ['TNS', 'NAA', 'MTG'].includes(currentAnnouncementType)
-          && normalizeStationName(currentAnnouncementStation || '') === normalizeStationName(currentDestinationStation || ''),
         formCode: currentRouteFormCode || '',
         routeName: currentManualRoute?.name || '',
         ngrButtonMessage: currentAnnouncementType === 'NAA' && ngrButtonMessageEnabled,
@@ -2406,21 +2325,6 @@ loadRouteTopology();
 
 const loadGTFSPatterns = async () => {
   try {
-    const settings = typeof require === 'function'
-      ? await require('electron').ipcRenderer.invoke('get-update-settings')
-      : { useExperimentalStaticDatabase: false };
-    useExperimentalStaticDatabase = settings.useExperimentalStaticDatabase === true;
-    if (useExperimentalStaticDatabase) {
-      await loadStaticRouteDatabase();
-      try {
-        await loadStationCoordinates();
-      } catch (error) {
-        console.error('Could not load station coordinates from GTFS stops.txt:', error);
-      }
-      console.log('📂 Experimental static route database selected; skipped GTFS routes and loaded station coordinates only.');
-      return null;
-    }
-
     console.log('🔄 Starting GTFS data load from SEQ_GTFS files...');
     
     // Load from SEQ_GTFS CSV files
@@ -2490,26 +2394,11 @@ async function checkRequiredAssets() {
   try {
     const response = await fetch('/api/assets-status');
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    let status = await response.json();
+    const status = await response.json();
     const loadingText = document.getElementById('loading-text');
     const updateSettings = typeof require === 'function'
       ? await require('electron').ipcRenderer.invoke('get-update-settings')
-      : { automaticAssets: true, automaticGTFS: true, useExperimentalStaticDatabase: false };
-    const staticDatabaseEnabled = updateSettings.useExperimentalStaticDatabase === true;
-    const ignoreGTFSRequirement = assetStatus => {
-      if (!staticDatabaseEnabled) return assetStatus;
-      const missing = assetStatus.missing.filter(asset => asset !== 'SEQ_GTFS');
-      return { ...assetStatus, ready: missing.length === 0, missing, missingGTFSFiles: [] };
-    };
-    status = ignoreGTFSRequirement(status);
-    if (staticDatabaseEnabled) {
-      await loadStaticRouteDatabase();
-      try {
-        await loadStationCoordinates();
-      } catch (error) {
-        console.error('Station coordinates could not be loaded while GTFS route data is disabled:', error);
-      }
-    }
+      : { automaticAssets: true, automaticGTFS: true };
     const assetIPC = window.electron?.ensureAudioAssets
       ? window.electron
       : (typeof require === 'function'
@@ -2541,7 +2430,7 @@ async function checkRequiredAssets() {
       if (!assetResult.success) throw new Error(assetResult.message);
     }
 
-    if (!staticDatabaseEnabled && updateSettings.automaticGTFS && assetIPC?.ensureGTFSData) {
+    if (updateSettings.automaticGTFS && assetIPC?.ensureGTFSData) {
       loadingText.textContent = 'Checking GTFS data...';
       assetIPC.onGTFSUpdateProgress?.(({ status: progressStatus, percent }) => {
         if (loadingText) loadingText.textContent = `Installing GTFS data... ${percent}%`;
@@ -2552,7 +2441,7 @@ async function checkRequiredAssets() {
     }
 
     const refreshedResponse = await fetch('/api/assets-status');
-    const refreshedStatus = ignoreGTFSRequirement(await refreshedResponse.json());
+    const refreshedStatus = await refreshedResponse.json();
     if (updateSettings.automaticAssets && refreshedStatus.ready && assetIPC?.checkAudioAssets) {
       const assetUpdate = await assetIPC.checkAudioAssets();
       if (assetUpdate.success && assetUpdate.updateAvailable && !window.qvasStartupBypassed) {
@@ -2613,7 +2502,7 @@ async function checkRequiredAssets() {
         }
       }
 
-      if (!staticDatabaseEnabled && updateSettings.automaticGTFS && refreshedStatus.missing.includes('SEQ_GTFS') && assetIPC?.updateGTFS) {
+      if (updateSettings.automaticGTFS && refreshedStatus.missing.includes('SEQ_GTFS') && assetIPC?.updateGTFS) {
         loadingText.textContent = 'Installing GTFS data... 0%';
         assetIPC.onGTFSUpdateProgress?.(({ status: progressStatus, percent }) => {
           loadingText.textContent = `Installing GTFS data... ${percent}%`;
@@ -2624,7 +2513,7 @@ async function checkRequiredAssets() {
       }
 
       const finalResponse = await fetch('/api/assets-status');
-      return ignoreGTFSRequirement(await finalResponse.json());
+      return await finalResponse.json();
     }
     return status;
   } catch (error) {
@@ -2694,8 +2583,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const normalizedDestination = String(destination || '').replace(/\s+station$/i, '').trim().toLowerCase();
     if (normalizedDestination === 'varsity lakes') return 'Gold Coast';
     if (normalizedDestination === 'kippa-ring') return 'Redcliffe';
-    if (normalizedDestination === 'domestic airport') return 'Brisbane Airport';
-    if (normalizedDestination === 'springfield central') return 'Springfield Ctl';
     return destination;
   }
 
@@ -3018,16 +2905,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const routeStations = currentStations && currentStations.length > 0
       ? currentStations
-      : globalGTFSData?.stops
-        ? Object.values(globalGTFSData.stops).map(stop => ({
+      : Object.values(globalGTFSData?.stops || {}).map(stop => ({
           name: normalizeStationName(stop.stop_name),
           lat: Number(stop.stop_lat),
           lon: Number(stop.stop_lon)
-        }))
-        : [...stationCoordinatesByName].map(([name, coordinates]) => ({
-          name: normalizeStationName(name),
-          lat: coordinates.lat,
-          lon: coordinates.lon
         }));
     let closest = null;
     for (const station of routeStations) {
@@ -3046,14 +2927,12 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function getStationCoordinatesByName(stationName) {
-    if (!stationName) return null;
+    if (!stationName || !globalGTFSData || !globalGTFSData.stops) {
+      return null;
+    }
 
     const normalizedTarget = normalizeStationName(stationName).toLowerCase();
     const coordinateLookupName = normalizedTarget === 'park road' ? 'boggo road' : normalizedTarget;
-    if (!globalGTFSData?.stops) {
-      return stationCoordinatesByName.get(coordinateLookupName) || null;
-    }
-
     const matchingStops = [];
     for (const stop of Object.values(globalGTFSData.stops)) {
       if (!stop || !stop.stop_name) continue;
@@ -3620,11 +3499,6 @@ document.addEventListener("DOMContentLoaded", function () {
               case 'numpad 6':
                 console.log('🔒 [POLLING] Key 6 - Locking doors');
                 doorsLock();
-                break;
-              case '7':
-              case 'numpad 7':
-                console.log('📣 [POLLING] Key 7 - Next station is');
-                if (typeof playNextStation === 'function') playNextStation();
                 break;
               case '7':
               case 'numpad 7':
@@ -4425,61 +4299,13 @@ document.addEventListener("DOMContentLoaded", function () {
     const runInfo = parseRunCode(run);
     console.log('Parsed run info:', runInfo);
     
-    let pattern = null;
-    let matchingManualRoute = null;
-    if (useExperimentalStaticDatabase) {
-      const rejectStaticRoute = message => {
-        runError.textContent = message;
-        routeConfirmed = false;
-        currentStations = [];
-        currentDestination = null;
-        currentDestinationStation = null;
-        currentRouteFormCode = null;
-        currentRouteLongName = null;
-        renderStations(currentStations);
-        runNumberDisplay.textContent = 'ROUTE NOT SET';
-        updateRouteDisplay();
-        if (destinationWindow && !destinationWindow.closed) {
-          destinationWindow.postMessage({ type: 'RESET' }, '*');
-        }
-      };
-      try {
-        await Promise.all([loadStaticRouteDatabase(), manualRouteDatabasePromise]);
-      } catch (error) {
-        console.error('Could not load the experimental static route database:', error);
-        rejectStaticRoute(`Static route database unavailable: ${error.message}`);
-        return;
-      }
-      const selectedDay = getSelectedDayType();
-      const staticEntry = staticRouteDatabase.find(entry =>
-        String(entry.NUMBER).trim().toUpperCase() === run
-        && String(entry.DAYS).split(/[;,|/]/).some(day => day.trim().toUpperCase() === selectedDay)
-      );
-      if (!staticEntry) {
-        rejectStaticRoute(`Run ${run} is not in the experimental database for ${selectedDay}.`);
-        return;
-      }
-
-      const normalizeStaticRouteName = name => String(name || '')
-        .toUpperCase()
-        .replace(/\bEXP\s+/g, '')
-        .replace(/[^A-Z0-9]/g, '');
-      const routeName = normalizeStaticRouteName(staticEntry.ROUTE);
-      matchingManualRoute = manualRouteEntries.find(route =>
-        normalizeStaticRouteName(route.name) === routeName
-      ) || null;
-      if (!matchingManualRoute || buildManualRoutePattern(matchingManualRoute).length === 0) {
-        rejectStaticRoute(`No usable manual route matches "${staticEntry.ROUTE}".`);
-        return;
-      }
-    } else {
-      console.log('Checking stoppingPatterns for:', run);
-      pattern = await getStoppingPattern(run);
-      const routeDataForRun = getRouteDataForRunCode(run);
-      const gtfsPatternForRun = pattern || (routeDataForRun ? getGtfsPreviewPattern(routeDataForRun, run) : null);
-      matchingManualRoute = getBestMatchingManualRoute(gtfsPatternForRun);
-    }
-
+    // If run code matches a stopping pattern, use it
+    console.log('Checking stoppingPatterns for:', run);
+    const pattern = await getStoppingPattern(run);
+    const routeDataForRun = getRouteDataForRunCode(run);
+    const gtfsPatternForRun = pattern || (routeDataForRun ? getGtfsPreviewPattern(routeDataForRun, run) : null);
+    const matchingManualRoute = getBestMatchingManualRoute(gtfsPatternForRun);
+    
     if (pattern || matchingManualRoute) {
       const matchedManualPattern = matchingManualRoute
         ? buildManualRoutePattern(matchingManualRoute)
@@ -4916,7 +4742,6 @@ document.addEventListener("DOMContentLoaded", function () {
             station: station.name,
             type: 'TNS',
             text: `The next station is ${station.name}`,
-            displayText: getStationAnnouncementText('TNS', station.name),
             audioPath: getPatternAnnouncementAudioPath(station, 'nextStation') || getAnnouncementAudioPath(station.name, 'nextStation', useFormPath ? previousStation : null)
           });
         }
@@ -4927,7 +4752,6 @@ document.addEventListener("DOMContentLoaded", function () {
             station: station.name,
             type: 'NAA',
             text: `Arriving at ${station.name}`,
-            displayText: getStationAnnouncementText('NAA', station.name),
             audioPath: getPatternAnnouncementAudioPath(station, 'arrival') || getAnnouncementAudioPath(station.name, 'arrival')
           });
         }
@@ -4938,7 +4762,6 @@ document.addEventListener("DOMContentLoaded", function () {
             station: station.name,
             type: 'MTG',
             text: `${station.name} station.`,
-            displayText: getStationAnnouncementText('MTG', station.name),
             audioPath: getPatternAnnouncementAudioPath(station, 'mindTheGap') || getAnnouncementAudioPath(station.name, 'mindTheGap')
           });
         }
@@ -5155,69 +4978,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     switch (normalizedType) {
       case 'naa':
-        return { type: 'NAA', displayText: getStationAnnouncementText('NAA', stationName), audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'arrival') };
+        return { type: 'NAA', displayText: `Arriving at ${stationName}`, audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'arrival') };
       case 'mtg':
-        return { type: 'MTG', displayText: getStationAnnouncementText('MTG', stationName), audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'mindTheGap') };
+        return { type: 'MTG', displayText: `${stationName}... Please mind the gap between the train and the platform.`, audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'mindTheGap') };
       case 'form':
         return { type: 'form', displayText: `${stationName} station`, audioPath: patternAudioPath || getFormOrMtgAudioPath(stationName) };
       case 'tns':
       default:
-        return { type: 'TNS', displayText: getStationAnnouncementText('TNS', stationName), audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'nextStation') };
+        return { type: 'TNS', displayText: `The next station is ${stationName}`, audioPath: patternAudioPath || getAnnouncementAudioPath(stationName, 'nextStation') };
     }
-  }
-
-  function getStationAnnouncementText(type, stationName) {
-    const normalizedType = normalizeAnnouncementTypeKey(type);
-    const field = ['tns', 'naa', 'mtg'].includes(normalizedType) ? normalizedType : '';
-    if (field) {
-      const stationKey = normalizeRuleKey(normalizeStationName(stationName));
-      const routeName = currentManualRoute?.name || '';
-      const destination = currentStations[currentStations.length - 1]?.name || currentDestinationStation || '';
-      const matchingRoute = announcementTextDatabase.routes.find(route => {
-        if (route.manualRouteName) {
-          if (routeName) return normalizeRuleKey(route.manualRouteName) === normalizeRuleKey(routeName);
-          return Boolean(route.destination) && normalizeRuleKey(normalizeStationName(route.destination)) === normalizeRuleKey(normalizeStationName(destination));
-        }
-        return Boolean(route.formCode)
-          && normalizeRuleKey(route.formCode) === normalizeRuleKey(currentRouteFormCode)
-          && (!route.destination || normalizeRuleKey(normalizeStationName(route.destination)) === normalizeRuleKey(normalizeStationName(destination)));
-      });
-      const matchingStationOverride = announcementTextDatabase.stationOverrides.find(override =>
-        normalizeRuleKey(normalizeStationName(override.station)) === stationKey
-        && String(override[field] || '').trim()
-      );
-      const matchingRouteStation = matchingRoute?.stations?.find(station =>
-        normalizeRuleKey(normalizeStationName(station.station)) === stationKey
-        && String(station[field] || '').trim()
-      );
-      const configuredText = matchingStationOverride?.[field] || matchingRouteStation?.[field];
-      if (configuredText) {
-        return String(configuredText)
-          .replaceAll('{station}', stationName || '')
-          .replaceAll('{destination}', destination);
-      }
-    }
-
-    const destination = currentStations[currentStations.length - 1]?.name || currentDestinationStation;
-    const isTerminus = destination
-      && normalizeStationName(stationName) === normalizeStationName(destination);
-    if (!isTerminus) {
-      if (normalizedType === 'tns') return `The next station is ${stationName}`;
-      if (normalizedType === 'naa') return `Now arriving at ${stationName}`;
-      if (normalizedType === 'mtg') return `${stationName}... mind the gap`;
-      return stationName;
-    }
-
-    if (normalizedType === 'tns') {
-      return `The next station is ${stationName}... This train terminates at ${stationName}... All customers please exit the train on arrival at ${stationName}... Queensland Rail would like to remind customers to take all personal possessions when you leave the train... For security reasons, please do not leave personal possessions unattended...`;
-    }
-    if (normalizedType === 'naa') {
-      return `Now arriving at ${stationName}... This train terminates here... All customers please exit the train...`;
-    }
-    if (normalizedType === 'mtg') {
-      return `${stationName}... mind the gap... This train terminates here... All customers please exit the train...`;
-    }
-    return stationName;
   }
 
   function getRouteStartAnnouncementData() {
@@ -5544,15 +5313,15 @@ document.addEventListener("DOMContentLoaded", function () {
     switch(announcementType) {
       case 'nextStation':
       case 'TNS':
-        pidDisplay.textContent = `The next station is ${stationName}.`;
+        pidDisplay.textContent = `The next station is ${stationName}`;
         break;
       case 'arrival':
       case 'NAA':
-        pidDisplay.textContent = `Arriving at ${stationName}.`;
+        pidDisplay.textContent = `Arriving at ${stationName}`;
         break;
       case 'mindTheGap':
       case 'MTG':
-        pidDisplay.textContent = `${stationName} station.`;
+        pidDisplay.textContent = `${stationName} station`;
         break;
       case 'form':
         pidDisplay.textContent = `${selectedStation?.name || currentStation || stationName} station`;
@@ -5614,7 +5383,7 @@ document.addEventListener("DOMContentLoaded", function () {
     updatePIDDisplay(selectedStation.name, 'MTG');
     
     // Generate Mind The Gap announcement dynamically
-    let displayText = getStationAnnouncementText('MTG', selectedStation.name);
+    let displayText = selectedStation.name + "... Please mind the gap between the train and the platform.";
     let audioPath = getPatternAnnouncementAudioPath(selectedStation, 'mindTheGap') || getAnnouncementAudioPath(selectedStation.name, "mindTheGap");
     
     console.log(`🎵 [MTG] Playing mind the gap for: ${selectedStation.name}`);
@@ -5649,7 +5418,7 @@ document.addEventListener("DOMContentLoaded", function () {
     updatePIDDisplay(selectedStation.name, 'TNS');
     
     // Generate Next Station announcement dynamically
-    let displayText = getStationAnnouncementText('TNS', selectedStation.name);
+    let displayText = `The next station is ${selectedStation.name}`;
     
     // currentDestinationStation is already set by route entry
     // TNS_Special path: TNS_Special/{FormCode}/{DestinationStation}/{StationName} TNS.mp3
@@ -5716,72 +5485,6 @@ document.addEventListener("DOMContentLoaded", function () {
     pendingAnnouncementPath = null;
     currentManualRoute = null;
     currentManualFormFile = null;
-
-    if (useExperimentalStaticDatabase) {
-      try {
-        await Promise.all([loadStaticRouteDatabase(), manualRouteDatabasePromise]);
-        const selectedDay = getSelectedDayType();
-        const staticEntry = staticRouteDatabase.find(entry =>
-          String(entry.NUMBER).trim().toUpperCase() === run
-          && String(entry.DAYS).split(/[;,|/]/).some(day => day.trim().toUpperCase() === selectedDay)
-        );
-        const normalizeRouteName = name => String(name || '')
-          .toUpperCase()
-          .replace(/\bEXP\s+/g, '')
-          .replace(/[^A-Z0-9]/g, '');
-        const staticRouteName = normalizeRouteName(staticEntry?.ROUTE);
-        const manualRoute = manualRouteEntries.find(route =>
-          normalizeRouteName(route.name) === staticRouteName
-        );
-        const manualPattern = manualRoute ? buildManualRoutePattern(manualRoute) : [];
-
-        if (!staticEntry || manualPattern.length === 0) {
-          const message = !staticEntry
-            ? `Run ${run} is not in the experimental database for ${selectedDay}.`
-            : `No usable manual route matches "${staticEntry.ROUTE}".`;
-          runError.textContent = message;
-          routeConfirmed = false;
-          currentStations = [];
-          renderStations(currentStations);
-          updateRouteDisplay();
-          return;
-        }
-
-        currentManualRoute = manualRoute;
-        currentManualFormFile = getManualFormFile(manualRoute);
-        updateRouteDisplay();
-        currentStations = enrichStationsWithCoordinates(manualPattern);
-        const origin = currentStations[0].name;
-        const dest = currentStations[currentStations.length - 1].name;
-        currentDestination = dest;
-        currentDestinationStation = dest;
-        const diDestination = getDiDisplayDestination(dest);
-        if (diDisplay) diDisplay.textContent = diDestination;
-        runNumberDisplay.textContent = run;
-        autoSelectSpecialMessageByDestination(dest);
-
-        if (typeof updateAppState === 'function') {
-          updateAppState({
-            route: run,
-            station: origin,
-            DI: diDestination,
-            inputValue: run
-          });
-        }
-
-        switchToStationSelectMode();
-        renderStationsAfterHardwareDelay(currentStations);
-        startTSWAutomation();
-      } catch (error) {
-        console.error('Unable to load experimental static route:', error);
-        runError.textContent = `Static route database unavailable: ${error.message}`;
-        routeConfirmed = false;
-        currentStations = [];
-        renderStations(currentStations);
-        updateRouteDisplay();
-      }
-      return;
-    }
     
     // ⚡ FAST PATH: Check hardcoded patterns first (instant, no network delay)
     const pattern = await getStoppingPattern(run);
@@ -6130,14 +5833,14 @@ document.addEventListener("DOMContentLoaded", function () {
     switch (announcementType) {
       case 'TNS':
         // The Next Station announcement
-        displayText = getStationAnnouncementText('TNS', selectedStation.name);
+        displayText = `The next station is ${selectedStation.name}`;
         audioPath = getAnnouncementAudioPath(selectedStation.name, 'nextStation');
         console.log(`   TNS announcement for: ${selectedStation.name}, path: ${audioPath}`);
         break;
       
       case 'MTG':
         // Mind The Gap announcement
-        displayText = getStationAnnouncementText('MTG', selectedStation.name);
+        displayText = selectedStation.name + "... Please mind the gap between the train and the platform.";
         audioPath = getAnnouncementAudioPath(selectedStation.name, "mindTheGap");
         console.log(`   MTG announcement for: ${selectedStation.name}, path: ${audioPath}`);
         break;
@@ -6151,7 +5854,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       default:
         // Default to TNS if no current announcement state
-        displayText = getStationAnnouncementText('TNS', selectedStation.name);
+        displayText = `The next station is ${selectedStation.name}`;
         audioPath = getAnnouncementAudioPath(selectedStation.name, 'nextStation');
         console.log(`   Defaulting to TNS for: ${selectedStation.name}, path: ${audioPath}`);
     }
@@ -6190,10 +5893,9 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!announcement) return;
       
       queuedDvaSelection = null;
-      const displayText = announcement.displayText || announcement.text;
       const announcementType = announcement.type === 'Form' ? 'form' : announcement.type;
       currentAnnouncementType = announcementType;
-      currentAnnouncementDisplayText = displayText;
+      currentAnnouncementDisplayText = announcement.text;
       currentAnnouncementAudioPath = announcement.audioPath;
       currentAnnouncementStation = announcement.station;
 
@@ -6205,7 +5907,7 @@ document.addEventListener("DOMContentLoaded", function () {
       
       // Send text to display window
       setTimeout(() => {
-        displayWindow.postMessage(displayText, '*');
+        displayWindow.postMessage(announcement.text, '*');
       }, 300);
       
       // Play audio if available
@@ -6374,7 +6076,7 @@ document.addEventListener("DOMContentLoaded", function () {
     updatePIDDisplay(selectedStation.name, 'MTG');
     
     // Generate Mind The Gap announcement dynamically
-    let displayText = getStationAnnouncementText('MTG', selectedStation.name);
+    let displayText = selectedStation.name + "... Please mind the gap between the train and the platform.";
     let audioPath = getAnnouncementAudioPath(selectedStation.name, "mindTheGap");
     
     console.log(`🚪 [DOOR UNLOCK] Playing MTG for: ${selectedStation.name}`);
@@ -6806,7 +6508,7 @@ document.addEventListener("DOMContentLoaded", function () {
     // Update PID display with arrival state
     updatePIDDisplay(selectedStation.name, 'NAA');
     
-    const displayText = getStationAnnouncementText('NAA', selectedStation.name);
+    const displayText = `Now arriving at ${selectedStation.name}`;
     const audioPath = getPatternAnnouncementAudioPath(selectedStation, 'arrival')
       || getAnnouncementAudioPath(selectedStation.name, 'arrival');
     
@@ -6831,7 +6533,7 @@ document.addEventListener("DOMContentLoaded", function () {
         destination: displayText,
         customText: '',
         useCustomText: false,
-        scroller: true,
+        scroller: false,
         persistent: true
       }, '*');
     }, 300);
@@ -7533,56 +7235,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const upperCode = value.toUpperCase();
         let routeData = null;
-
-        if (useExperimentalStaticDatabase) {
-          const renderStaticRoutePreview = () => {
-            const selectedDay = getSelectedDayType();
-            const staticEntry = staticRouteDatabase.find(entry =>
-              String(entry.NUMBER).trim().toUpperCase() === upperCode
-              && String(entry.DAYS).split(/[;,|/]/).some(day => day.trim().toUpperCase() === selectedDay)
-            );
-            if (!staticEntry) {
-              routeDisplay.classList.add('route-unknown');
-              routePreview.textContent = '[Not Known]';
-              console.log(`⚠️ No static route data found for ${upperCode} on ${selectedDay}`);
-              return;
-            }
-
-            const normalizeRouteName = name => String(name || '')
-              .toUpperCase()
-              .replace(/\bEXP\s+/g, '')
-              .replace(/[^A-Z0-9]/g, '');
-            const routeName = normalizeRouteName(staticEntry.ROUTE);
-            const manualRoute = manualRouteEntries.find(route =>
-              normalizeRouteName(route.name) === routeName
-            );
-            if (!manualRoute) {
-              routeDisplay.classList.add('route-unknown');
-              routePreview.textContent = '[Route pattern unavailable]';
-              console.warn(`Static route "${staticEntry.ROUTE}" has no matching manual route pattern.`);
-              return;
-            }
-
-            routeDisplay.classList.remove('route-unknown');
-            routePreview.textContent = `-${manualRoute.name}`;
-          };
-
-          if (staticRouteDatabase.length === 0 || manualRouteEntries.length === 0) {
-            routePreview.textContent = 'Loading static route database...';
-            Promise.all([loadStaticRouteDatabase(), manualRouteDatabasePromise])
-              .then(() => {
-                if (runInput?.value.trim().toUpperCase() === upperCode) updateRouteDisplay();
-              })
-              .catch(error => {
-                console.error('Unable to preview static route:', error);
-                routePreview.textContent = '[Static database unavailable]';
-              });
-            return;
-          }
-
-          renderStaticRoutePreview();
-          return;
-        }
         
         // Try to find the route data using proper GTFS search logic
         // First try direct lookup in runCodeIndex
@@ -7866,8 +7518,8 @@ document.addEventListener("DOMContentLoaded", function () {
   let brightnessRequestId = 0;
   let brightnessOperation = Promise.resolve();
   
-  const trackHeight = 280; // matches CSS
-  const handleHeight = 40; // matches CSS
+  const trackHeight = (window.__QV_SLIDER && window.__QV_SLIDER.track) || 280; // matches CSS
+  const handleHeight = (window.__QV_SLIDER && window.__QV_SLIDER.handle) || 40; // matches CSS
   
   // ==================== Audio Output Device Selection ====================
   // Function to enumerate and update audio devices
@@ -8407,9 +8059,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const automaticAssetsToggle = document.getElementById('automatic-assets-toggle');
   const automaticGTFSToggle = document.getElementById('automatic-gtfs-toggle');
   const automaticApplicationToggle = document.getElementById('automatic-application-toggle');
-  const staticRouteDatabaseToggle = document.getElementById('static-route-database-toggle');
-  const staticRouteDatabaseStatus = document.getElementById('static-route-database-status');
-  let activeStaticDatabaseSetting = false;
   const updateSettingsIPC = typeof require === 'function'
     ? {
         get: () => require('electron').ipcRenderer.invoke('get-update-settings'),
@@ -8429,19 +8078,11 @@ document.addEventListener("DOMContentLoaded", function () {
     button.classList.toggle('fn-toggle-btn-grey', !enabled);
   }
 
-  function setGTFSSettingsVisibility(staticDatabaseEnabled) {
-    ['gtfs-data-status-section', 'gtfs-manual-update-section', 'automatic-gtfs-settings-section']
-      .forEach(id => document.getElementById(id)?.classList.toggle('hide', staticDatabaseEnabled));
-  }
-
   if (updateSettingsIPC) {
     updateSettingsIPC.get().then(settings => {
-      activeStaticDatabaseSetting = settings.useExperimentalStaticDatabase === true;
       renderUpdateToggle(automaticAssetsToggle, settings.automaticAssets);
       renderUpdateToggle(automaticGTFSToggle, settings.automaticGTFS);
       renderUpdateToggle(automaticApplicationToggle, settings.automaticApplication);
-      renderUpdateToggle(staticRouteDatabaseToggle, activeStaticDatabaseSetting);
-      setGTFSSettingsVisibility(activeStaticDatabaseSetting);
     });
   }
 
@@ -8455,26 +8096,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   if (automaticGTFSToggle && updateSettingsIPC) {
     automaticGTFSToggle.addEventListener('click', async () => {
-      if (activeStaticDatabaseSetting) return;
       const settings = await updateSettingsIPC.get();
       const updated = await updateSettingsIPC.set('automaticGTFS', !settings.automaticGTFS);
       renderUpdateToggle(automaticGTFSToggle, updated.automaticGTFS);
-    });
-  }
-
-  if (staticRouteDatabaseToggle && updateSettingsIPC) {
-    staticRouteDatabaseToggle.addEventListener('click', async () => {
-      const settings = await updateSettingsIPC.get();
-      const updated = await updateSettingsIPC.set(
-        'useExperimentalStaticDatabase',
-        !settings.useExperimentalStaticDatabase
-      );
-      renderUpdateToggle(staticRouteDatabaseToggle, updated.useExperimentalStaticDatabase);
-      if (staticRouteDatabaseStatus) {
-        staticRouteDatabaseStatus.textContent = updated.useExperimentalStaticDatabase
-          ? 'Saved. Restart QVAS to switch from GTFS to the static route database.'
-          : 'Saved. Restart QVAS to switch back to GTFS.';
-      }
     });
   }
 

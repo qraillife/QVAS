@@ -471,7 +471,7 @@
             <tr><td>Browser engine</td><td id="system-info-browser">Unavailable</td></tr>
             <tr><td>Electron</td><td id="system-info-electron">Unavailable</td></tr>
             <tr><td>Node.js</td><td id="system-info-node">Unavailable</td></tr>
-            <tr><td>App version</td><td id="system-info-app-version">17.2.8</td></tr>
+            <tr><td>App version</td><td id="system-info-app-version">17.2.7</td></tr>
             <tr><td>Battery</td><td id="system-info-battery">Unavailable</td></tr>
             <tr><td>IP address</td><td id="system-info-ip-address">Unavailable</td></tr>
           </tbody>
@@ -510,11 +510,11 @@
     <div class="status-panel-left update-panel-left">
       <div id="set3-update-content">
         <div class="fn-audio-device-title">System Updates</div>
-        <div class="system-settings-section update-section" id="gtfs-data-status-section">
+        <div class="system-settings-section update-section">
           <label class="system-settings-label">GTFS data last updated:</label>
           <span class="system-settings-status" id="gtfs-last-updated" role="status">Checking...</span>
         </div>
-        <div class="system-settings-section update-section" id="gtfs-manual-update-section">
+        <div class="system-settings-section update-section">
           <button class="status-gps-refresh" id="set3-gtfs-update-btn" type="button">Update GTFS</button>
           <div class="gtfs-update-progress" aria-label="GTFS update progress">
             <div class="gtfs-update-progress-bar" id="set3-gtfs-update-progress-bar"></div>
@@ -526,7 +526,7 @@
           <button class="fn-toggle-btn" id="automatic-assets-toggle" type="button">ON</button>
           <span class="system-settings-status">Checks for new audio assets during startup.</span>
         </div>
-        <div class="system-settings-section update-section" id="automatic-gtfs-settings-section">
+        <div class="system-settings-section update-section">
           <label class="system-settings-label">Automatic GTFS updates:</label>
           <button class="fn-toggle-btn" id="automatic-gtfs-toggle" type="button">ON</button>
           <span class="system-settings-status">Refreshes GTFS data during startup when online.</span>
@@ -556,11 +556,6 @@
           <select id="audio-device-select" class="audio-device-select">
             <option value="">Default Device</option>
           </select>
-        </div>
-        <div class="system-settings-section">
-          <label class="system-settings-label">Use experimental static route database:</label>
-          <button class="fn-toggle-btn" id="static-route-database-toggle" type="button">OFF</button>
-          <span class="system-settings-status" id="static-route-database-status" role="status">Uses Route_Database.csv and manual-routes.json for routes; loads only GTFS station coordinates. Restart required.</span>
         </div>
         <div class="system-settings-section">
           <label class="system-settings-label">Auto CCTV on Door Unlock:</label>
