@@ -53,7 +53,12 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         run: |
           npm install --no-save 7zip-bin @electron/asar
+          # build-site.js expects the phone shim in ../shim/
+          mkdir -p ../shim && cp qvas-web-shim.js ../shim/qvas-web-shim.js
+          mkdir -p ../data && cp gtfs-patterns.json ../data/gtfs-patterns.json
           node build-from-release.js _site --force
+          state="${{ steps.up.outputs.state }}"
+          node finalize-site.js _site "${state%%|*}"
 
       - name: Copy into repo (keeping your own files) and commit
         if: steps.up.outputs.changed == 'true'

@@ -19,6 +19,9 @@ manifest.webmanifest
 .github/
 build-from-release.js
 build-site.js
+trim-gtfs.js
+finalize-site.js
 server.js
 qvas-web-shim.js
 .upstream-state
+gtfs-patterns.json
