@@ -3435,85 +3435,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
-  // ---- Phone GPS (browser geolocation) - works with no signal, GPS needs no internet ----
-  let gpsWatchId = null;
-  let gpsWatchdogTimer = null;
-  let gpsWatchStartedAt = 0;
-
-  function onPhoneFix(pos) {
-    const c = pos.coords || {};
-    processGPSPosition({
-      coords: {
-        latitude: c.latitude,
-        longitude: c.longitude,
-        accuracy: c.accuracy,
-        speed: (c.speed === null || c.speed === undefined) ? null : c.speed
-      },
-      timestamp: pos.timestamp || Date.now(),
-      source: 'Phone GPS'
-    });
-  }
-
-  function onPhoneError(err) {
-    console.error('[GPS] Phone location error: ' + (err && err.message ? err.message : err));
-    setGPSUnavailable();
-  }
-
-  function startPhoneGPS() {
-    if (!gpsModeEnabled || gpsSourceMode !== 'phone') return;
-    if (!navigator.geolocation) {
-      setGPSUnavailable();
-      return;
-    }
-    if (gpsWatchId === null) {
-      gpsWatchStartedAt = Date.now();
-      gpsWatchId = navigator.geolocation.watchPosition(onPhoneFix, onPhoneError, {
-        enableHighAccuracy: true,
-        maximumAge: 0,
-        timeout: 20000
-      });
-    }
-    if (gpsWatchdogTimer === null) {
-      // iPhone can silently stop a GPS watch. If nothing arrives for 20s, start a fresh one.
-      gpsWatchdogTimer = setInterval(() => {
-        if (!gpsModeEnabled || gpsSourceMode !== 'phone') return;
-        if (Date.now() - Math.max(gpsLastUpdateAt, gpsWatchStartedAt) > 20000) restartPhoneGPS();
-      }, 5000);
-    }
-  }
-
-  function stopPhoneGPS() {
-    if (gpsWatchId !== null) {
-      try { navigator.geolocation.clearWatch(gpsWatchId); } catch (e) {}
-      gpsWatchId = null;
-    }
-    if (gpsWatchdogTimer !== null) {
-      clearInterval(gpsWatchdogTimer);
-      gpsWatchdogTimer = null;
-    }
-  }
-
-  function restartPhoneGPS() {
-    stopPhoneGPS();
-    startPhoneGPS();
-  }
-
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'visible' && gpsModeEnabled && gpsSourceMode === 'phone') restartPhoneGPS();
-  });
-
   function startGPSTracking() {
-    if (!gpsModeEnabled) return;
-    if (gpsSourceMode === 'phone') {
-      startPhoneGPS();
-      return;
-    }
-    if (gpsSourceMode !== 'this-pc') return;
+    if (!gpsModeEnabled || gpsSourceMode !== 'this-pc') return;
     if (!navigator.geolocation) {
       setGPSUnavailable();
       return;
     }
-    if (gpsPollTimer !== null) clearInterval(gpsPollTimer);
     pollGPSPosition();
     gpsPollTimer = setInterval(pollGPSPosition, GPS_POLL_INTERVAL_MS);
   }
@@ -3526,7 +3453,6 @@ document.addEventListener("DOMContentLoaded", function () {
       clearInterval(gpsPollTimer);
       gpsPollTimer = null;
     }
-    if (!enabled) stopPhoneGPS();
     if (!enabled) {
       gpsAvailable = false;
       gpsFailureStartedAt = 0;
@@ -3535,7 +3461,7 @@ document.addEventListener("DOMContentLoaded", function () {
       tswPositionSource = null;
       resetTSWAutomationState();
     }
-    if (enabled) startGPSTracking();
+    if (enabled && gpsSourceMode === 'this-pc') startGPSTracking();
     updateDoorCycleIndicatorVisibility();
     updateStatusGPSDisplay();
     updateCctvAvailability();
@@ -3560,14 +3486,13 @@ document.addEventListener("DOMContentLoaded", function () {
       clearInterval(gpsPollTimer);
       gpsPollTimer = null;
     }
-    stopPhoneGPS();
     gpsAvailable = false;
     gpsFailureStartedAt = 0;
     gpsLastUpdateAt = 0;
     tswLastPosition = null;
     tswPositionSource = null;
     resetTSWAutomationState();
-    if (gpsModeEnabled) startGPSTracking();
+    if (gpsModeEnabled && gpsSourceMode === 'this-pc') startGPSTracking();
     updateStatusGPSDisplay();
   }
 
@@ -3584,7 +3509,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   async function pollTSWForDistanceTriggers() {
-    if (gpsSourceMode === 'phone') return;   // phone GPS comes from the watch above, not a server
     if (!['phone', 'onboard'].includes(gpsSourceMode)) return;
     if (!currentStations || currentStations.length === 0) return;
     if (gpsAvailable) setGPSUnavailable();
@@ -3654,7 +3578,7 @@ document.addEventListener("DOMContentLoaded", function () {
     pollTSWForDistanceTriggers().catch(() => {});
   }
 
-  if (gpsModeEnabled) startGPSTracking();
+  if (gpsModeEnabled && gpsSourceMode === 'this-pc') startGPSTracking();
 
   // ==================== KEYBOARD POLLING FROM SERVER (FALLBACK) ====================
   let lastProcessedKeyTime = 0;
@@ -11848,10 +11772,3 @@ console.log(`✅ Route search helpers loaded! Use these commands:`);
 console.log(`  • findRoutesByRunNumber("18S4")        - Find routes by exact run number (FORM_CODE + TRIP_ID matching)`);
 console.log(`  • findRoutesByPartialRunNumber("18S")   - Find routes by partial run number`);
 console.log(`  • checkGTFSData()                        - Check GTFS data status`);
-
-// Offline support: register the service worker (safe to call more than once)
-if ('serviceWorker' in navigator && location.protocol !== 'file:') {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch((e) => console.warn('Service worker failed:', e));
-  });
-}
