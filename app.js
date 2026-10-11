@@ -1288,6 +1288,7 @@ function parseRunCode(runCode) {
 
 // Global audio instance for tracking and stopping
 let currentAudio = null;
+let currentAudioActivatesStopButtons = true;
 let selectedAudioDevice = localStorage.getItem('selectedAudioDevice') || ''; // Audio output device selection
 let runInput = null; // Global reference to run number input field
 
@@ -1374,7 +1375,7 @@ function playNextStatusAlert(endedAudio = null) {
   currentAnnouncementDisplayText = alert.displayText;
   currentAnnouncementStation = '';
   currentAnnouncementSpecialMessageId = null;
-  playAudio(alert.audioPath);
+  playAudio(alert.audioPath, { publishAnnouncement: false });
 }
 
 let lastBatteryAlertBand = null;
@@ -1416,8 +1417,11 @@ function manualStopAudio() {
 }
 
 function updateStopButtonColor() {
-  // Determine if audio is currently playing
-  const isPlaying = currentAudio && !currentAudio.paused && !currentAudio.ended;
+  // Only passenger announcement audio activates the Stop buttons.
+  const isPlaying = currentAudioActivatesStopButtons
+    && currentAudio
+    && !currentAudio.paused
+    && !currentAudio.ended;
   
   // Get all stop buttons
   const stopButtons = [
@@ -1492,7 +1496,7 @@ function startAnnouncementLoop(audioPath, displayText, announcementType) {
 }
 
 // Audio playing function for Electron with proper file:// URL handling
-function playAudio(audioPath) {
+function playAudio(audioPath, { publishAnnouncement = true } = {}) {
   // Stop any currently playing audio first
   stopAudio();
   
@@ -1513,37 +1517,42 @@ function playAudio(audioPath) {
     }
   }
   
-  playAudioInternal(audioPath, fallbackPath);
+  playAudioInternal(audioPath, fallbackPath, publishAnnouncement);
 }
 
-function playAudioInternal(audioPath, fallbackPath) {
+function playAudioInternal(audioPath, fallbackPath, publishAnnouncement = true) {
   if (!audioPath) return;
+  currentAudioActivatesStopButtons = publishAnnouncement;
   
   console.log(`🎵 Playing audio: ${audioPath}`);
   
-  // Broadcast audio to remote devices
+  // Publish passenger announcements to PIDs; startup and status-alert audio stays local.
   if (typeof updateAppState === 'function') {
-    const announcementStartedAt = Date.now();
-    updateAppState({
-      audioPath,
-      announcement: {
-        id: `${announcementStartedAt}-${Math.random().toString(36).slice(2, 8)}`,
-        type: currentAnnouncementType || '',
-        text: currentAnnouncementDisplayText || '',
-        specialMessageId: currentAnnouncementType === 'special' ? currentAnnouncementSpecialMessageId : '',
+    if (publishAnnouncement) {
+      const announcementStartedAt = Date.now();
+      updateAppState({
         audioPath,
-        station: currentAnnouncementType === 'form' && currentStation
-          ? currentStation
-          : currentAnnouncementStation || currentStation || '',
-        destination: currentDestinationStation || '',
-        terminusMessage: ['TNS', 'NAA', 'MTG'].includes(currentAnnouncementType)
-          && normalizeStationName(currentAnnouncementStation || '') === normalizeStationName(currentDestinationStation || ''),
-        formCode: currentRouteFormCode || '',
-        routeName: currentManualRoute?.name || '',
-        ngrButtonMessage: currentAnnouncementType === 'NAA' && ngrButtonMessageEnabled,
-        startedAt: announcementStartedAt
-      }
-    });
+        announcement: {
+          id: `${announcementStartedAt}-${Math.random().toString(36).slice(2, 8)}`,
+          type: currentAnnouncementType || '',
+          text: currentAnnouncementDisplayText || '',
+          specialMessageId: currentAnnouncementType === 'special' ? currentAnnouncementSpecialMessageId : '',
+          audioPath,
+          station: currentAnnouncementType === 'form' && currentStation
+            ? currentStation
+            : currentAnnouncementStation || currentStation || '',
+          destination: currentDestinationStation || '',
+          terminusMessage: ['TNS', 'NAA', 'MTG'].includes(currentAnnouncementType)
+            && normalizeStationName(currentAnnouncementStation || '') === normalizeStationName(currentDestinationStation || ''),
+          formCode: currentRouteFormCode || '',
+          routeName: currentManualRoute?.name || '',
+          ngrButtonMessage: currentAnnouncementType === 'NAA' && ngrButtonMessageEnabled,
+          startedAt: announcementStartedAt
+        }
+      });
+    } else {
+      updateAppState({ audioPath: null, announcement: null, announcementClearedAt: Date.now() });
+    }
   }
   
   try {
@@ -1655,7 +1664,7 @@ function playAudioInternal(audioPath, fallbackPath) {
       if (fallbackPath && !audio.fallbackAttempted) {
         audio.fallbackAttempted = true;
         console.log(`   ➜ Attempting fallback: ${fallbackPath}`);
-        playAudioInternal(fallbackPath, null);
+        playAudioInternal(fallbackPath, null, publishAnnouncement);
       } else if (/(?:^|[\\/])(?:TNS_Special|Route Audio Files|Manual Route files)[\\/]/i.test(audioPath) && !audio.fallbackAttempted) {
         // Auto-fallback: route-specific file not found, try the standard folder
         audio.fallbackAttempted = true;
@@ -1669,18 +1678,18 @@ function playAudioInternal(audioPath, fallbackPath) {
             // TNS file fallback
             const tnsPath = `QR_PIDS_AudioFiles/TNS/${filename}`;
             console.log(`   ➜ Route-specific TNS not found, falling back to TNS: ${tnsPath}`);
-            playAudioInternal(tnsPath, null);
+            playAudioInternal(tnsPath, null, publishAnnouncement);
           } else if (filename.toLowerCase().includes(' mtg')) {
             // MTG file fallback
             const mtgFolder = isMtgOnlyRoute(currentRouteFormCode) ? 'Stations' : 'mind the gap';
             const mtgPath = `QR_PIDS_AudioFiles/${mtgFolder}/${filename}`;
             console.log(`   ➜ Route-specific MTG not found, falling back to ${mtgFolder}: ${mtgPath}`);
-            playAudioInternal(mtgPath, null);
+            playAudioInternal(mtgPath, null, publishAnnouncement);
           } else {
             // NAA file fallback (just station name)
             const naaPath = `QR_PIDS_AudioFiles/now arriving at/NAA ${filename}`;
             console.log(`   ➜ Route-specific NAA not found, falling back to NAA: ${naaPath}`);
-            playAudioInternal(naaPath, null);
+            playAudioInternal(naaPath, null, publishAnnouncement);
           }
         }
       } else {
@@ -1745,7 +1754,7 @@ function playAudioInternal(audioPath, fallbackPath) {
           if (fallbackPath && !audio.fallbackAttempted) {
             audio.fallbackAttempted = true;
             console.log(`   ➜ Play failed, attempting fallback: ${fallbackPath}`);
-            playAudioInternal(fallbackPath, null);
+            playAudioInternal(fallbackPath, null, publishAnnouncement);
           } else {
             console.error('   ✗ Audio play promise failed:', error);
             // Show user-friendly error
@@ -2696,6 +2705,7 @@ document.addEventListener("DOMContentLoaded", function () {
     if (normalizedDestination === 'kippa-ring') return 'Redcliffe';
     if (normalizedDestination === 'domestic airport') return 'Brisbane Airport';
     if (normalizedDestination === 'springfield central') return 'Springfield Ctl';
+    if (normalizedDestination === 'special destination') return 'SPECIAL';
     return destination;
   }
 
@@ -3661,7 +3671,7 @@ document.addEventListener("DOMContentLoaded", function () {
   // Play startup audio on page load
   setTimeout(() => {
     console.log('🎵 Playing startup audio');
-    playAudio('QR_PIDS_AudioFiles/StartUp.MP3');
+    playAudio('QR_PIDS_AudioFiles/StartUp.MP3', { publishAnnouncement: false });
     const startupAudio = currentAudio;
     startupAudio?.addEventListener('ended', () => {
       queueStatusAlert('QR_PIDS_AudioFiles/System Ready.MP3', 'System ready', 'SYSTEM_READY');
@@ -3875,6 +3885,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }));
   }
 
+  function isSpecialDestinationRoute(routeName) {
+    return String(routeName || '').trim().toUpperCase() === 'DESTINATION = SPECIAL';
+  }
+
   function getManualFormFile(manualRoute) {
     if (!manualRoute) return '';
     if (manualRoute.formFile) {
@@ -4044,15 +4058,16 @@ document.addEventListener("DOMContentLoaded", function () {
 
     if (!option.manualRoute || !runInput) return;
     const manualRoute = option.manualRoute;
+    const isSpecialDestination = isSpecialDestinationRoute(manualRoute.name);
     const pattern = buildManualRoutePattern(manualRoute);
-    if (pattern.length === 0) return;
+    if (pattern.length === 0 && !isSpecialDestination) return;
 
     const typedRunNumber = runInput.value.trim().toUpperCase();
     if (!typedRunNumber && manualRoute.id) {
       runInput.value = String(manualRoute.id).slice(0, 4).toUpperCase();
     }
-    currentStations = enrichStationsWithCoordinates(pattern);
-    const destination = currentStations[currentStations.length - 1]?.name || '';
+    currentStations = isSpecialDestination ? [] : enrichStationsWithCoordinates(pattern);
+    const destination = isSpecialDestination ? 'Special Destination' : (currentStations[currentStations.length - 1]?.name || '');
     currentDestination = destination;
     currentDestinationStation = destination;
     const diDestination = getDiDisplayDestination(destination);
@@ -4080,7 +4095,8 @@ document.addEventListener("DOMContentLoaded", function () {
     closeRouteSelectionPanel();
     switchToStationSelectMode();
     renderStationsAfterHardwareDelay(currentStations);
-    startTSWAutomation();
+    if (isSpecialDestination) autoSelectSpecialMessageByDestination(destination);
+    if (currentStations.length > 0) startTSWAutomation();
   }
 
   if (routeSelectionUpBtn) routeSelectionUpBtn.addEventListener('click', () => {
@@ -4427,9 +4443,10 @@ document.addEventListener("DOMContentLoaded", function () {
     
     let pattern = null;
     let matchingManualRoute = null;
+    let isSpecialDestination = false;
     if (useExperimentalStaticDatabase) {
-      const rejectStaticRoute = message => {
-        runError.textContent = message;
+      const rejectStaticRoute = () => {
+        runError.textContent = '';
         routeConfirmed = false;
         currentStations = [];
         currentDestination = null;
@@ -4447,7 +4464,7 @@ document.addEventListener("DOMContentLoaded", function () {
         await Promise.all([loadStaticRouteDatabase(), manualRouteDatabasePromise]);
       } catch (error) {
         console.error('Could not load the experimental static route database:', error);
-        rejectStaticRoute(`Static route database unavailable: ${error.message}`);
+        rejectStaticRoute();
         return;
       }
       const selectedDay = getSelectedDayType();
@@ -4456,10 +4473,12 @@ document.addEventListener("DOMContentLoaded", function () {
         && String(entry.DAYS).split(/[;,|/]/).some(day => day.trim().toUpperCase() === selectedDay)
       );
       if (!staticEntry) {
-        rejectStaticRoute(`Run ${run} is not in the experimental database for ${selectedDay}.`);
+        console.warn(`Run ${run} is not in the experimental database for ${selectedDay}.`);
+        rejectStaticRoute();
         return;
       }
 
+      isSpecialDestination = isSpecialDestinationRoute(staticEntry.ROUTE);
       const normalizeStaticRouteName = name => String(name || '')
         .toUpperCase()
         .replace(/\bEXP\s+/g, '')
@@ -4468,8 +4487,9 @@ document.addEventListener("DOMContentLoaded", function () {
       matchingManualRoute = manualRouteEntries.find(route =>
         normalizeStaticRouteName(route.name) === routeName
       ) || null;
-      if (!matchingManualRoute || buildManualRoutePattern(matchingManualRoute).length === 0) {
-        rejectStaticRoute(`No usable manual route matches "${staticEntry.ROUTE}".`);
+      if (!matchingManualRoute || (!isSpecialDestination && buildManualRoutePattern(matchingManualRoute).length === 0)) {
+        console.warn(`No usable manual route matches "${staticEntry.ROUTE}".`);
+        rejectStaticRoute();
         return;
       }
     } else {
@@ -4488,9 +4508,15 @@ document.addEventListener("DOMContentLoaded", function () {
       currentManualFormFile = getManualFormFile(matchingManualRoute);
       console.log(`✅ Matched Manual Mode Form file: ${currentManualFormFile || '(none)'}`);
       updateRouteDisplay();
-      currentStations = enrichStationsWithCoordinates(matchedManualPattern.length > 0 ? matchedManualPattern : (pattern || gtfsPatternForRun));
-      const origin = currentStations[0].name;
-      const dest = currentStations[currentStations.length-1].name;
+      currentStations = isSpecialDestination
+        ? []
+        : enrichStationsWithCoordinates(matchedManualPattern.length > 0 ? matchedManualPattern : (pattern || gtfsPatternForRun));
+      const origin = isSpecialDestination ? 'Special Origin' : currentStations[0].name;
+      const dest = isSpecialDestination ? 'Special Destination' : currentStations[currentStations.length-1].name;
+      if (isSpecialDestination) {
+        currentDestination = dest;
+        currentDestinationStation = dest;
+      }
       
       // Load route-specific announcements for this route (5-minute refresh)
       const formCode = getFormCodeForRoute(run);
@@ -4605,9 +4631,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const upBtn = document.getElementById("up-btn");
     const downBtn = document.getElementById("down-btn");
     const normalDownBtn = document.getElementById("normal-down-btn");
+    const isSpecialDestination = isSpecialDestinationRoute(currentManualRoute?.name);
     
     if (upBtn) {
-      if (currentHighlightIndex === 0) {
+      if (isSpecialDestination || currentHighlightIndex === 0) {
         upBtn.classList.add('footer-btn-grey');
         upBtn.classList.remove('footer-btn-green');
       } else {
@@ -4617,7 +4644,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     
     if (downBtn) {
-      if (currentHighlightIndex >= currentStations.length - 1) {
+      if (isSpecialDestination || currentHighlightIndex >= currentStations.length - 1) {
         downBtn.classList.add('footer-btn-grey');
         downBtn.classList.remove('footer-btn-green');
       } else {
@@ -4714,6 +4741,8 @@ document.addEventListener("DOMContentLoaded", function () {
       // Set highlight index and highlight the station
       currentHighlightIndex = closestStationIndex;
       highlightStation(closestStationIndex);
+    } else if (isSpecialDestinationRoute(currentManualRoute?.name)) {
+      updateStationDisplayPage();
     }
     
     updateNormalUpButtonLabel();
@@ -5725,6 +5754,7 @@ document.addEventListener("DOMContentLoaded", function () {
           String(entry.NUMBER).trim().toUpperCase() === run
           && String(entry.DAYS).split(/[;,|/]/).some(day => day.trim().toUpperCase() === selectedDay)
         );
+        const isSpecialDestination = isSpecialDestinationRoute(staticEntry?.ROUTE);
         const normalizeRouteName = name => String(name || '')
           .toUpperCase()
           .replace(/\bEXP\s+/g, '')
@@ -5735,11 +5765,11 @@ document.addEventListener("DOMContentLoaded", function () {
         );
         const manualPattern = manualRoute ? buildManualRoutePattern(manualRoute) : [];
 
-        if (!staticEntry || manualPattern.length === 0) {
-          const message = !staticEntry
+        if (!staticEntry || !manualRoute || (!isSpecialDestination && manualPattern.length === 0)) {
+          console.warn(!staticEntry
             ? `Run ${run} is not in the experimental database for ${selectedDay}.`
-            : `No usable manual route matches "${staticEntry.ROUTE}".`;
-          runError.textContent = message;
+            : `No usable manual route matches "${staticEntry.ROUTE}".`);
+          runError.textContent = '';
           routeConfirmed = false;
           currentStations = [];
           renderStations(currentStations);
@@ -5750,9 +5780,9 @@ document.addEventListener("DOMContentLoaded", function () {
         currentManualRoute = manualRoute;
         currentManualFormFile = getManualFormFile(manualRoute);
         updateRouteDisplay();
-        currentStations = enrichStationsWithCoordinates(manualPattern);
-        const origin = currentStations[0].name;
-        const dest = currentStations[currentStations.length - 1].name;
+        currentStations = isSpecialDestination ? [] : enrichStationsWithCoordinates(manualPattern);
+        const origin = isSpecialDestination ? '' : currentStations[0].name;
+        const dest = isSpecialDestination ? 'Special Destination' : currentStations[currentStations.length - 1].name;
         currentDestination = dest;
         currentDestinationStation = dest;
         const diDestination = getDiDisplayDestination(dest);
@@ -5771,10 +5801,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         switchToStationSelectMode();
         renderStationsAfterHardwareDelay(currentStations);
-        startTSWAutomation();
+        if (currentStations.length > 0) {
+          startTSWAutomation();
+        }
       } catch (error) {
         console.error('Unable to load experimental static route:', error);
-        runError.textContent = `Static route database unavailable: ${error.message}`;
+        runError.textContent = '';
         routeConfirmed = false;
         currentStations = [];
         renderStations(currentStations);
@@ -5992,6 +6024,9 @@ document.addEventListener("DOMContentLoaded", function () {
   // Select button - confirm start station, play mind the gap only if doors unlocked
   const selectBtn = document.getElementById("select-btn");
   if (selectBtn) selectBtn.addEventListener("click", function() {
+    if (isSpecialDestinationRoute(currentManualRoute?.name) && currentStations.length === 0) {
+      return;
+    }
     if (!selectedStation) {
       runError.textContent = "Select a station first.";
       return;
@@ -8176,16 +8211,15 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById('manual-list-container')?.classList.add('hide');
         stationListContainer.classList.remove('hide');
         stationListContainer.classList.add('show');
-        switchToNormalMode();
+        if (previousFooter === 'station') {
+          switchToStationSelectMode();
+        } else {
+          switchToNormalMode();
+        }
       } else {
         showKeyboardMode();
       }
       return;
-    }
-    if (hasRouteInput()) {
-      switchToNormalMode();
-    } else {
-      showKeyboardMode();
     }
   });
   
@@ -9171,16 +9205,6 @@ document.addEventListener("DOMContentLoaded", function () {
   let peiPreviousPanel = null;
   
   function showPeiPanel(fromPanel) {
-    clearCctvFullscreenState();
-    peiPreviousPanel = fromPanel || 'main';
-    clearAllUiPanels();
-
-    if (helperBar) {
-      helperBar.textContent = '';
-      helperBar.classList.add('hide');
-    }
-    
-    // Track current footer before hiding (only when coming from main)
     if (fromPanel === 'main') {
       if (!initialFooter.classList.contains('hide')) {
         previousFooter = 'initial';
@@ -9191,6 +9215,14 @@ document.addEventListener("DOMContentLoaded", function () {
       } else if (!normalFooter.classList.contains('hide')) {
         previousFooter = 'normal';
       }
+    }
+    clearCctvFullscreenState();
+    peiPreviousPanel = fromPanel || 'main';
+    clearAllUiPanels();
+
+    if (helperBar) {
+      helperBar.textContent = '';
+      helperBar.classList.add('hide');
     }
     
     // Hide all panels
@@ -9598,18 +9630,17 @@ document.addEventListener("DOMContentLoaded", function () {
       if (hasRouteInput()) {
         mainPanel.classList.remove('hide');
         document.getElementById('main-right-panel')?.classList.remove('hide');
-        switchToNormalMode();
+        if (previousFooter === 'station') {
+          switchToStationSelectMode();
+        } else {
+          switchToNormalMode();
+        }
       } else {
         mainPanel.classList.remove('hide');
         document.getElementById('main-right-panel')?.classList.remove('hide');
         showKeyboardMode();
       }
       return;
-    }
-    if (hasRouteInput()) {
-      switchToNormalMode();
-    } else {
-      showKeyboardMode();
     }
   });
 
@@ -10705,13 +10736,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function showSpecialPanel(previousScreenOverride = null) {
-    clearCctvFullscreenState();
-    resetFooterStackState();
     const noRouteEntered = !hasRouteInput();
-    previousScreenBeforeSpecial = previousScreenOverride || (noRouteEntered ? 'startup' : capturePreviousUiScreen() || getCurrentUiScreenKey());
-    previousScreenBeforeEmergency = null;
-
-    // Track current footer before hiding
+    const returnScreen = previousScreenOverride || (noRouteEntered ? 'startup' : capturePreviousUiScreen() || getCurrentUiScreenKey());
     if (!initialFooter.classList.contains('hide')) {
       previousFooter = 'initial';
     } else if (!startupFooter.classList.contains('hide')) {
@@ -10721,6 +10747,10 @@ document.addEventListener("DOMContentLoaded", function () {
     } else if (!normalFooter.classList.contains('hide')) {
       previousFooter = 'normal';
     }
+    clearCctvFullscreenState();
+    resetFooterStackState();
+    previousScreenBeforeSpecial = returnScreen;
+    previousScreenBeforeEmergency = null;
 
     clearAllUiPanels();
     
@@ -11059,10 +11089,8 @@ document.addEventListener("DOMContentLoaded", function () {
   const emergencyFooterTopGap = document.getElementById('emergency-footer-top-gap');
 
   function showEmergencyPanel(previousScreenOverride = null) {
-    resetFooterStackState();
     const noRouteEntered = !hasRouteInput();
     previousScreenBeforeEmergency = previousScreenOverride || (noRouteEntered ? 'startup' : capturePreviousUiScreen() || getCurrentUiScreenKey());
-    previousScreenBeforeSpecial = null;
     // Track current footer
     if (!initialFooter.classList.contains('hide')) {
       previousFooter = 'initial';
@@ -11073,6 +11101,10 @@ document.addEventListener("DOMContentLoaded", function () {
     } else if (!normalFooter.classList.contains('hide')) {
       previousFooter = 'normal';
     }
+    if (previousScreenOverride !== 'special') {
+      previousScreenBeforeSpecial = null;
+    }
+    resetFooterStackState();
     
     // Hide all panels
     mainPanel.classList.add('hide');
@@ -11153,10 +11185,16 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     const targetScreen = previousScreenBeforeEmergency || previousUiScreen || previousFooter || 'special';
     previousScreenBeforeEmergency = null;
-    previousScreenBeforeSpecial = null;
 
     clearAllUiPanels();
 
+    if (targetScreen === 'special') {
+      const specialReturnScreen = previousScreenBeforeSpecial || 'normal';
+      showSpecialPanel(specialReturnScreen);
+      return;
+    }
+
+    previousScreenBeforeSpecial = null;
     if (targetScreen === 'initial' || targetScreen === 'startup') {
       if (!hasRouteInput()) {
         showKeyboardMode();

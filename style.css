@@ -715,7 +715,6 @@ body:has(#pei-panel:not(.hide)) .main-panel {
 .footer-btn#station-reset-btn:active,
 .footer-btn#normal-up-btn:active,
 .footer-btn#normal-down-btn:active,
-.footer-btn#play-btn:active,
 .footer-btn#normal-special-btn:active,
 .footer-btn#normal-reset-btn:active,
 .footer-btn#startup-special-btn:active,
@@ -1024,11 +1023,6 @@ body:has(#cctv-panel:not(.hide)) #cctv-select-footer {
   border-top: 1px solid var(--separator-dark);
   border-bottom: 1px solid var(--separator-dark);
   box-sizing: border-box;
-}
-
-#pei-footer-top-gap {
-  height: 28px;
-  min-height: 28px;
 }
 
 #special-footer-top-gap,
@@ -1747,30 +1741,10 @@ body:has(#cctv-panel:not(.hide)) #cctv-select-footer {
 .pei-event-status.active { color: #93d14b; }
 .pei-event-status.hold { color: #5bd5d0; }
 
-.pei-call-detail {
-  display: grid;
-  grid-template-columns: minmax(150px, .8fr) minmax(220px, 1.2fr);
-  gap: 12px;
-  min-height: 174px;
-  padding: 10px;
-  border-top: 1px solid #555;
-  background: #101010;
-}
-
-.pei-call-meta { display: flex; flex-direction: column; gap: 9px; color: #fff; }
-.pei-call-meta strong { font-size: 1.05em; }
-#pei-call-status { color: #f0b94e; font-weight: bold; }
-.pei-camera-wrap { position: relative; display: grid; place-items: center; min-height: 150px; overflow: hidden; background: #000; }
-.pei-camera-wrap img { width: 100%; height: 100%; max-height: 200px; object-fit: contain; }
-.pei-camera-caption { position: absolute; left: 6px; bottom: 6px; padding: 4px 7px; background: #000c; color: #fff; font-size: 11px; }
 .pei-flashing { animation: pei-alarm-flash .75s steps(2, start) infinite; background-color: #ed211c !important; border-color: #ff7772 !important; color: #fff !important; }
 .pei-connected { background-color: #a41411 !important; border-color: #ff514a !important; color: #fff !important; }
 
 @keyframes pei-alarm-flash { to { visibility: hidden; } }
-
-@media (max-width: 760px) {
-  .pei-call-detail { grid-template-columns: 1fr; }
-}
 
 /* CCTV Panel */
 .cctv-panel-container {
@@ -2201,10 +2175,14 @@ button.active-press {
 .footer-btn[id*="special"]:active,
 .footer-btn[id*="special"].active-press,
 .footer-btn[id*="emergency"]:active,
-.footer-btn[id*="emergency"].active-press,
-.footer-btn[id$="play-btn"]:active,
-.footer-btn[id$="play-btn"].active-press {
+.footer-btn[id*="emergency"].active-press {
   background: #008040 !important;
+}
+.footer-btn#select-btn:active,
+.footer-btn#select-btn.active-press,
+.footer-btn#play-btn:active,
+.footer-btn#play-btn.active-press {
+  background: #808080 !important;
 }
 .key-btn:active,
 .key-btn.active-press,
@@ -2730,4 +2708,153 @@ button:focus-visible,
 .service-selection-close:hover {
   background: #555;
   border-color: #777;
+}
+
+/* Keep controls at their normal state colors while pressed. */
+button:active,
+button.active-press,
+[role="button"]:active,
+[role="button"].active-press {
+  filter: none !important;
+  opacity: 1 !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+.header-row-2:active {
+  opacity: 1 !important;
+}
+.standby-overlay.ready #standby-exit-btn:active {
+  background: #008040 !important;
+}
+
+.side-btn:active,
+.side-btn.active-press {
+  background: #008040 !important;
+}
+.side-btn-green:active,
+.side-btn-green.active-press {
+  background: #008040 !important;
+}
+.side-btn-red:active,
+.side-btn-red.active-press {
+  background: #ff0000 !important;
+}
+.side-btn-grey:active,
+.side-btn-grey.active-press {
+  background: #808080 !important;
+}
+
+.footer-btn:active,
+.footer-btn.active-press {
+  background: #808080 !important;
+}
+.footer-btn-green:active,
+.footer-btn-green.active-press,
+.footer-btn.active:active,
+.footer-btn.active.active-press {
+  background: #008040 !important;
+}
+.footer-btn-red:active,
+.footer-btn-red.active-press {
+  background: #ff0000 !important;
+}
+.footer-btn-grey:active,
+.footer-btn-grey.active-press {
+  background: #808080 !important;
+}
+.footer-btn#special-btn:active,
+.footer-btn#reset-btn:active,
+.footer-btn#station-special-btn:active,
+.footer-btn#station-reset-btn:active,
+.footer-btn#normal-up-btn:active,
+.footer-btn#normal-down-btn:active,
+.footer-btn#play-btn:active,
+.footer-btn#normal-special-btn:active,
+.footer-btn#normal-reset-btn:active,
+.footer-btn#startup-special-btn:active,
+.footer-btn#special-emergency-btn:active,
+.footer-btn#staff-emergency-btn:active {
+  background: #008040 !important;
+}
+.footer-btn#select-btn:active,
+.footer-btn#play-btn:active,
+.footer-btn#select-btn.active-press,
+.footer-btn#play-btn.active-press {
+  background: #008040 !important;
+}
+
+.key-btn:active,
+.key-btn.active-press {
+  background: #ff0000 !important;
+  color: #fff !important;
+  border: 3px solid #fff !important;
+}
+#startup-footer #enter-btn:active,
+#startup-footer #enter-btn.active-press {
+  background: #ff0000 !important;
+}
+.day-btn:active,
+.day-btn.active-press {
+  background: #fff !important;
+  color: #000 !important;
+  border: 2px solid #000 !important;
+}
+.day-btn.selected:active,
+.day-btn.selected.active-press {
+  background: #ff0000 !important;
+  color: #fff !important;
+  border: 3px solid #fff !important;
+}
+.key-clear:active,
+.key-clear.active-press,
+.key-backspace:active,
+.key-backspace.active-press {
+  background: #ffcccc !important;
+  color: #8c4a4a !important;
+}
+.btn-clear-special:active,
+.btn-clear-special.active-press {
+  background: #808080 !important;
+}
+
+.fn-toggle-btn:active,
+.fn-toggle-btn.active-press {
+  background: #008040 !important;
+}
+.fn-toggle-btn.enabled:active,
+.fn-toggle-btn.enabled.active-press {
+  background: #ff0000 !important;
+}
+.fn-toggle-btn.disabled:active,
+.fn-toggle-btn.disabled.active-press {
+  background: #555 !important;
+}
+#set3-update-content .update-action-btn:active,
+#set3-update-content .update-action-btn.active-press {
+  background: #ff0000 !important;
+}
+.status-gps-refresh:active,
+.status-gps-refresh.active-press {
+  background: #555 !important;
+}
+.cctv-segment:active,
+.cctv-segment.active-press {
+  background: #008040 !important;
+}
+.cctv-segment.selected:active,
+.cctv-segment.selected.active-press {
+  background: #ff0000 !important;
+}
+.cctv-segment-grey:active,
+.cctv-segment-grey.active-press {
+  background: #a0a0a0 !important;
+}
+
+.station-more-btn:active,
+.manual-more-btn:active,
+.special-more-btn:active {
+  background: #000 !important;
+}
+.service-selection-close:active {
+  background: #333 !important;
 }
